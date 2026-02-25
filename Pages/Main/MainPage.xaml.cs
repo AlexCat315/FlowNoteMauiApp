@@ -10,6 +10,8 @@ namespace FlowNoteMauiApp;
 public partial class MainPage : ContentPage
 {
     private const string DefaultSampleUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+    private const float EditorMinZoom = 0.5f;
+    private const float EditorMaxZoom = 4f;
 
     private int _currentPageIndex;
     private int _totalPageCount;
@@ -26,6 +28,7 @@ public partial class MainPage : ContentPage
     private DrawingCanvas? _drawingCanvas;
     private DrawingInputMode _drawingInputMode = DrawingInputMode.PenStylus;
     private bool _isUpdatingFingerDrawSwitch;
+    private bool _isSyncingZoomFromViewer;
 
     public MainPage()
     {
@@ -63,7 +66,10 @@ public partial class MainPage : ContentPage
             EnableLinkNavigation = true,
             DisplayMode = PdfDisplayMode.SinglePageContinuous,
             ScrollOrientation = PdfScrollOrientation.Vertical,
-            FitPolicy = FitPolicy.Width
+            FitPolicy = FitPolicy.Width,
+            MinZoom = EditorMinZoom,
+            MaxZoom = EditorMaxZoom,
+            Zoom = 1f
         };
 
         _pdfViewer.DocumentLoaded += OnDocumentLoaded;
@@ -98,11 +104,17 @@ public partial class MainPage : ContentPage
         if (!IsEditorInitialized)
             return;
 
+        var minZoom = Math.Max(EditorMinZoom, (float)ZoomSlider.Minimum);
+        var maxZoom = Math.Max(minZoom, (float)ZoomSlider.Maximum);
+        var zoom = Math.Clamp((float)ZoomSlider.Value, minZoom, maxZoom);
+
         PdfViewer.EnableZoom = EnableZoomSwitch.IsToggled;
         PdfViewer.EnableSwipe = EnableSwipeSwitch.IsToggled;
         PdfViewer.EnableLinkNavigation = EnableLinkSwitch.IsToggled;
-        PdfViewer.Zoom = (float)ZoomSlider.Value;
-        DrawingCanvas.ViewportZoom = PdfViewer.Zoom <= 0f ? 1f : PdfViewer.Zoom;
+        PdfViewer.MinZoom = minZoom;
+        PdfViewer.MaxZoom = maxZoom;
+        PdfViewer.Zoom = zoom;
+        DrawingCanvas.ViewportZoom = zoom;
     }
 
     private bool EnsurePdfLoaded(bool showHint = false)
@@ -167,6 +179,10 @@ public partial class MainPage : ContentPage
         DisplayModePicker.SelectedIndex = (int)PdfDisplayMode.SinglePageContinuous;
         OrientationPicker.SelectedIndex = (int)PdfScrollOrientation.Vertical;
         FitPolicyPicker.SelectedIndex = (int)FitPolicy.Width;
+        ZoomSlider.Minimum = EditorMinZoom;
+        ZoomSlider.Maximum = EditorMaxZoom;
+        ZoomSlider.Value = 1f;
+        ZoomValueLabel.Text = "1.00x";
 
         EnableLinkSwitch.IsToggled = true;
         ApplyViewerSettingsFromUi();

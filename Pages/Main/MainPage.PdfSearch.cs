@@ -168,12 +168,17 @@ public partial class MainPage
 
     private void OnZoomSliderValueChanged(object? sender, ValueChangedEventArgs e)
     {
-        var zoom = MathF.Round((float)e.NewValue, 2);
+        var zoom = ClampEditorZoom((float)e.NewValue);
         ZoomValueLabel.Text = $"{zoom:0.00}x";
 
         if (!IsEditorInitialized)
             return;
 
+        if (_isSyncingZoomFromViewer)
+            return;
+
+        PdfViewer.MinZoom = EditorMinZoom;
+        PdfViewer.MaxZoom = EditorMaxZoom;
         PdfViewer.Zoom = zoom;
         DrawingCanvas.ViewportZoom = zoom;
     }
@@ -182,7 +187,9 @@ public partial class MainPage
     {
         _totalPageCount = e.PageCount;
         _currentPageIndex = Math.Clamp(PdfViewer.CurrentPage, 0, Math.Max(0, _totalPageCount - 1));
-        DrawingCanvas.ViewportZoom = PdfViewer.Zoom <= 0f ? 1f : PdfViewer.Zoom;
+        var zoom = ClampEditorZoom(PdfViewer.Zoom <= 0f ? 1f : PdfViewer.Zoom);
+        DrawingCanvas.ViewportZoom = zoom;
+        SyncZoomUiFromViewer(zoom);
         UpdatePageIndicators();
         ShowStatus(AppResources.DocumentLoadedFormat.Replace("{0}", _totalPageCount.ToString()));
     }
@@ -201,7 +208,26 @@ public partial class MainPage
 
         DrawingCanvas.ScrollX = e.OffsetX;
         DrawingCanvas.ScrollY = e.OffsetY;
-        DrawingCanvas.ViewportZoom = e.Zoom <= 0f ? 1f : e.Zoom;
+        var zoom = ClampEditorZoom(e.Zoom <= 0f ? 1f : e.Zoom);
+        DrawingCanvas.ViewportZoom = zoom;
+        SyncZoomUiFromViewer(zoom);
+    }
+
+    private static float ClampEditorZoom(float zoom)
+    {
+        return Math.Clamp(zoom, EditorMinZoom, EditorMaxZoom);
+    }
+
+    private void SyncZoomUiFromViewer(float zoom)
+    {
+        var clamped = ClampEditorZoom(zoom);
+        ZoomValueLabel.Text = $"{clamped:0.00}x";
+        if (Math.Abs(ZoomSlider.Value - clamped) < 0.001)
+            return;
+
+        _isSyncingZoomFromViewer = true;
+        ZoomSlider.Value = clamped;
+        _isSyncingZoomFromViewer = false;
     }
 
     private void OnPdfError(object? sender, PdfErrorEventArgs e)

@@ -37,13 +37,32 @@
         </Style>
 
         <Style x:Key="ToolbarIconButton" TargetType="ImageButton" BasedOn="{StaticResource HeaderIconButton}">
-            <Setter Property="WidthRequest" Value="42" />
-            <Setter Property="HeightRequest" Value="42" />
-            <Setter Property="CornerRadius" Value="21" />
-            <Setter Property="Padding" Value="9" />
+            <Setter Property="WidthRequest" Value="34" />
+            <Setter Property="HeightRequest" Value="34" />
+            <Setter Property="CornerRadius" Value="17" />
+            <Setter Property="Padding" Value="7" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#F4F5F8, Dark=#2B3D57}" />
+            <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}" />
         </Style>
 
         <Style x:Key="ToolbarIconButtonSelected" TargetType="ImageButton" BasedOn="{StaticResource ToolbarIconButton}">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ToolSelected}, Dark={StaticResource AccentBlueDark}}" />
+            <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource PrimaryBlue}, Dark={StaticResource PrimaryBlueLight}}" />
+            <Setter Property="TintColor" Value="{AppThemeBinding Light={StaticResource AccentBlueDark}, Dark={StaticResource PrimaryBlueLight}}" />
+        </Style>
+
+        <Style x:Key="ToolbarToolIconButton" TargetType="ImageButton">
+            <Setter Property="WidthRequest" Value="32" />
+            <Setter Property="HeightRequest" Value="32" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="BorderWidth" Value="1" />
+            <Setter Property="BorderColor" Value="Transparent" />
+            <Setter Property="TintColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}" />
+        </Style>
+
+        <Style x:Key="ToolbarToolIconButtonSelected" TargetType="ImageButton" BasedOn="{StaticResource ToolbarToolIconButton}">
             <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ToolSelected}, Dark={StaticResource AccentBlueDark}}" />
             <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource PrimaryBlue}, Dark={StaticResource PrimaryBlueLight}}" />
             <Setter Property="TintColor" Value="{AppThemeBinding Light={StaticResource AccentBlueDark}, Dark={StaticResource PrimaryBlueLight}}" />
@@ -90,9 +109,9 @@
         </Style>
 
         <Style x:Key="ColorButton" TargetType="Button">
-            <Setter Property="WidthRequest" Value="32" />
-            <Setter Property="HeightRequest" Value="32" />
-            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="WidthRequest" Value="30" />
+            <Setter Property="HeightRequest" Value="30" />
+            <Setter Property="CornerRadius" Value="15" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="BorderWidth" Value="2" />
             <Setter Property="BorderColor" Value="Transparent" />
@@ -115,10 +134,10 @@
         </Style>
 
         <Style x:Key="FlatTopIconButton" TargetType="ImageButton">
-            <Setter Property="WidthRequest" Value="28" />
-            <Setter Property="HeightRequest" Value="28" />
+            <Setter Property="WidthRequest" Value="22" />
+            <Setter Property="HeightRequest" Value="22" />
             <Setter Property="CornerRadius" Value="0" />
-            <Setter Property="Padding" Value="4" />
+            <Setter Property="Padding" Value="2" />
             <Setter Property="BackgroundColor" Value="Transparent" />
             <Setter Property="BorderWidth" Value="0" />
             <Setter Property="TintColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}" />
@@ -127,8 +146,8 @@
         <Style x:Key="FilterTabButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
             <Setter Property="BackgroundColor" Value="Transparent" />
             <Setter Property="Padding" Value="4,0" />
-            <Setter Property="MinimumHeightRequest" Value="34" />
-            <Setter Property="FontSize" Value="18" />
+            <Setter Property="MinimumHeightRequest" Value="30" />
+            <Setter Property="FontSize" Value="15" />
             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}" />
         </Style>
     </ContentPage.Resources>
@@ -138,55 +157,55 @@
 
         <Grid x:Name="HomePanel" IsVisible="True" RowDefinitions="Auto,Auto,*" RowSpacing="0">
             <Grid Grid.Row="0" RowDefinitions="Auto,1" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2C3E}">
-                <Grid Grid.Row="0" Padding="24,10,24,10" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                    <HorizontalStackLayout Spacing="14" VerticalOptions="Center">
-                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_menu.svg" Clicked="OnMenuClicked" />
-                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_eye_off.svg" Clicked="OnDrawerRecentClicked" />
-                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_folder.svg" Clicked="OnDrawerAllDocsClicked" />
+                <Grid Grid.Row="0" Padding="20,9,20,9" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="home_menu.svg" Clicked="OnMenuClicked" />
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="home_bell.svg" Clicked="OnDrawerRecentClicked" />
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="home_cloud.svg" Clicked="OnDrawerAllDocsClicked" />
                     </HorizontalStackLayout>
 
                     <Image Grid.Column="1"
                            Source="icon_file.svg"
-                           WidthRequest="21"
-                           HeightRequest="21"
-                           Opacity="0.86"
+                           WidthRequest="18"
+                           HeightRequest="18"
+                           Opacity="0.8"
                            HorizontalOptions="Center"
                            VerticalOptions="Center" />
 
-                    <HorizontalStackLayout Grid.Column="2" Spacing="14" VerticalOptions="Center">
-                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_eye.svg" Clicked="OnDrawerFavoriteClicked" />
-                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_search.svg" Clicked="OnHomeRefreshClicked" />
-                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_settings.svg" Clicked="OnOpenSettingsClicked" />
+                    <HorizontalStackLayout Grid.Column="2" Spacing="12" VerticalOptions="Center">
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="home_done.svg" Clicked="OnDrawerFavoriteClicked" />
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="home_search.svg" Clicked="OnHomeRefreshClicked" />
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="home_settings.svg" Clicked="OnOpenSettingsClicked" />
                     </HorizontalStackLayout>
                 </Grid>
                 <BoxView Grid.Row="1" Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}" />
             </Grid>
 
-            <Grid Grid.Row="1" Padding="24,16,24,10" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                <HorizontalStackLayout HorizontalOptions="Center" Spacing="26">
+            <Grid Grid.Row="1" Padding="20,12,20,8" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="20">
                     <VerticalStackLayout Spacing="5">
                         <Button x:Name="FilterAllButton" Style="{StaticResource FilterTabButton}" Text="全部" Clicked="OnHomeFilterAllClicked" />
-                        <BoxView x:Name="FilterAllIndicator" HeightRequest="3" WidthRequest="40" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" />
+                        <BoxView x:Name="FilterAllIndicator" HeightRequest="2" WidthRequest="30" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" />
                     </VerticalStackLayout>
                     <VerticalStackLayout Spacing="5">
                         <Button x:Name="FilterPdfButton" Style="{StaticResource FilterTabButton}" Text="PDF" Clicked="OnHomeFilterPdfClicked" />
-                        <BoxView x:Name="FilterPdfIndicator" HeightRequest="3" WidthRequest="40" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" IsVisible="False" />
+                        <BoxView x:Name="FilterPdfIndicator" HeightRequest="2" WidthRequest="30" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" IsVisible="False" />
                     </VerticalStackLayout>
                     <VerticalStackLayout Spacing="5">
                         <Button x:Name="FilterNoteButton" Style="{StaticResource FilterTabButton}" Text="笔记" Clicked="OnHomeFilterNoteClicked" />
-                        <BoxView x:Name="FilterNoteIndicator" HeightRequest="3" WidthRequest="40" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" IsVisible="False" />
+                        <BoxView x:Name="FilterNoteIndicator" HeightRequest="2" WidthRequest="30" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" IsVisible="False" />
                     </VerticalStackLayout>
                     <VerticalStackLayout Spacing="5">
                         <Button x:Name="FilterFolderButton" Style="{StaticResource FilterTabButton}" Text="文件夹" Clicked="OnHomeFilterFolderClicked" />
-                        <BoxView x:Name="FilterFolderIndicator" HeightRequest="3" WidthRequest="48" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" IsVisible="False" />
+                        <BoxView x:Name="FilterFolderIndicator" HeightRequest="2" WidthRequest="36" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" IsVisible="False" />
                     </VerticalStackLayout>
                 </HorizontalStackLayout>
 
-                <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
-                    <Border WidthRequest="20"
-                            HeightRequest="20"
+                <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                    <Border WidthRequest="16"
+                            HeightRequest="16"
                             StrokeThickness="0"
-                            StrokeShape="RoundRectangle 5">
+                            StrokeShape="RoundRectangle 4">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                 <GradientStop Color="#E95077" Offset="0" />
@@ -195,12 +214,12 @@
                             </LinearGradientBrush>
                         </Border.Background>
                     </Border>
-                    <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_layers_selected.svg" Clicked="OnHomeSortClicked" />
-                    <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_menu.svg" Clicked="OnHomeSortClicked" />
+                    <ImageButton Style="{StaticResource FlatTopIconButton}" Source="home_reorder.svg" Clicked="OnHomeSortClicked" />
+                    <ImageButton Style="{StaticResource FlatTopIconButton}" Source="home_sort.svg" Clicked="OnHomeSortClicked" />
                     <Button x:Name="HomeSortButton"
                             Style="{StaticResource BaseButtonStyle}"
                             Text="排序"
-                            FontSize="16"
+                            FontSize="14"
                             Padding="0"
                             BackgroundColor="Transparent"
                             Clicked="OnHomeSortClicked" />
@@ -209,7 +228,7 @@
 
             <Grid Grid.Row="2">
                 <ScrollView>
-                    <VerticalStackLayout Spacing="10" Padding="56,6,56,120">
+                    <VerticalStackLayout Spacing="8" Padding="44,4,44,120">
                         <FlexLayout x:Name="HomeNotesList"
                                     Direction="Row"
                                     Wrap="Wrap"
@@ -221,21 +240,23 @@
 
                 <VerticalStackLayout HorizontalOptions="End"
                                      VerticalOptions="End"
-                                     Spacing="14"
+                                     Spacing="12"
                                      Margin="0,0,30,24">
                     <ImageButton x:Name="QuickPenButton"
                                  Style="{StaticResource FloatingIconButton}"
-                                 WidthRequest="56"
-                                 HeightRequest="56"
-                                 CornerRadius="28"
-                                 Padding="15"
+                                 WidthRequest="48"
+                                 HeightRequest="48"
+                                 CornerRadius="24"
+                                 Padding="12"
                                  BackgroundColor="{StaticResource PrimaryBlueLight}"
                                  TintColor="{StaticResource PrimaryBlueDark}"
                                  Source="icon_pencil.svg"
                                  Clicked="OnHomeQuickPenClicked" />
                     <ImageButton Style="{StaticResource FloatingIconButton}"
-                                 WidthRequest="64"
-                                 HeightRequest="64"
+                                 WidthRequest="58"
+                                 HeightRequest="58"
+                                 CornerRadius="29"
+                                 Padding="15"
                                  Source="icon_plus.svg"
                                  Clicked="OnHomeImportLocalClicked" />
                 </VerticalStackLayout>
@@ -253,91 +274,58 @@
                 HorizontalOptions="Fill"
                 VerticalOptions="Start"
                 Margin="12,8,12,0"
-                Padding="12,10"
-                Style="{StaticResource PanelCard}"
+                Padding="10,8"
+                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#223247}"
+                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 20"
                 Opacity="0.98">
-            <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
-                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-                    <ImageButton Grid.Column="0"
-                                 Style="{StaticResource ToolbarIconButton}"
-                                 Source="icon_home.svg"
-                                 Clicked="OnHomeClicked" />
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <Border Grid.Column="0"
+                            Padding="8,6"
+                            BackgroundColor="{AppThemeBinding Light=#F7F8FB, Dark=#1D2B3E}"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 14">
+                        <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="10">
+                            <ImageButton Grid.Column="0"
+                                         Style="{StaticResource ToolbarIconButton}"
+                                         WidthRequest="30"
+                                         HeightRequest="30"
+                                         CornerRadius="15"
+                                         Padding="7"
+                                         Source="icon_arrow_left.svg"
+                                         Clicked="OnHomeClicked" />
+                            <Image Grid.Column="1"
+                                   Source="icon_file.svg"
+                                   WidthRequest="14"
+                                   HeightRequest="14"
+                                   VerticalOptions="Center"
+                                   Opacity="0.82" />
+                            <Label x:Name="EditorDocumentTitleLabel"
+                                   Grid.Column="2"
+                                   Text="未命名笔记"
+                                   VerticalOptions="Center"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="16"
+                                   MaxLines="1"
+                                   LineBreakMode="TailTruncation"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                            <ImageButton Grid.Column="3"
+                                         WidthRequest="22"
+                                         HeightRequest="22"
+                                         CornerRadius="11"
+                                         BackgroundColor="Transparent"
+                                         BorderWidth="0"
+                                         Padding="4"
+                                         Source="icon_x.svg"
+                                         TintColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
+                                         Clicked="OnHomeClicked" />
+                        </Grid>
+                    </Border>
 
-                    <ScrollView Grid.Column="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                        <HorizontalStackLayout Spacing="8">
-                            <Border Padding="12,8"
-                                    BackgroundColor="{AppThemeBinding Light=#EFF6FF, Dark=#2A3C55}"
-                                    Stroke="{AppThemeBinding Light={StaticResource PrimaryBlueLight}, Dark={StaticResource PrimaryBlueDark}}"
-                                    StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 12">
-                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" MinWidthRequest="260">
-                                    <Image Source="icon_file.svg" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" Opacity="0.8" />
-                                    <Label x:Name="EditorDocumentTitleLabel"
-                                           Grid.Column="1"
-                                           Text="未命名笔记"
-                                           VerticalOptions="Center"
-                                           FontFamily="OpenSansSemibold"
-                                           FontSize="15"
-                                           MaxLines="1"
-                                           LineBreakMode="TailTruncation"
-                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-                                    <ImageButton Grid.Column="2"
-                                                 WidthRequest="22"
-                                                 HeightRequest="22"
-                                                 BackgroundColor="Transparent"
-                                                 Padding="2"
-                                                 Source="icon_x.svg"
-                                                 TintColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
-                                </Grid>
-                            </Border>
-
-                            <Border Padding="12,8"
-                                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray800}}"
-                                    Stroke="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}"
-                                    StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 12">
-                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" MinWidthRequest="180">
-                                    <Image Source="icon_file.svg" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" Opacity="0.78" />
-                                    <Label Grid.Column="1"
-                                           Text="160-180"
-                                           VerticalOptions="Center"
-                                           FontFamily="OpenSansSemibold"
-                                           FontSize="15"
-                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-                                    <ImageButton Grid.Column="2"
-                                                 WidthRequest="22"
-                                                 HeightRequest="22"
-                                                 BackgroundColor="Transparent"
-                                                 Padding="2"
-                                                 Source="icon_x.svg"
-                                                 TintColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
-                                </Grid>
-                            </Border>
-
-                            <Border Padding="12,8"
-                                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray800}}"
-                                    Stroke="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}"
-                                    StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 12">
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" MinWidthRequest="160">
-                                    <Label Text="200-220"
-                                           VerticalOptions="Center"
-                                           FontFamily="OpenSansSemibold"
-                                           FontSize="15"
-                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-                                    <ImageButton Grid.Column="1"
-                                                 WidthRequest="22"
-                                                 HeightRequest="22"
-                                                 BackgroundColor="Transparent"
-                                                 Padding="2"
-                                                 Source="icon_x.svg"
-                                                 TintColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
-                                </Grid>
-                            </Border>
-                        </HorizontalStackLayout>
-                    </ScrollView>
-
-                    <HorizontalStackLayout Grid.Column="2" Spacing="6">
+                    <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                         <ImageButton Style="{StaticResource ToolbarIconButton}"
                                      Source="icon_plus.svg"
                                      Clicked="OnHomeImportLocalClicked" />
@@ -354,43 +342,48 @@
                 </Grid>
 
                 <Border Grid.Row="1"
-                        Padding="8"
-                        BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}"
-                        Stroke="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}"
+                        Padding="6,4"
+                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1E2D43}"
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                         StrokeThickness="1"
-                        StrokeShape="RoundRectangle 14">
+                        StrokeShape="RoundRectangle 12">
                     <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                        <HorizontalStackLayout Spacing="8">
-                            <ImageButton x:Name="UndoButton" Style="{StaticResource ToolbarIconButton}" Source="icon_arrow_back_up.svg" Clicked="OnUndoClicked" />
-                            <ImageButton x:Name="RedoButton" Style="{StaticResource ToolbarIconButton}" Source="icon_arrow_forward_up.svg" Clicked="OnRedoClicked" />
-                            <ImageButton x:Name="PenModeButton" Style="{StaticResource ToolbarIconButtonSelected}" Source="icon_pencil.svg" Clicked="OnPenModeClicked" />
-                            <ImageButton x:Name="HighlighterButton" Style="{StaticResource ToolbarIconButton}" Source="icon_brush.svg" Clicked="OnHighlighterClicked" />
-                            <ImageButton x:Name="EraserButton" Style="{StaticResource ToolbarIconButton}" Source="icon_eraser.svg" Clicked="OnEraserClicked" />
-                            <ImageButton x:Name="ClearButton2" Style="{StaticResource ToolbarIconButton}" Source="icon_trash.svg" Clicked="OnClearClicked" />
-                            <ImageButton x:Name="DrawingToggleButton" Style="{StaticResource ToolbarIconButtonSelected}" Source="icon_pencil.svg" Clicked="OnDrawingToggleClicked" />
-                            <ImageButton Style="{StaticResource ToolbarIconButton}" Source="icon_layers_selected.svg" Clicked="OnLayerToggleClicked" />
+                        <HorizontalStackLayout Spacing="4">
+                            <ImageButton x:Name="UndoButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_arrow_back_up.svg" Clicked="OnUndoClicked" />
+                            <ImageButton x:Name="RedoButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_arrow_forward_up.svg" Clicked="OnRedoClicked" />
+                            <BoxView WidthRequest="1" HeightRequest="18" VerticalOptions="Center" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" Margin="1,0" />
 
-                            <ImageButton x:Name="PrevPageButton" Style="{StaticResource ToolbarIconButton}" Source="icon_arrow_left.svg" Clicked="OnPrevPageClicked" />
-                            <Border Padding="10,0"
+                            <ImageButton x:Name="PenModeButton" Style="{StaticResource ToolbarToolIconButtonSelected}" Source="icon_pencil.svg" Clicked="OnPenModeClicked" />
+                            <ImageButton x:Name="HighlighterButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_brush.svg" Clicked="OnHighlighterClicked" />
+                            <ImageButton x:Name="EraserButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_eraser.svg" Clicked="OnEraserClicked" />
+                            <ImageButton x:Name="ClearButton2" Style="{StaticResource ToolbarToolIconButton}" Source="icon_trash.svg" Clicked="OnClearClicked" />
+                            <ImageButton x:Name="DrawingToggleButton" Style="{StaticResource ToolbarToolIconButtonSelected}" Source="icon_pencil.svg" Clicked="OnDrawingToggleClicked" />
+                            <ImageButton Style="{StaticResource ToolbarToolIconButton}" Source="icon_layers_selected.svg" Clicked="OnLayerToggleClicked" />
+                            <BoxView WidthRequest="1" HeightRequest="18" VerticalOptions="Center" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" Margin="1,0" />
+
+                            <ImageButton x:Name="PrevPageButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_arrow_left.svg" Clicked="OnPrevPageClicked" />
+                            <Border Padding="8,0"
+                                    HeightRequest="28"
                                     VerticalOptions="Center"
-                                    BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundPrimary}, Dark={StaticResource Gray800}}"
+                                    BackgroundColor="{AppThemeBinding Light=#F7F8FA, Dark=#2A3C55}"
                                     Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                                     StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 10">
+                                    StrokeShape="RoundRectangle 9">
                                 <Label x:Name="PageInfoLabel"
-                                       Text="1/1"
+                                       Text="Page: 1/1"
                                        VerticalOptions="Center"
                                        FontFamily="OpenSansSemibold"
-                                       FontSize="13"
+                                       FontSize="12"
                                        TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
                             </Border>
-                            <ImageButton x:Name="NextPageButton" Style="{StaticResource ToolbarIconButton}" Source="icon_arrow_right.svg" Clicked="OnNextPageClicked" />
+                            <ImageButton x:Name="NextPageButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_arrow_right.svg" Clicked="OnNextPageClicked" />
+                            <BoxView WidthRequest="1" HeightRequest="18" VerticalOptions="Center" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" Margin="1,0" />
 
-                            <Button x:Name="ColorBlack" Style="{StaticResource ColorButton}" BackgroundColor="#000000" Clicked="OnColorBlackClicked" />
-                            <Button x:Name="ColorBlue" Style="{StaticResource ColorButton}" BackgroundColor="#1B5FCB" Clicked="OnColorBlueClicked" />
-                            <Button x:Name="ColorRed" Style="{StaticResource ColorButton}" BackgroundColor="#D4362B" Clicked="OnColorRedClicked" />
-                            <Button x:Name="ColorGreen" Style="{StaticResource ColorButton}" BackgroundColor="#22C55E" Clicked="OnColorGreenClicked" />
-                            <Button x:Name="ColorOrange" Style="{StaticResource ColorButton}" BackgroundColor="#F59E0B" Clicked="OnColorOrangeClicked" />
+                            <Button x:Name="ColorBlack" Style="{StaticResource ColorButton}" BackgroundColor="#111111" Clicked="OnColorBlackClicked" />
+                            <Button x:Name="ColorBlue" Style="{StaticResource ColorButton}" BackgroundColor="#2F74D0" Clicked="OnColorBlueClicked" />
+                            <Button x:Name="ColorRed" Style="{StaticResource ColorButton}" BackgroundColor="#E23B30" Clicked="OnColorRedClicked" />
+                            <Button x:Name="ColorGreen" Style="{StaticResource ColorButton}" BackgroundColor="#2CC66D" Clicked="OnColorGreenClicked" />
+                            <Button x:Name="ColorOrange" Style="{StaticResource ColorButton}" BackgroundColor="#F4B100" Clicked="OnColorOrangeClicked" />
                             <Button x:Name="ColorWhite" Style="{StaticResource ColorButton}" BackgroundColor="#FFFFFF" BorderColor="#CBD5E1" BorderWidth="1" Clicked="OnColorWhiteClicked" />
                         </HorizontalStackLayout>
                     </ScrollView>
@@ -883,7 +876,7 @@
                             </Grid>
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                                 <Slider x:Name="ZoomSlider" Minimum="0.5" Maximum="4" Value="1" ValueChanged="OnZoomSliderValueChanged" />
-                                <Label x:Name="ZoomValueLabel" Grid.Column="1" Text="1.0x" WidthRequest="50" VerticalOptions="Center" />
+                                <Label x:Name="ZoomValueLabel" Grid.Column="1" Text="1.00x" WidthRequest="50" VerticalOptions="Center" />
                             </Grid>
 
                             <HorizontalStackLayout Spacing="8">

@@ -163,8 +163,8 @@ public partial class MainPage
 
         var card = new Border
         {
-            WidthRequest = 146,
-            Margin = new Thickness(0, 0, 26, 24),
+            WidthRequest = 130,
+            Margin = new Thickness(0, 0, 22, 20),
             BackgroundColor = Colors.Transparent,
             StrokeThickness = 0,
             Padding = new Thickness(0)
@@ -174,35 +174,35 @@ public partial class MainPage
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = new GridLength(160) },
+                new RowDefinition { Height = new GridLength(138) },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }
             },
-            RowSpacing = 8
+            RowSpacing = 6
         };
 
         var preview = new Border
         {
-            WidthRequest = 110,
-            HeightRequest = 160,
+            WidthRequest = 94,
+            HeightRequest = 138,
             HorizontalOptions = LayoutOptions.Center,
             BackgroundColor = HomePreviewBackground,
             Stroke = HomePreviewStroke,
             StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
-            Padding = new Thickness(10)
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
+            Padding = new Thickness(8)
         };
         preview.Content = new Border
         {
             BackgroundColor = HomePreviewPaperBackground,
             Stroke = IsDarkTheme ? Color.FromArgb("#5D779A") : Color.FromArgb("#D8E1EE"),
             StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
             Content = new Image
             {
                 Source = "icon_folder.svg",
-                WidthRequest = 50,
-                HeightRequest = 50,
+                WidthRequest = 40,
+                HeightRequest = 40,
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center,
                 Opacity = 0.85
@@ -223,7 +223,7 @@ public partial class MainPage
         {
             Text = folderName,
             FontFamily = "OpenSansSemibold",
-            FontSize = 14,
+            FontSize = 12,
             MaxLines = 2,
             LineBreakMode = LineBreakMode.WordWrap,
             HorizontalTextAlignment = TextAlignment.Center,
@@ -232,7 +232,7 @@ public partial class MainPage
         var moreLabel = new Label
         {
             Text = "⋮",
-            FontSize = 18,
+            FontSize = 15,
             TextColor = ThemeSecondaryText
         };
         titleRow.Children.Add(moreLabel);
@@ -251,14 +251,14 @@ public partial class MainPage
         metaGrid.Children.Add(new Label
         {
             Text = "文件夹",
-            FontSize = 12,
+            FontSize = 10,
             TextColor = ThemeSecondaryText
         });
         var dateLabel = new Label
         {
             Text = DateTime.Now.ToString("yy/MM/dd"),
             HorizontalTextAlignment = TextAlignment.End,
-            FontSize = 12,
+            FontSize = 10,
             TextColor = ThemeSecondaryText
         };
         metaGrid.Children.Add(dateLabel);
@@ -287,8 +287,8 @@ public partial class MainPage
         var selected = note.Id == _currentNoteId;
         var card = new Border
         {
-            WidthRequest = 146,
-            Margin = new Thickness(0, 0, 26, 24),
+            WidthRequest = 130,
+            Margin = new Thickness(0, 0, 22, 20),
             BackgroundColor = Colors.Transparent,
             StrokeThickness = 0,
             Padding = new Thickness(0)
@@ -298,23 +298,23 @@ public partial class MainPage
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = new GridLength(160) },
+                new RowDefinition { Height = new GridLength(138) },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }
             },
-            RowSpacing = 8
+            RowSpacing = 6
         };
 
         var preview = new Border
         {
-            WidthRequest = 110,
-            HeightRequest = 160,
+            WidthRequest = 94,
+            HeightRequest = 138,
             HorizontalOptions = LayoutOptions.Center,
             BackgroundColor = HomePreviewBackground,
             Stroke = selected ? Color.FromArgb("#4A90E2") : HomePreviewStroke,
             StrokeThickness = selected ? 1.5 : 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
-            Padding = new Thickness(10)
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
+            Padding = new Thickness(8)
         };
 
         preview.Content = new Border
@@ -322,12 +322,12 @@ public partial class MainPage
             BackgroundColor = HomePreviewPaperBackground,
             Stroke = IsDarkTheme ? Color.FromArgb("#5D779A") : Color.FromArgb("#D8E1EE"),
             StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
             Content = new Image
             {
                 Source = "icon_file.svg",
-                WidthRequest = 48,
-                HeightRequest = 48,
+                WidthRequest = 38,
+                HeightRequest = 38,
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center,
                 Opacity = 0.76
@@ -348,7 +348,7 @@ public partial class MainPage
         {
             Text = note.Name,
             FontFamily = "OpenSansSemibold",
-            FontSize = 14,
+            FontSize = 12,
             MaxLines = 2,
             LineBreakMode = LineBreakMode.WordWrap,
             HorizontalTextAlignment = TextAlignment.Center,
@@ -357,7 +357,7 @@ public partial class MainPage
         var chevron = new Label
         {
             Text = "⋮",
-            FontSize = 18,
+            FontSize = 15,
             TextColor = ThemeSecondaryText,
             VerticalOptions = LayoutOptions.Start
         };
@@ -377,14 +377,14 @@ public partial class MainPage
         metaGrid.Children.Add(new Label
         {
             Text = $"{EstimatePages(note)}页",
-            FontSize = 12,
+            FontSize = 10,
             TextColor = ThemeSecondaryText
         });
         var dateLabel = new Label
         {
             Text = note.LastOpenedAtUtc.ToLocalTime().ToString("yy/MM/dd"),
             HorizontalTextAlignment = TextAlignment.End,
-            FontSize = 12,
+            FontSize = 10,
             TextColor = ThemeSecondaryText
         };
         metaGrid.Children.Add(dateLabel);
