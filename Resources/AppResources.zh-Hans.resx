@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ToolbarToggle" xml:space="preserve">
+    <value>打开工具栏</value>
+  </data>
+  <data name="ToolbarTitle" xml:space="preserve">
+    <value>FlowPDFView 工具栏</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="UrlPlaceholder" xml:space="preserve">
+    <value>输入 PDF URL，例如 https://.../demo.pdf</value>
+  </data>
+  <data name="LoadUrl" xml:space="preserve">
+    <value>加载 URL</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>输入关键词，测试搜索高亮</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>搜索</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>上一个</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>下一个</value>
+  </data>
+  <data name="Highlight" xml:space="preserve">
+    <value>高亮</value>
+  </data>
+  <data name="SearchStatus" xml:space="preserve">
+    <value>搜索: 未执行</value>
+  </data>
+  <data name="LoadSample" xml:space="preserve">
+    <value>加载示例</value>
+  </data>
+  <data name="LocalFile" xml:space="preserve">
+    <value>本地文件</value>
+  </data>
+  <data name="Reload" xml:space="preserve">
+    <value>重载</value>
+  </data>
+  <data name="PreviousPage" xml:space="preserve">
+    <value>上一页</value>
+  </data>
+  <data name="NextPage" xml:space="preserve">
+    <value>下一页</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>来源</value>
+  </data>
+  <data name="SourceNotLoaded" xml:space="preserve">
+    <value>来源: 未加载</value>
+  </data>
+  <data name="DisplayMode" xml:space="preserve">
+    <value>显示模式</value>
+  </data>
+  <data name="ScrollOrientation" xml:space="preserve">
+    <value>滚动方向</value>
+  </data>
+  <data name="FitPolicy" xml:space="preserve">
+    <value>适配策略</value>
+  </data>
+  <data name="Zoom" xml:space="preserve">
+    <value>缩放</value>
+  </data>
+  <data name="Swipe" xml:space="preserve">
+    <value>滑动</value>
+  </data>
+  <data name="Link" xml:space="preserve">
+    <value>链接</value>
+  </data>
+  <data name="PageInfo" xml:space="preserve">
+    <value>页码: - / -</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="StatusWaiting" xml:space="preserve">
+    <value>状态: 等待加载 PDF</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>语言</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>英语</value>
+  </data>
+  <data name="Chinese" xml:space="preserve">
+    <value>中文</value>
+  </data>
+  <data name="InvalidUrl" xml:space="preserve">
+    <value>URL 无效</value>
+  </data>
+  <data name="EnterFullUrl" xml:space="preserve">
+    <value>请输入完整的绝对 URL。</value>
+  </data>
+  <data name="LoadingUrlPdf" xml:space="preserve">
+    <value>正在加载 URL PDF...</value>
+  </data>
+  <data name="FileSelectionCancelled" xml:space="preserve">
+    <value>已取消文件选择</value>
+  </data>
+  <data name="SelectPdfFile" xml:space="preserve">
+    <value>选择 PDF 文件</value>
+  </data>
+  <data name="FileEmpty" xml:space="preserve">
+    <value>所选文件为空</value>
+  </data>
+  <data name="LoadingLocalPdf" xml:space="preserve">
+    <value>正在加载本地 PDF...</value>
+  </data>
+  <data name="SelectFileFailed" xml:space="preserve">
+    <value>选择文件失败</value>
+  </data>
+  <data name="ReloadTriggered" xml:space="preserve">
+    <value>已触发重载</value>
+  </data>
+  <data name="SearchEnterKeyword" xml:space="preserve">
+    <value>搜索: 请输入关键词</value>
+  </data>
+  <data name="SearchNotSupported" xml:space="preserve">
+    <value>搜索: 当前平台暂不支持</value>
+  </data>
+  <data name="SearchNoResults" xml:space="preserve">
+    <value>搜索: 未找到结果</value>
+  </data>
+  <data name="SearchFailed" xml:space="preserve">
+    <value>搜索失败</value>
+  </data>
+  <data name="SearchCleared" xml:space="preserve">
+    <value>搜索: 已清除</value>
+  </data>
+  <data name="SearchHighlight" xml:space="preserve">
+    <value>搜索高亮</value>
+  </data>
+  <data name="SearchHighlightNotSupported" xml:space="preserve">
+    <value>搜索高亮: 当前平台暂不支持</value>
+  </data>
+  <data name="Enabled" xml:space="preserve">
+    <value>已开启</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>已关闭</value>
+  </data>
+  <data name="DocumentLoaded" xml:space="preserve">
+    <value>文档已加载</value>
+  </data>
+  <data name="LoadFailed" xml:space="preserve">
+    <value>加载失败</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>搜索中</value>
+  </data>
+  <data name="SelectPdfFileOnly" xml:space="preserve">
+    <value>请仅选择 .pdf 文件</value>
+  </data>
+</root>
