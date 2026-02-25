@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:pdf="clr-namespace:Flow.PDFView;assembly=Flow.PDFView"
-             x:Class="ExampleMauiApp.MainPage">
+             x:Class="FlowNoteMauiApp.MainPage">
     <ContentPage.Resources>
         <Color x:Key="PanelBgColorLight">#F2FFFFFF</Color>
         <Color x:Key="PanelBgColorDark">#F21E293B</Color>

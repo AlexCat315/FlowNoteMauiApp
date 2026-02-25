@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace ExampleMauiApp;
+namespace FlowNoteMauiApp;
 
 [Application]
 public class MainApplication : MauiApplication

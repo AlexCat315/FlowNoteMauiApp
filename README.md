@@ -1,6 +1,6 @@
-# ExampleMauiApp
+# FlowNoteMauiApp
 
-`ExampleMauiApp` 用于演示 `Flow.PDFView` 的核心能力与交互。
+`FlowNoteMauiApp` 用于演示 `Flow.PDFView` 的核心能力与交互。
 
 ## 当前演示内容
 
@@ -36,9 +36,9 @@
 ## 构建与运行
 
 ```bash
-dotnet build ExampleMauiApp/ExampleMauiApp.csproj -f net10.0-android
-dotnet build ExampleMauiApp/ExampleMauiApp.csproj -f net10.0-ios
-dotnet build ExampleMauiApp/ExampleMauiApp.csproj -f net10.0-maccatalyst
+dotnet build FlowNoteMauiApp/FlowNoteMauiApp.csproj -f net10.0-android
+dotnet build FlowNoteMauiApp/FlowNoteMauiApp.csproj -f net10.0-ios
+dotnet build FlowNoteMauiApp/FlowNoteMauiApp.csproj -f net10.0-maccatalyst
 ```
 
 VS Code 运行 Android 时可使用你现有的 `dotnet build -t:Run ...` 参数模板。

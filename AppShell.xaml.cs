@@ -1,4 +1,4 @@
-﻿namespace ExampleMauiApp;
+﻿namespace FlowNoteMauiApp;
 
 public partial class AppShell : Shell
 {

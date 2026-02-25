@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace ExampleMauiApp;
+namespace FlowNoteMauiApp;
 
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate

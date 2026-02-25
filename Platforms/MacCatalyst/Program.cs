@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace ExampleMauiApp;
+namespace FlowNoteMauiApp;
 
 public class Program
 {

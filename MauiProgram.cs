@@ -1,7 +1,7 @@
 ﻿using Flow.PDFView;
 using Microsoft.Extensions.Logging;
 
-namespace ExampleMauiApp;
+namespace FlowNoteMauiApp;
 
 public static class MauiProgram
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace ExampleMauiApp;
+namespace FlowNoteMauiApp;
 
 public partial class App : Application
 {

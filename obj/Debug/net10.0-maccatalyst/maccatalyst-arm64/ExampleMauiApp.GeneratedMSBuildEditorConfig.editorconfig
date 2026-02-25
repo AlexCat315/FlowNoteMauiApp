@@ -19,7 +19,7 @@ build_property.InvariantGlobalization = false
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
-build_property.RootNamespace = ExampleMauiApp
+build_property.RootNamespace = FlowNoteMauiApp
 build_property.ProjectDir = /Users/alexcat/dev/FlowNoteMauiApp/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
@@ -28,7 +28,7 @@ build_property.EnableCodeStyleSeverity =
 
 [/Users/alexcat/dev/FlowNoteMauiApp/App.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = ExampleMauiApp.App.xaml
+build_metadata.AdditionalFiles.ManifestResourceName = FlowNoteMauiApp.App.xaml
 build_metadata.AdditionalFiles.TargetPath = App.xaml
 build_metadata.AdditionalFiles.RelativePath = App.xaml
 build_metadata.AdditionalFiles.Inflator = SourceGen
@@ -38,7 +38,7 @@ build_metadata.AdditionalFiles.LineInfo =
 
 [/Users/alexcat/dev/FlowNoteMauiApp/AppShell.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = ExampleMauiApp.AppShell.xaml
+build_metadata.AdditionalFiles.ManifestResourceName = FlowNoteMauiApp.AppShell.xaml
 build_metadata.AdditionalFiles.TargetPath = AppShell.xaml
 build_metadata.AdditionalFiles.RelativePath = AppShell.xaml
 build_metadata.AdditionalFiles.Inflator = SourceGen
@@ -48,7 +48,7 @@ build_metadata.AdditionalFiles.LineInfo =
 
 [/Users/alexcat/dev/FlowNoteMauiApp/MainPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = ExampleMauiApp.MainPage.xaml
+build_metadata.AdditionalFiles.ManifestResourceName = FlowNoteMauiApp.MainPage.xaml
 build_metadata.AdditionalFiles.TargetPath = MainPage.xaml
 build_metadata.AdditionalFiles.RelativePath = MainPage.xaml
 build_metadata.AdditionalFiles.Inflator = SourceGen
@@ -58,7 +58,7 @@ build_metadata.AdditionalFiles.LineInfo =
 
 [/Users/alexcat/dev/FlowNoteMauiApp/Resources/Styles/Colors.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = ExampleMauiApp.Resources.Styles.Colors.xaml
+build_metadata.AdditionalFiles.ManifestResourceName = FlowNoteMauiApp.Resources.Styles.Colors.xaml
 build_metadata.AdditionalFiles.TargetPath = Resources/Styles/Colors.xaml
 build_metadata.AdditionalFiles.RelativePath = Resources/Styles/Colors.xaml
 build_metadata.AdditionalFiles.Inflator = SourceGen
@@ -68,7 +68,7 @@ build_metadata.AdditionalFiles.LineInfo =
 
 [/Users/alexcat/dev/FlowNoteMauiApp/Resources/Styles/Styles.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = ExampleMauiApp.Resources.Styles.Styles.xaml
+build_metadata.AdditionalFiles.ManifestResourceName = FlowNoteMauiApp.Resources.Styles.Styles.xaml
 build_metadata.AdditionalFiles.TargetPath = Resources/Styles/Styles.xaml
 build_metadata.AdditionalFiles.RelativePath = Resources/Styles/Styles.xaml
 build_metadata.AdditionalFiles.Inflator = SourceGen

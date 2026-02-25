@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Resources;
 using System.ComponentModel;
 
-namespace ExampleMauiApp.Resources;
+namespace FlowNoteMauiApp.Resources;
 
 public static class AppResources
 {
@@ -15,7 +15,7 @@ public static class AppResources
         {
             if (_resourceManager == null)
             {
-                _resourceManager = new ResourceManager("ExampleMauiApp.Resources.AppResources", typeof(AppResources).Assembly);
+                _resourceManager = new ResourceManager("FlowNoteMauiApp.Resources.AppResources", typeof(AppResources).Assembly);
             }
             return _resourceManager;
         }

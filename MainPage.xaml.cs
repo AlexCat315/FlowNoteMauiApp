@@ -1,13 +1,13 @@
 ﻿using System.Globalization;
 using Flow.PDFView.Abstractions;
-using ExampleMauiApp.Resources;
+using FlowNoteMauiApp.Resources;
 using PdfPageChangedEventArgs = Flow.PDFView.Abstractions.PageChangedEventArgs;
 #if MACCATALYST
 using Foundation;
 using UIKit;
 #endif
 
-namespace ExampleMauiApp;
+namespace FlowNoteMauiApp;
 
 public partial class MainPage : ContentPage
 {

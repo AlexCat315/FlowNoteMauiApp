@@ -1,8 +1,8 @@
 using System.Globalization;
-using ExampleMauiApp.Resources;
+using FlowNoteMauiApp.Resources;
 using Microsoft.Maui.Controls;
 
-namespace ExampleMauiApp;
+namespace FlowNoteMauiApp;
 
 public static class LanguageManager
 {
