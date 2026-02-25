@@ -364,9 +364,5 @@ FodyWeavers.xsd
 
 .DS_Store
 .idea
-obj/Debug/net10.0-android/mauiimage.inputs
-obj/Debug/net10.0-android/mauiimage.outputs
-obj/Debug/net10.0-android/mauiimage.inputs
-obj/Debug/net10.0-android/mauiimage.outputs
-obj/Debug/net10.0-android/mauiimage.inputs
-obj/Debug/net10.0-android/mauiimage.outputs
+
+obj/
