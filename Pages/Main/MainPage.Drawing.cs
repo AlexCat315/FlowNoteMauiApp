@@ -466,6 +466,20 @@ public partial class MainPage
         }
     }
 
+    private void OnDrawingCanvasTwoFingerPan(object? sender, DrawingCanvas.TwoFingerPanEventArgs e)
+    {
+        if (!EnsurePdfLoaded())
+            return;
+
+        if (PdfViewer.DisplayMode == Flow.PDFView.Abstractions.PdfDisplayMode.SinglePage)
+            return;
+
+        if (_drawingInputMode != DrawingInputMode.FingerCapacitive)
+            return;
+
+        PdfViewer.PanBy(e.DeltaX, e.DeltaY);
+    }
+
     private void OnDrawingStrokeCommitted(object? sender, EventArgs e)
     {
         QueueInkSave();

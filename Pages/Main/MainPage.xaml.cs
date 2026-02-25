@@ -90,6 +90,7 @@ public partial class MainPage : ContentPage
         _drawingCanvas.Layers.CollectionChanged += (_, _) => RefreshLayerList();
         _drawingCanvas.StrokeCommitted += OnDrawingStrokeCommitted;
         _drawingCanvas.TwoFingerSwipe += OnDrawingCanvasTwoFingerSwipe;
+        _drawingCanvas.TwoFingerPan += OnDrawingCanvasTwoFingerPan;
 
         EditorHost.Children.Add(_pdfViewer);
         EditorHost.Children.Add(_drawingCanvas);

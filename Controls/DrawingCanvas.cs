@@ -24,6 +24,18 @@ public class DrawingCanvas : SKCanvasView
         public TwoFingerSwipeDirection Direction { get; }
     }
 
+    public sealed class TwoFingerPanEventArgs : EventArgs
+    {
+        public TwoFingerPanEventArgs(float deltaX, float deltaY)
+        {
+            DeltaX = deltaX;
+            DeltaY = deltaY;
+        }
+
+        public float DeltaX { get; }
+        public float DeltaY { get; }
+    }
+
     public static readonly BindableProperty LayersProperty =
         BindableProperty.Create(nameof(Layers), typeof(ObservableCollection<DrawingLayer>), typeof(DrawingCanvas),
             propertyChanged: OnLayersChanged);
@@ -82,9 +94,11 @@ public class DrawingCanvas : SKCanvasView
     private bool _isTwoFingerGestureActive;
     private SKPoint _twoFingerAnchor;
     private const float TwoFingerSwipeThreshold = 120f;
+    private const float TwoFingerPanMinDelta = 0.5f;
 
     public event EventHandler? StrokeCommitted;
     public event EventHandler<TwoFingerSwipeEventArgs>? TwoFingerSwipe;
+    public event EventHandler<TwoFingerPanEventArgs>? TwoFingerPan;
 
     private readonly record struct StrokeHistoryEntry(int LayerIndex, DrawingStroke Stroke);
 
@@ -508,16 +522,8 @@ public class DrawingCanvas : SKCanvasView
         {
             CancelCurrentStroke();
             _suspendDrawingUntilTouchesReleased = true;
-            if (EnableTwoFingerSwipeNavigation)
-            {
-                HandleTwoFingerGesture();
-                e.Handled = true;
-            }
-            else
-            {
-                // Let the underlying PDF view handle continuous-mode pinch/scroll.
-                e.Handled = false;
-            }
+            HandleTwoFingerGesture();
+            e.Handled = true;
             InvalidateSurface();
             return;
         }
@@ -644,6 +650,16 @@ public class DrawingCanvas : SKCanvasView
 
         var deltaX = center.X - _twoFingerAnchor.X;
         var deltaY = center.Y - _twoFingerAnchor.Y;
+        _twoFingerAnchor = center;
+
+        if (!EnableTwoFingerSwipeNavigation)
+        {
+            if (Math.Abs(deltaX) < TwoFingerPanMinDelta && Math.Abs(deltaY) < TwoFingerPanMinDelta)
+                return;
+
+            TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(deltaX, deltaY));
+            return;
+        }
 
         if (Math.Abs(deltaY) < TwoFingerSwipeThreshold || Math.Abs(deltaY) <= Math.Abs(deltaX))
             return;
@@ -652,7 +668,6 @@ public class DrawingCanvas : SKCanvasView
             ? TwoFingerSwipeDirection.NextPage
             : TwoFingerSwipeDirection.PreviousPage;
 
-        _twoFingerAnchor = center;
         TwoFingerSwipe?.Invoke(this, new TwoFingerSwipeEventArgs(direction));
     }
 
