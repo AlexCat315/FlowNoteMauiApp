@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FlowNoteMauiApp.Views.Main.MainDrawerOverlayView">
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/MainPageStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentView.Resources>
+<Grid x:Name="HomeDrawerOverlay"
+      IsVisible="False"
+      BackgroundColor="#6A0E1828">
+    <Grid ColumnDefinitions="330,*">
+        <Border Grid.Column="0"
+                Margin="10,10,0,10"
+                Padding="14,12,14,14"
+                Style="{StaticResource PanelCard}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}">
+            <ScrollView>
+                <VerticalStackLayout Spacing="10">
+                    <Grid Padding="0,2,0,6" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Border WidthRequest="44"
+                                HeightRequest="44"
+                                StrokeShape="RoundRectangle 22"
+                                Stroke="{AppThemeBinding Light=#D3DAE8, Dark=#4B607D}"
+                                StrokeThickness="1"
+                                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2A3A52}">
+                            <Image Source="icon_file.svg" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" HorizontalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
+                            <Label Text="登录/注册"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="16"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                            <Label Text="同步你的学习进度"
+                                   FontSize="12"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
+                        </VerticalStackLayout>
+                        <ImageButton x:Name="DrawerHeaderCloseButton"
+                                     Grid.Column="2"
+                                     Style="{StaticResource HeaderIconButton}"
+                                     Source="icon_x.svg"
+ />
+                    </Grid>
+
+                    <Border Style="{StaticResource PanelCard}"
+                            Padding="8"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#25344A}">
+                        <VerticalStackLayout Spacing="2">
+                            <Button x:Name="DrawerAllDocsButton" Style="{StaticResource DrawerItemButton}" Text="所有文档" />
+                            <Button x:Name="DrawerRecentButton" Style="{StaticResource DrawerItemButton}" Text="最近使用" />
+                            <Button x:Name="DrawerFavoriteButton" Style="{StaticResource DrawerItemButton}" Text="我的收藏" />
+                            <Button x:Name="DrawerTrashButton" Style="{StaticResource DrawerItemButton}" Text="回收站" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Label Margin="0,8,0,0"
+                           Text="我的标签"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="14"
+                           TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                    <Border Style="{StaticResource PanelCard}"
+                            Padding="8"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#25344A}">
+                        <VerticalStackLayout Spacing="2">
+                            <Button x:Name="DrawerEditTagsButton" Style="{StaticResource DrawerItemButton}" Text="编辑标签" />
+                            <Button x:Name="DrawerCreateTagButton" Style="{StaticResource DrawerItemButton}" Text="创建新标签" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Label Margin="0,8,0,0"
+                           Text="我的应用"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="14"
+                           TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                    <Border Style="{StaticResource PanelCard}"
+                            Padding="8"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#25344A}">
+                        <VerticalStackLayout Spacing="2">
+                            <Button x:Name="DrawerHelpButton" Style="{StaticResource DrawerItemButton}" Text="帮助中心" />
+                            <Button x:Name="DrawerAboutButton" Style="{StaticResource DrawerItemButton}" Text="关于我们" />
+                            <Button x:Name="DrawerDiscountButton" Style="{StaticResource DrawerItemButton}" Text="获取折扣" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Margin="0,8,0,0"
+                            Padding="12"
+                            Stroke="Transparent"
+                            StrokeShape="RoundRectangle 14">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#4A90E2" Offset="0" />
+                                <GradientStop Color="#6A7FF0" Offset="0.6" />
+                                <GradientStop Color="#57B8E5" Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Image Source="icon_file.svg" WidthRequest="36" HeightRequest="36" Opacity="0.9" />
+                            <Label Grid.Column="1"
+                                   Text="注册即领免费试用\n解锁全功能笔记工作流"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="13"
+                                   TextColor="White" />
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Border>
+
+        <BoxView Grid.Column="1" Color="Transparent">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer x:Name="DrawerBackdropTapGesture" />
+            </BoxView.GestureRecognizers>
+        </BoxView>
+    </Grid>
+</Grid>
+</ContentView>

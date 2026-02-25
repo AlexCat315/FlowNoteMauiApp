@@ -33,6 +33,7 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         InitializeComponent();
+        WireComposedViewEvents();
         var services = Application.Current?.Handler?.MauiContext?.Services;
         _workspaceService = services?.GetService<IWorkspaceService>() ?? new WorkspaceService();
         _drawingPersistenceService = services?.GetService<IDrawingPersistenceService>() ?? new DrawingPersistenceService();
