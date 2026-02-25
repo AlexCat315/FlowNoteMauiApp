@@ -6,6 +6,7 @@ using FlowNoteMauiApp.Core.Drawing;
 using FlowNoteMauiApp.Core.AI;
 using FlowNoteMauiApp.Core.Security;
 using FlowNoteMauiApp.Data.Repositories;
+using Syncfusion.Maui.Toolkit.Hosting;
 
 namespace FlowNoteMauiApp;
 
@@ -18,6 +19,7 @@ public static class MauiProgram
 			.UseMauiApp<App>()
 			.UseMauiPdfView()
 			.UseSkiaSharp()
+			.ConfigureSyncfusionToolkit()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

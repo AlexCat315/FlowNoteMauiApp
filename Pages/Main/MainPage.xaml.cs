@@ -24,6 +24,8 @@ public partial class MainPage : ContentPage
     private CancellationTokenSource? _inkSaveDebounce;
     private PdfView? _pdfViewer;
     private DrawingCanvas? _drawingCanvas;
+    private DrawingInputMode _drawingInputMode = DrawingInputMode.PenStylus;
+    private bool _isUpdatingFingerDrawSwitch;
 
     public MainPage()
     {
@@ -87,6 +89,7 @@ public partial class MainPage : ContentPage
 
         ApplyViewerSettingsFromUi();
         _drawingCanvas.ViewportZoom = _pdfViewer.Zoom <= 0f ? 1f : _pdfViewer.Zoom;
+        ApplyInputMode(_drawingInputMode, activateDrawing: false);
         RefreshLayerList();
     }
 
@@ -120,20 +123,20 @@ public partial class MainPage : ContentPage
     private bool IsDarkTheme => Application.Current?.RequestedTheme == AppTheme.Dark;
 
     private Color ThemeSelectedBackground => IsDarkTheme
-        ? Color.FromArgb("#1E3A5F")
-        : Color.FromArgb("#DBEAFE");
+        ? Color.FromArgb("#33527A")
+        : Color.FromArgb("#E8F4FD");
 
     private Color ThemeListBackground => IsDarkTheme
-        ? Color.FromArgb("#334155")
-        : Color.FromArgb("#F8FAFC");
+        ? Color.FromArgb("#26374E")
+        : Color.FromArgb("#F4F8FF");
 
     private Color ThemePrimaryText => IsDarkTheme
-        ? Color.FromArgb("#F1F5F9")
-        : Color.FromArgb("#1E293B");
+        ? Color.FromArgb("#E5E5EA")
+        : Color.FromArgb("#1C1C1E");
 
     private Color ThemeSecondaryText => IsDarkTheme
-        ? Color.FromArgb("#94A3B8")
-        : Color.FromArgb("#64748B");
+        ? Color.FromArgb("#AEAEB2")
+        : Color.FromArgb("#636366");
 
     private void UpdateLocalizedStrings()
     {
@@ -171,7 +174,7 @@ public partial class MainPage : ContentPage
         UpdatePageIndicators();
         RefreshLayerList();
         UpdateColorSelection("Black");
-        UpdateToolSelection("Pen");
+        ApplyInputMode(_drawingInputMode, activateDrawing: false);
         WorkspaceFolderEntry.Text = _workspaceFolder;
         UpdateHomeSortLabel();
         UpdateHomeFilterButtons();

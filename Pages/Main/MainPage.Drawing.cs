@@ -4,6 +4,13 @@ namespace FlowNoteMauiApp;
 
 public partial class MainPage
 {
+    private enum DrawingInputMode
+    {
+        PenStylus,
+        FingerCapacitive,
+        TapRead
+    }
+
     private bool EnsureDrawingReady(bool showHint = false)
     {
         if (IsEditorInitialized)
@@ -20,20 +27,25 @@ public partial class MainPage
         if (!EnsureDrawingReady(showHint: true))
             return;
 
+        SetInputModePanelVisible(false);
+
+        if (_drawingInputMode == DrawingInputMode.TapRead)
+        {
+            ApplyInputMode(DrawingInputMode.PenStylus, showStatus: true);
+            return;
+        }
+
         DrawingCanvas.EnableDrawing = !DrawingCanvas.EnableDrawing;
         DrawingCanvas.IsVisible = DrawingCanvas.EnableDrawing;
         DrawingToolbarPanel.IsVisible = DrawingCanvas.EnableDrawing;
-        
-        if (DrawingCanvas.EnableDrawing)
+
+        if (!DrawingCanvas.EnableDrawing)
         {
-            UpdateToolSelection("Pen");
-            DrawingToggleButton.BackgroundColor = IsDarkTheme ? Color.FromArgb("#324A6B") : Color.FromArgb("#DBE7FF");
-        }
-        else
-        {
-            DrawingToggleButton.BackgroundColor = IsDarkTheme ? Color.FromArgb("#26344A") : Color.FromArgb("#F7FAFF");
             QueueInkSave();
         }
+
+        UpdateDrawingToggleVisual(DrawingCanvas.EnableDrawing);
+        UpdateToolSelection(_drawingInputMode == DrawingInputMode.FingerCapacitive ? "Finger" : "Pen");
     }
 
     private void OnDrawingToolbarCloseClicked(object? sender, EventArgs e)
@@ -41,10 +53,12 @@ public partial class MainPage
         if (!EnsureDrawingReady())
             return;
 
+        SetInputModePanelVisible(false);
         DrawingCanvas.EnableDrawing = false;
         DrawingCanvas.IsVisible = false;
         DrawingToolbarPanel.IsVisible = false;
         LayerPanel.IsVisible = false;
+        UpdateDrawingToggleVisual(false);
         QueueInkSave();
     }
 
@@ -53,15 +67,113 @@ public partial class MainPage
         if (!EnsureDrawingReady())
             return;
 
-        DrawingCanvas.IsPenMode = !DrawingCanvas.IsPenMode;
+        SetInputModePanelVisible(!InputModePanel.IsVisible);
+    }
+
+    private void SetInputModePanelVisible(bool visible)
+    {
+        InputModePanel.IsVisible = visible;
+    }
+
+    private void UpdateDrawingToggleVisual(bool isEnabled)
+    {
+        DrawingToggleButton.BackgroundColor = isEnabled
+            ? (IsDarkTheme ? Color.FromArgb("#33527A") : Color.FromArgb("#E8F4FD"))
+            : (IsDarkTheme ? Color.FromArgb("#2B3D57") : Color.FromArgb("#FFFFFF"));
+        DrawingToggleButton.BorderColor = isEnabled
+            ? Color.FromArgb("#4A90E2")
+            : (IsDarkTheme ? Color.FromArgb("#4A607C") : Color.FromArgb("#D1D1D6"));
+        DrawingToggleButton.BorderWidth = 1;
+    }
+
+    private void SetFingerDrawSwitchState(bool isFingerMode)
+    {
+        if (EnableFingerDrawSwitch.IsToggled == isFingerMode)
+            return;
+
+        _isUpdatingFingerDrawSwitch = true;
+        EnableFingerDrawSwitch.IsToggled = isFingerMode;
+        _isUpdatingFingerDrawSwitch = false;
+    }
+
+    private void UpdateInputModeSelectionVisual()
+    {
+        InputModePenCheck.IsVisible = _drawingInputMode == DrawingInputMode.PenStylus;
+        InputModeFingerCheck.IsVisible = _drawingInputMode == DrawingInputMode.FingerCapacitive;
+        InputModeReadCheck.IsVisible = _drawingInputMode == DrawingInputMode.TapRead;
+    }
+
+    private void ApplyInputMode(DrawingInputMode mode, bool showStatus = false, bool activateDrawing = true)
+    {
+        _drawingInputMode = mode;
+        UpdateInputModeSelectionVisual();
+        SetFingerDrawSwitchState(mode == DrawingInputMode.FingerCapacitive);
+
+        if (!IsEditorInitialized)
+            return;
+
+        var wasDrawingEnabled = DrawingCanvas.EnableDrawing;
+        var targetDrawingEnabled = mode != DrawingInputMode.TapRead && (activateDrawing || DrawingCanvas.EnableDrawing);
         DrawingCanvas.IsErasing = false;
         DrawingCanvas.IsHighlighter = false;
-        UpdateToolSelection(DrawingCanvas.IsPenMode ? "Pen" : "Finger");
-        EnableFingerDrawSwitch.IsToggled = !DrawingCanvas.IsPenMode;
+
+        switch (mode)
+        {
+            case DrawingInputMode.PenStylus:
+                DrawingCanvas.IsPenMode = true;
+                DrawingCanvas.EnableDrawing = targetDrawingEnabled;
+                DrawingCanvas.IsVisible = targetDrawingEnabled;
+                DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
+                UpdateToolSelection("Pen");
+                if (showStatus)
+                    ShowStatus("已切换到手写笔模式");
+                break;
+            case DrawingInputMode.FingerCapacitive:
+                DrawingCanvas.IsPenMode = false;
+                DrawingCanvas.EnableDrawing = targetDrawingEnabled;
+                DrawingCanvas.IsVisible = targetDrawingEnabled;
+                DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
+                UpdateToolSelection("Finger");
+                if (showStatus)
+                    ShowStatus("手指/电容笔模式：单指书写，双指翻页或移动页面");
+                break;
+            case DrawingInputMode.TapRead:
+                DrawingCanvas.EnableDrawing = false;
+                DrawingCanvas.IsVisible = false;
+                DrawingToolbarPanel.IsVisible = false;
+                LayerPanel.IsVisible = false;
+                if (wasDrawingEnabled)
+                    QueueInkSave();
+                UpdateToolSelection("Read");
+                if (showStatus)
+                    ShowStatus("已切换到点读模式");
+                break;
+        }
+
+        UpdateDrawingToggleVisual(DrawingCanvas.EnableDrawing);
+    }
+
+    private void OnInputModePenClicked(object? sender, EventArgs e)
+    {
+        ApplyInputMode(DrawingInputMode.PenStylus, showStatus: true);
+        SetInputModePanelVisible(false);
+    }
+
+    private void OnInputModeFingerClicked(object? sender, EventArgs e)
+    {
+        ApplyInputMode(DrawingInputMode.FingerCapacitive, showStatus: true);
+        SetInputModePanelVisible(false);
+    }
+
+    private void OnInputModeReadClicked(object? sender, EventArgs e)
+    {
+        ApplyInputMode(DrawingInputMode.TapRead, showStatus: true);
+        SetInputModePanelVisible(false);
     }
 
     private void OnLayerToggleClicked(object? sender, EventArgs e)
     {
+        SetInputModePanelVisible(false);
         LayerPanel.IsVisible = !LayerPanel.IsVisible;
     }
 
@@ -70,6 +182,7 @@ public partial class MainPage
         if (!EnsureDrawingReady())
             return;
 
+        SetInputModePanelVisible(false);
         DrawingCanvas.IsErasing = false;
         DrawingCanvas.IsHighlighter = !DrawingCanvas.IsHighlighter;
         UpdateToolSelection(DrawingCanvas.IsHighlighter ? "Highlighter" : "Pen");
@@ -80,6 +193,7 @@ public partial class MainPage
         if (!EnsureDrawingReady())
             return;
 
+        SetInputModePanelVisible(false);
         DrawingCanvas.IsErasing = !DrawingCanvas.IsErasing;
         DrawingCanvas.IsHighlighter = false;
         UpdateToolSelection(DrawingCanvas.IsErasing ? "Eraser" : "Pen");
@@ -87,11 +201,22 @@ public partial class MainPage
 
     private void UpdateToolSelection(string selectedTool)
     {
-        var selectedColor = IsDarkTheme ? Color.FromArgb("#324A6B") : Color.FromArgb("#DBE7FF");
-        var normalColor = IsDarkTheme ? Color.FromArgb("#26344A") : Color.FromArgb("#F7FAFF");
-        PenModeButton.BackgroundColor = (selectedTool == "Pen" || selectedTool == "Finger") ? selectedColor : normalColor;
+        var selectedColor = IsDarkTheme ? Color.FromArgb("#33527A") : Color.FromArgb("#E8F4FD");
+        var normalColor = IsDarkTheme ? Color.FromArgb("#2B3D57") : Color.FromArgb("#FFFFFF");
+        var selectedBorder = Color.FromArgb("#4A90E2");
+        var normalBorder = IsDarkTheme ? Color.FromArgb("#4A607C") : Color.FromArgb("#D1D1D6");
+        var isPenSelected = (selectedTool == "Pen" || selectedTool == "Finger") && _drawingInputMode != DrawingInputMode.TapRead;
+
+        PenModeButton.BackgroundColor = isPenSelected ? selectedColor : normalColor;
         HighlighterButton.BackgroundColor = selectedTool == "Highlighter" ? selectedColor : normalColor;
         EraserButton.BackgroundColor = selectedTool == "Eraser" ? selectedColor : normalColor;
+
+        PenModeButton.BorderColor = isPenSelected ? selectedBorder : normalBorder;
+        HighlighterButton.BorderColor = selectedTool == "Highlighter" ? selectedBorder : normalBorder;
+        EraserButton.BorderColor = selectedTool == "Eraser" ? selectedBorder : normalBorder;
+        PenModeButton.BorderWidth = 1;
+        HighlighterButton.BorderWidth = 1;
+        EraserButton.BorderWidth = 1;
     }
 
     private void OnRedoClicked(object? sender, EventArgs e)
@@ -186,14 +311,15 @@ public partial class MainPage
 
     private void UpdateColorSelection(string selectedColor)
     {
-        var selectedBorderColor = Color.FromRgb(37, 99, 235);
+        var selectedBorderColor = Color.FromArgb("#4A90E2");
+        var normalBorderColor = IsDarkTheme ? Color.FromArgb("#526883") : Colors.Transparent;
         
-        ColorBlack.BorderColor = selectedColor == "Black" ? selectedBorderColor : Colors.Transparent;
-        ColorRed.BorderColor = selectedColor == "Red" ? selectedBorderColor : Colors.Transparent;
-        ColorBlue.BorderColor = selectedColor == "Blue" ? selectedBorderColor : Colors.Transparent;
-        ColorGreen.BorderColor = selectedColor == "Green" ? selectedBorderColor : Colors.Transparent;
-        ColorOrange.BorderColor = selectedColor == "Orange" ? selectedBorderColor : Colors.Transparent;
-        ColorWhite.BorderColor = selectedColor == "White" ? selectedBorderColor : Colors.Transparent;
+        ColorBlack.BorderColor = selectedColor == "Black" ? selectedBorderColor : normalBorderColor;
+        ColorRed.BorderColor = selectedColor == "Red" ? selectedBorderColor : normalBorderColor;
+        ColorBlue.BorderColor = selectedColor == "Blue" ? selectedBorderColor : normalBorderColor;
+        ColorGreen.BorderColor = selectedColor == "Green" ? selectedBorderColor : normalBorderColor;
+        ColorOrange.BorderColor = selectedColor == "Orange" ? selectedBorderColor : normalBorderColor;
+        ColorWhite.BorderColor = selectedColor == "White" ? selectedBorderColor : Color.FromArgb("#CBD5E1");
     }
 
     private void OnAddLayerClicked(object? sender, EventArgs e)
@@ -231,24 +357,32 @@ public partial class MainPage
             var isSelected = i == DrawingCanvas.CurrentLayerIndex;
             var layerIndex = i;
             
-            var bgColor = isSelected ? ThemeSelectedBackground : Colors.Transparent;
+            var bgColor = isSelected
+                ? (IsDarkTheme ? Color.FromArgb("#33527A") : Color.FromArgb("#E8F4FD"))
+                : Colors.Transparent;
             
             var layerItem = new Border
             {
                 BackgroundColor = bgColor,
-                Padding = new Thickness(8, 8),
-                Stroke = IsDarkTheme ? Color.FromArgb("#334155") : Color.FromArgb("#E2E8F0"),
+                Padding = new Thickness(10, 8),
+                Stroke = isSelected
+                    ? Color.FromArgb("#4A90E2")
+                    : (IsDarkTheme ? Color.FromArgb("#415B79") : Color.FromArgb("#D8E4F5")),
                 StrokeThickness = 1,
-                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 6 }
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 }
             };
             
-            var stack = new HorizontalStackLayout();
+            var stack = new HorizontalStackLayout
+            {
+                Spacing = 8
+            };
             
             var visibilityIcon = new ImageButton
             {
                 Source = layer.IsVisible ? "icon_eye.svg" : "icon_eye_off.svg",
-                WidthRequest = 24,
-                HeightRequest = 24,
+                WidthRequest = 28,
+                HeightRequest = 28,
+                CornerRadius = 14,
                 BackgroundColor = Colors.Transparent,
                 Command = new Command(() => 
                 {
@@ -263,8 +397,8 @@ public partial class MainPage
             {
                 Text = layer.Name,
                 VerticalOptions = LayoutOptions.Center,
-                Margin = new Thickness(8, 0, 0, 0),
-                FontSize = 14,
+                FontFamily = "OpenSansSemibold",
+                FontSize = 13,
                 TextColor = ThemePrimaryText
             };
             
@@ -287,11 +421,13 @@ public partial class MainPage
 
     private void OnFingerDrawToggled(object? sender, ToggledEventArgs e)
     {
-        if (!EnsureDrawingReady())
+        if (_isUpdatingFingerDrawSwitch)
             return;
 
-        DrawingCanvas.IsPenMode = !e.Value;
-        UpdateToolSelection(DrawingCanvas.IsPenMode ? "Pen" : "Finger");
+        ApplyInputMode(
+            e.Value ? DrawingInputMode.FingerCapacitive : DrawingInputMode.PenStylus,
+            showStatus: IsEditorInitialized,
+            activateDrawing: false);
     }
 
     private void OnDrawingStrokeCommitted(object? sender, EventArgs e)

@@ -26,6 +26,7 @@ public partial class MainPage
     private string _homeSearchKeyword = string.Empty;
     private IReadOnlyList<WorkspaceNote> _cachedHomeNotes = Array.Empty<WorkspaceNote>();
     private IReadOnlyList<string> _cachedHomeFolders = Array.Empty<string>();
+    private bool _isUpdatingHomeFilterSegment;
 
     private void SetDrawerVisible(bool visible)
     {
@@ -116,25 +117,21 @@ public partial class MainPage
 
     private void UpdateHomeFilterButtons()
     {
-        SetFilterButtonVisual(HomeFilterAllButton, _homeFilter == HomeFilterType.All);
-        SetFilterButtonVisual(HomeFilterPdfButton, _homeFilter == HomeFilterType.Pdf);
-        SetFilterButtonVisual(HomeFilterNoteButton, _homeFilter == HomeFilterType.Note);
-        SetFilterButtonVisual(HomeFilterFolderButton, _homeFilter == HomeFilterType.Folder);
-    }
+        if (_isUpdatingHomeFilterSegment)
+            return;
 
-    private void SetFilterButtonVisual(Button button, bool selected)
-    {
-        if (selected)
+        _isUpdatingHomeFilterSegment = true;
+        try
         {
-            button.BackgroundColor = IsDarkTheme ? Color.FromArgb("#234B9B") : Color.FromArgb("#E7EEFF");
-            button.TextColor = IsDarkTheme ? Color.FromArgb("#CFE0FF") : Color.FromArgb("#1F56F5");
-            button.FontFamily = "OpenSansSemibold";
+            var index = GetHomeFilterIndex(_homeFilter);
+            if (HomeFilterSegmentedControl.SelectedIndex != index)
+            {
+                HomeFilterSegmentedControl.SelectedIndex = index;
+            }
         }
-        else
+        finally
         {
-            button.BackgroundColor = Colors.Transparent;
-            button.TextColor = ThemePrimaryText;
-            button.FontFamily = "OpenSansRegular";
+            _isUpdatingHomeFilterSegment = false;
         }
     }
 
@@ -150,27 +147,37 @@ public partial class MainPage
         HomeSortButton.Text = $"{mode} {(_isHomeSortDescending ? "↓" : "↑")}";
     }
 
-    private void OnHomeFilterAllClicked(object? sender, EventArgs e)
+    private int GetHomeFilterIndex(HomeFilterType filter) => filter switch
     {
-        _homeFilter = HomeFilterType.All;
-        RefreshHomeFeed();
-    }
+        HomeFilterType.Pdf => 1,
+        HomeFilterType.Note => 2,
+        HomeFilterType.Folder => 3,
+        _ => 0
+    };
 
-    private void OnHomeFilterPdfClicked(object? sender, EventArgs e)
+    private static HomeFilterType GetHomeFilterByIndex(int index) => index switch
     {
-        _homeFilter = HomeFilterType.Pdf;
-        RefreshHomeFeed();
-    }
+        1 => HomeFilterType.Pdf,
+        2 => HomeFilterType.Note,
+        3 => HomeFilterType.Folder,
+        _ => HomeFilterType.All
+    };
 
-    private void OnHomeFilterNoteClicked(object? sender, EventArgs e)
+    private void OnHomeFilterSegmentChanged(object? sender, Syncfusion.Maui.Toolkit.SegmentedControl.SelectionChangedEventArgs e)
     {
-        _homeFilter = HomeFilterType.Note;
-        RefreshHomeFeed();
-    }
+        if (_isUpdatingHomeFilterSegment)
+            return;
 
-    private void OnHomeFilterFolderClicked(object? sender, EventArgs e)
-    {
-        _homeFilter = HomeFilterType.Folder;
+        var newIndexObject = (object?)e.NewIndex;
+        if (newIndexObject is null)
+            return;
+
+        var newIndex = Convert.ToInt32(newIndexObject, CultureInfo.InvariantCulture);
+        var nextFilter = GetHomeFilterByIndex(newIndex);
+        if (_homeFilter == nextFilter)
+            return;
+
+        _homeFilter = nextFilter;
         RefreshHomeFeed();
     }
 
@@ -214,13 +221,7 @@ public partial class MainPage
             if (!IsEditorInitialized)
                 return;
 
-            DrawingCanvas.EnableDrawing = true;
-            DrawingCanvas.IsVisible = true;
-            DrawingToolbarPanel.IsVisible = true;
-            UpdateToolSelection("Pen");
-            DrawingToggleButton.BackgroundColor = IsDarkTheme
-                ? Color.FromArgb("#324A6B")
-                : Color.FromArgb("#DBE7FF");
+            ApplyInputMode(DrawingInputMode.PenStylus);
         }
         catch (Exception ex)
         {
@@ -231,17 +232,20 @@ public partial class MainPage
     private void OnOpenSettingsClicked(object? sender, EventArgs e)
     {
         SetDrawerVisible(false);
+        SetInputModePanelVisible(false);
         SetSettingsVisible(true);
         _ = RefreshWorkspaceViewsAsync();
     }
 
     private void OnSettingsOverlayTapped(object? sender, TappedEventArgs e)
     {
+        SetInputModePanelVisible(false);
         SetSettingsVisible(false);
     }
 
     private void OnDrawerBackdropTapped(object? sender, TappedEventArgs e)
     {
+        SetInputModePanelVisible(false);
         SetDrawerVisible(false);
     }
 
@@ -339,7 +343,7 @@ public partial class MainPage
         EnableZoomSwitch.IsToggled = true;
         EnableSwipeSwitch.IsToggled = true;
         EnableLinkSwitch.IsToggled = true;
-        EnableFingerDrawSwitch.IsToggled = false;
+        ApplyInputMode(DrawingInputMode.PenStylus, activateDrawing: false);
         StrokeWidthSlider.Value = 3;
 
         _homeFilter = HomeFilterType.All;

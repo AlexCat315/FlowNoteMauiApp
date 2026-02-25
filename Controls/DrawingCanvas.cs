@@ -54,8 +54,10 @@ public class DrawingCanvas : SKCanvasView
 
     private readonly Stack<StrokeHistoryEntry> _undoStack = new();
     private readonly Stack<StrokeHistoryEntry> _redoStack = new();
+    private readonly HashSet<long> _activeTouchIds = new();
     private DrawingStroke? _currentStroke;
     private bool _isDrawing;
+    private bool _suspendDrawingUntilTouchesReleased;
 
     public event EventHandler? StrokeCommitted;
 
@@ -438,6 +440,10 @@ public class DrawingCanvas : SKCanvasView
 
     private static void OnPenModeChanged(BindableObject bindable, object oldValue, object newValue)
     {
+        if (bindable is DrawingCanvas canvas)
+        {
+            canvas.ResetTouchTracking();
+        }
     }
 
     private static void OnEnableDrawingChanged(BindableObject bindable, object oldValue, object newValue)
@@ -445,12 +451,38 @@ public class DrawingCanvas : SKCanvasView
         if (bindable is DrawingCanvas canvas)
         {
             canvas.InputTransparent = !(bool)newValue;
+            if (!(bool)newValue)
+            {
+                canvas.ResetTouchTracking();
+            }
         }
     }
 
     private void OnCanvasTouch(object? sender, SKTouchEventArgs e)
     {
         if (!EnableDrawing)
+        {
+            e.Handled = false;
+            return;
+        }
+
+        TrackTouch(e);
+        if (_suspendDrawingUntilTouchesReleased && _activeTouchIds.Count == 0)
+        {
+            _suspendDrawingUntilTouchesReleased = false;
+        }
+
+        // Finger/capacitive mode: one-finger writes, two-finger gestures are handed to the PDF for navigation.
+        if (!IsPenMode && _activeTouchIds.Count >= 2)
+        {
+            CancelCurrentStroke();
+            _suspendDrawingUntilTouchesReleased = true;
+            e.Handled = false;
+            InvalidateSurface();
+            return;
+        }
+
+        if (_suspendDrawingUntilTouchesReleased)
         {
             e.Handled = false;
             return;
@@ -498,6 +530,33 @@ public class DrawingCanvas : SKCanvasView
 
         InvalidateSurface();
         e.Handled = true;
+    }
+
+    private void TrackTouch(SKTouchEventArgs e)
+    {
+        switch (e.ActionType)
+        {
+            case SKTouchAction.Pressed:
+                _activeTouchIds.Add(e.Id);
+                break;
+            case SKTouchAction.Released:
+            case SKTouchAction.Cancelled:
+                _activeTouchIds.Remove(e.Id);
+                break;
+        }
+    }
+
+    private void ResetTouchTracking()
+    {
+        _activeTouchIds.Clear();
+        _suspendDrawingUntilTouchesReleased = false;
+        CancelCurrentStroke();
+    }
+
+    private void CancelCurrentStroke()
+    {
+        _isDrawing = false;
+        _currentStroke = null;
     }
 
     private void StartDrawing(DrawingPoint point)
