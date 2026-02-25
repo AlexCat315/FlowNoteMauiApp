@@ -135,6 +135,7 @@ public partial class MainPage
             return;
 
         PdfViewer.DisplayMode = (PdfDisplayMode)DisplayModePicker.SelectedIndex;
+        UpdateTwoFingerNavigationPolicy();
     }
 
     private void OnOrientationChanged(object? sender, EventArgs e)

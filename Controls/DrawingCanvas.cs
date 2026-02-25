@@ -68,6 +68,10 @@ public class DrawingCanvas : SKCanvasView
         BindableProperty.Create(nameof(EnableDrawing), typeof(bool), typeof(DrawingCanvas),
             defaultValue: false, propertyChanged: OnEnableDrawingChanged);
 
+    public static readonly BindableProperty EnableTwoFingerSwipeNavigationProperty =
+        BindableProperty.Create(nameof(EnableTwoFingerSwipeNavigation), typeof(bool), typeof(DrawingCanvas),
+            defaultValue: true);
+
     private readonly Stack<StrokeHistoryEntry> _undoStack = new();
     private readonly Stack<StrokeHistoryEntry> _redoStack = new();
     private readonly HashSet<long> _activeTouchIds = new();
@@ -160,6 +164,12 @@ public class DrawingCanvas : SKCanvasView
     {
         get => (bool)GetValue(EnableDrawingProperty);
         set => SetValue(EnableDrawingProperty, value);
+    }
+
+    public bool EnableTwoFingerSwipeNavigation
+    {
+        get => (bool)GetValue(EnableTwoFingerSwipeNavigationProperty);
+        set => SetValue(EnableTwoFingerSwipeNavigationProperty, value);
     }
 
     public bool CanUndo => _undoStack.Count > 0;
@@ -498,8 +508,16 @@ public class DrawingCanvas : SKCanvasView
         {
             CancelCurrentStroke();
             _suspendDrawingUntilTouchesReleased = true;
-            HandleTwoFingerGesture();
-            e.Handled = true;
+            if (EnableTwoFingerSwipeNavigation)
+            {
+                HandleTwoFingerGesture();
+                e.Handled = true;
+            }
+            else
+            {
+                // Let the underlying PDF view handle continuous-mode pinch/scroll.
+                e.Handled = false;
+            }
             InvalidateSurface();
             return;
         }

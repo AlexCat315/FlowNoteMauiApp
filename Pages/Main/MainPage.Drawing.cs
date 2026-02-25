@@ -133,7 +133,7 @@ public partial class MainPage
                 DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
                 UpdateToolSelection("Finger");
                 if (showStatus)
-                    ShowStatus("手指/电容笔模式：单指书写，双指翻页或移动页面");
+                    ShowStatus("手指/电容笔模式：单指书写，双指滚动；仅单页模式双指可翻页");
                 break;
             case DrawingInputMode.TapRead:
                 DrawingCanvas.EnableDrawing = false;
@@ -446,6 +446,9 @@ public partial class MainPage
     private void OnDrawingCanvasTwoFingerSwipe(object? sender, DrawingCanvas.TwoFingerSwipeEventArgs e)
     {
         if (!EnsurePdfLoaded())
+            return;
+
+        if (PdfViewer.DisplayMode != Flow.PDFView.Abstractions.PdfDisplayMode.SinglePage)
             return;
 
         if (e.Direction == DrawingCanvas.TwoFingerSwipeDirection.NextPage)

@@ -95,9 +95,18 @@ public partial class MainPage : ContentPage
         EditorHost.Children.Add(_drawingCanvas);
 
         ApplyViewerSettingsFromUi();
+        UpdateTwoFingerNavigationPolicy();
         _drawingCanvas.ViewportZoom = _pdfViewer.Zoom <= 0f ? 1f : _pdfViewer.Zoom;
         ApplyInputMode(_drawingInputMode, activateDrawing: false);
         RefreshLayerList();
+    }
+
+    private void UpdateTwoFingerNavigationPolicy()
+    {
+        if (!IsEditorInitialized)
+            return;
+
+        DrawingCanvas.EnableTwoFingerSwipeNavigation = PdfViewer.DisplayMode == PdfDisplayMode.SinglePage;
     }
 
     private void ApplyViewerSettingsFromUi()
