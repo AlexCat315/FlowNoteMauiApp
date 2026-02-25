@@ -133,7 +133,7 @@ public partial class MainPage
                 DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
                 UpdateToolSelection("Finger");
                 if (showStatus)
-                    ShowStatus("手指/电容笔模式：单指书写，双指滚动；仅单页模式双指可翻页");
+                    ShowStatus("手指/电容笔模式：单指书写，双指滚动/缩放；仅单页模式双指可翻页");
                 break;
             case DrawingInputMode.TapRead:
                 DrawingCanvas.EnableDrawing = false;
@@ -477,7 +477,15 @@ public partial class MainPage
         if (_drawingInputMode != DrawingInputMode.FingerCapacitive)
             return;
 
-        PdfViewer.PanBy(e.DeltaX, e.DeltaY);
+        if (e.HasZoom)
+        {
+            PdfViewer.ZoomBy(e.ScaleFactor, e.CenterX, e.CenterY);
+        }
+
+        if (e.HasPan)
+        {
+            PdfViewer.PanBy(e.DeltaX, e.DeltaY);
+        }
     }
 
     private void OnDrawingStrokeCommitted(object? sender, EventArgs e)
