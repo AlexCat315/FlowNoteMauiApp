@@ -2,46 +2,76 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:pdf="clr-namespace:Flow.PDFView;assembly=Flow.PDFView"
+             xmlns:controls="clr-namespace:FlowNoteMauiApp.Controls"
              x:Class="FlowNoteMauiApp.MainPage">
     <ContentPage.Resources>
-        <Color x:Key="PanelBgColorLight">#F2FFFFFF</Color>
-        <Color x:Key="PanelBgColorDark">#F21E293B</Color>
-        <Color x:Key="PanelStrokeColorLight">#D0D7DE</Color>
-        <Color x:Key="PanelStrokeColorDark">#475569</Color>
-        <Color x:Key="PanelTextColorLight">#0F172A</Color>
-        <Color x:Key="PanelTextColorDark">#E2E8F0</Color>
-        <Color x:Key="PanelHintTextColorLight">#334155</Color>
-        <Color x:Key="PanelHintTextColorDark">#CBD5E1</Color>
-        <Color x:Key="InputBgLight">#FFFFFF</Color>
-        <Color x:Key="InputBgDark">#334155</Color>
-        <Color x:Key="InputBorderLight">#CBD5E1</Color>
-        <Color x:Key="InputBorderDark">#64748B</Color>
+        <Color x:Key="PrimaryColor">#2563EB</Color>
+        <Color x:Key="SurfaceColor">#FFFFFF</Color>
+        <Color x:Key="SurfaceDarkColor">#1E293B</Color>
+        <Color x:Key="ToolbarBgLight">#FFFFFF</Color>
+        <Color x:Key="ToolbarBgDark">#1E293B</Color>
+        <Color x:Key="SelectedColor">#DBEAFE</Color>
+        <Color x:Key="SelectedDarkColor">#1E3A5F</Color>
+        <Color x:Key="TextColorLight">#1E293B</Color>
+        <Color x:Key="TextColorDark">#F1F5F9</Color>
+        
+        <Style x:Key="ColorButton" TargetType="Button">
+            <Setter Property="WidthRequest" Value="28"/>
+            <Setter Property="HeightRequest" Value="28"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderWidth" Value="2"/>
+            <Setter Property="BorderColor" Value="Transparent"/>
+        </Style>
 
-        <Style TargetType="Entry">
-            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PanelTextColorLight}, Dark={StaticResource PanelTextColorDark}}" />
-            <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource PanelHintTextColorLight}, Dark={StaticResource PanelHintTextColorDark}}" />
-            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource InputBgLight}, Dark={StaticResource InputBgDark}}" />
+        <Style x:Key="ToolButtonImg" TargetType="ImageButton">
+            <Setter Property="WidthRequest" Value="44"/>
+            <Setter Property="HeightRequest" Value="44"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BackgroundColor" Value="Transparent"/>
+            <Setter Property="TintColor" Value="#1E293B"/>
         </Style>
-        <Style TargetType="Picker">
-            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PanelTextColorLight}, Dark={StaticResource PanelTextColorDark}}" />
-            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource InputBgLight}, Dark={StaticResource InputBgDark}}" />
-            <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource PanelHintTextColorLight}, Dark={StaticResource PanelHintTextColorDark}}" />
+
+        <Style x:Key="ToolButtonSelectedImg" TargetType="ImageButton">
+            <Setter Property="WidthRequest" Value="44"/>
+            <Setter Property="HeightRequest" Value="44"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BackgroundColor" Value="#DBEAFE"/>
+            <Setter Property="TintColor" Value="#2563EB"/>
         </Style>
-        <Style TargetType="Label">
-            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PanelTextColorLight}, Dark={StaticResource PanelTextColorDark}}" />
+
+        <Style x:Key="ToolButton" TargetType="Button">
+            <Setter Property="WidthRequest" Value="44"/>
+            <Setter Property="HeightRequest" Value="44"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BackgroundColor" Value="Transparent"/>
+            <Setter Property="TextColor" Value="#1E293B"/>
+            <Setter Property="FontSize" Value="16"/>
         </Style>
-        <Style TargetType="Button">
-            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PanelTextColorLight}, Dark={StaticResource PanelTextColorDark}}" />
-            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E2E8F0, Dark=#334155}" />
+
+        <Style x:Key="ToolButtonSelected" TargetType="Button">
+            <Setter Property="WidthRequest" Value="44"/>
+            <Setter Property="HeightRequest" Value="44"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BackgroundColor" Value="#DBEAFE"/>
+            <Setter Property="TextColor" Value="#2563EB"/>
+            <Setter Property="FontSize" Value="16"/>
         </Style>
     </ContentPage.Resources>
 
-    <Grid Padding="16">
-        <Border StrokeThickness="1"
-                Stroke="#CBD5E1"
-                BackgroundColor="#E2E8F0"
-                StrokeShape="RoundRectangle 10"
-                Padding="8">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- PDF and Drawing Container -->
+        <Grid Grid.Row="0">
+            <!-- PDF Viewer -->
             <pdf:PdfView x:Name="PdfViewer"
                          EnableZoom="True"
                          EnableSwipe="True"
@@ -51,190 +81,245 @@
                          FitPolicy="Width"
                          DocumentLoaded="OnDocumentLoaded"
                          PageChanged="OnPageChanged"
-                         Error="OnPdfError" />
-        </Border>
+                         Error="OnPdfError"/>
+            
+            <!-- Drawing Canvas Overlay - same size as PDF viewer -->
+            <controls:DrawingCanvas x:Name="DrawingCanvas"
+                                   IsVisible="False"
+                                   InputTransparent="False"
+                                   HorizontalOptions="Fill"
+                                   VerticalOptions="Fill"/>
+        </Grid>
 
-        <Button x:Name="ToolbarToggleButton"
-                VerticalOptions="End"
-                HorizontalOptions="End"
-                Margin="12"
-                Padding="16,10"
-                Clicked="OnToolbarToggleClicked" />
+        <!-- Top Bar -->
+        <Border Grid.Row="0"
+                VerticalOptions="Start"
+                HorizontalOptions="Center"
+                Margin="16,12,16,0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource ToolbarBgLight}, Dark={StaticResource ToolbarBgDark}}"
+                StrokeThickness="0"
+                Padding="8,4"
+                Opacity="0.95"
+                StrokeShape="RoundRectangle 12">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="4">
+                <!-- Menu -->
+                <ImageButton Grid.Column="0" Style="{StaticResource ToolButtonImg}" Source="icons/outline/menu.svg" Clicked="OnMenuClicked"/>
 
-        <Border x:Name="ToolbarPanel"
-                IsVisible="False"
-                VerticalOptions="End"
-                Margin="8"
-                BackgroundColor="{AppThemeBinding Light={StaticResource PanelBgColorLight}, Dark={StaticResource PanelBgColorDark}}"
-                StrokeThickness="1"
-                Stroke="{AppThemeBinding Light={StaticResource PanelStrokeColorLight}, Dark={StaticResource PanelStrokeColorDark}}"
-                Padding="10"
-                MaximumHeightRequest="420"
-                StrokeShape="RoundRectangle 10">
-            <Grid RowDefinitions="Auto,*" RowSpacing="8">
-                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                    <Label x:Name="ToolbarTitleLabel"
-                           FontSize="16"
-                           FontAttributes="Bold"
-                           TextColor="{AppThemeBinding Light={StaticResource PanelTextColorLight}, Dark={StaticResource PanelTextColorDark}}"
-                           VerticalTextAlignment="Center" />
-                    <Button Grid.Column="1"
-                            x:Name="CloseButton"
-                            Clicked="OnToolbarCloseClicked" />
-                </Grid>
+                <!-- Page Navigation -->
+                <ImageButton Grid.Column="1" Style="{StaticResource ToolButtonImg}" Source="icons/outline/arrow-left.svg" Clicked="OnPrevPageClicked" x:Name="PrevPageButton"/>
+                <Label Grid.Column="2" x:Name="PageInfoLabel"
+                       Text="1/1"
+                       FontSize="13"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
+                <ImageButton Grid.Column="3" Style="{StaticResource ToolButtonImg}" Source="icons/outline/arrow-right.svg" Clicked="OnNextPageClicked" x:Name="NextPageButton"/>
 
-                <ScrollView Grid.Row="1"
-                            Orientation="Vertical">
-                    <VerticalStackLayout Spacing="8">
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                            <Entry x:Name="UrlEntry"
-                                    Grid.Column="0"
-                                    Placeholder="Enter PDF URL, e.g. https://.../demo.pdf"
-                                    ClearButtonVisibility="WhileEditing"
-                                    ReturnType="Go" />
-                            <Button x:Name="LoadUrlButton"
-                                    Grid.Column="1"
-                                    Clicked="OnLoadUrlClicked" />
-                        </Grid>
-
-                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                            <Entry x:Name="SearchEntry"
-                                    Grid.Column="0"
-                                    Placeholder="Enter keyword to test search highlight"
-                                    ReturnType="Search" />
-                            <Button x:Name="SearchButton"
-                                    Grid.Column="1"
-                                    Clicked="OnSearchClicked" />
-                            <Button x:Name="ClearButton"
-                                    Grid.Column="2"
-                                    Clicked="OnSearchClearClicked" />
-                        </Grid>
-
-                        <FlexLayout Direction="Row" Wrap="Wrap" AlignItems="Center">
-                            <Button x:Name="SearchPrevButton"
-                                    Text="Previous"
-                                    Margin="0,0,8,0"
-                                    IsEnabled="False"
-                                    Clicked="OnSearchPrevClicked" />
-                            <Button x:Name="SearchNextButton"
-                                    Text="Next"
-                                    Margin="0,0,8,0"
-                                    IsEnabled="False"
-                                    Clicked="OnSearchNextClicked" />
-                            <Label x:Name="HighlightLabel"
-                                   VerticalTextAlignment="Center" />
-                            <Switch x:Name="SearchHighlightSwitch"
-                                    Margin="4,0,12,0"
-                                    IsToggled="True"
-                                    Toggled="OnSearchHighlightToggled" />
-                            <Label x:Name="SearchStatusLabel"
-                                   Text="Search: Not executed"
-                                   FontSize="12"
-                                   TextColor="{AppThemeBinding Light={StaticResource PanelHintTextColorLight}, Dark={StaticResource PanelHintTextColorDark}}"
-                                   VerticalTextAlignment="Center" />
-                        </FlexLayout>
-
-                        <FlexLayout Direction="Row" Wrap="Wrap" AlignItems="Center">
-                            <Button x:Name="LoadSampleButton"
-                                    Margin="0,0,8,0"
-                                    Clicked="OnLoadSampleClicked" />
-                            <Button x:Name="LocalFileButton"
-                                    Margin="0,0,8,0"
-                                    Clicked="OnPickFileClicked" />
-                            <Button x:Name="ReloadButton"
-                                    Margin="0,0,8,0"
-                                    Clicked="OnReloadClicked" />
-                            <Button x:Name="PrevPageButton"
-                                    Margin="0,0,8,0"
-                                    Text="Previous Page"
-                                    Clicked="OnPrevPageClicked"
-                                    IsEnabled="False" />
-                            <Button x:Name="NextPageButton"
-                                    Margin="0,0,8,0"
-                                    Text="Next Page"
-                                    Clicked="OnNextPageClicked"
-                                    IsEnabled="False" />
-                            <Label x:Name="SourceInfoLabel"
-                                   WidthRequest="220"
-                                   VerticalTextAlignment="Center"
-                                   Text="Source: Not loaded"
-                                   FontSize="12"
-                                   TextColor="{AppThemeBinding Light={StaticResource PanelHintTextColorLight}, Dark={StaticResource PanelHintTextColorDark}}"
-                                   LineBreakMode="TailTruncation" />
-                        </FlexLayout>
-
-                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8" >
-                            <Picker x:Name="DisplayModePicker"
-                                    Title="Display Mode"
-                                    SelectedIndexChanged="OnDisplayModeChanged" />
-                            <Picker x:Name="OrientationPicker"
-                                    Grid.Column="1"
-                                    Title="Scroll Orientation"
-                                    SelectedIndexChanged="OnOrientationChanged" />
-                            <Picker x:Name="FitPolicyPicker"
-                                    Grid.Column="2"
-                                    Title="Fit Policy"
-                                    SelectedIndexChanged="OnFitPolicyChanged" />
-                        </Grid>
-
-                        <StackLayout Orientation="Horizontal">
-                            <Label x:Name="LanguageLabel" VerticalTextAlignment="Center" Margin="0,0,8,0" />
-                            <Button x:Name="LangEnButton" Text="EN" WidthRequest="50" Clicked="OnLangEnClicked" Margin="0,0,4,0" />
-                            <Button x:Name="LangZhButton" Text="中" WidthRequest="50" Clicked="OnLangZhClicked" />
-                        </StackLayout>
-
-                        <FlexLayout Direction="Row" Wrap="Wrap" AlignItems="Center">
-                            <Label x:Name="ZoomLabel" VerticalTextAlignment="Center" />
-                            <Switch x:Name="EnableZoomSwitch"
-                                    Margin="4,0,12,0"
-                                    IsToggled="True"
-                                    Toggled="OnEnableZoomToggled" />
-                            <Label x:Name="SwipeLabel" VerticalTextAlignment="Center" />
-                            <Switch x:Name="EnableSwipeSwitch"
-                                    Margin="4,0,12,0"
-                                    IsToggled="True"
-                                    Toggled="OnEnableSwipeToggled" />
-                            <Label x:Name="LinkLabel" VerticalTextAlignment="Center" />
-                            <Switch x:Name="EnableLinkSwitch"
-                                    Margin="4,0,0,0"
-                                    IsToggled="True"
-                                    Toggled="OnEnableLinkToggled" />
-                        </FlexLayout>
-
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                            <Slider x:Name="ZoomSlider"
-                                    Grid.Column="0"
-                                    Minimum="1"
-                                    Maximum="4"
-                                    Value="1"
-                                    ValueChanged="OnZoomSliderValueChanged" />
-                            <Label x:Name="ZoomValueLabel"
-                                   Grid.Column="1"
-                                   WidthRequest="60"
-                                   HorizontalTextAlignment="End"
-                                   VerticalTextAlignment="Center"
-                                   Text="1.0x" />
-                        </Grid>
-
-                        <Grid ColumnDefinitions="Auto,*">
-                            <Label Grid.Column="0"
-                                   x:Name="PageInfoLabel"
-                                   Text="Page: - / -"
-                                   FontAttributes="Bold"
-                                   VerticalTextAlignment="Center" />
-                            <Label Grid.Column="1"
-                                   x:Name="EventInfoLabel"
-                                   Margin="10,0,0,0"
-                                   Text="Status: Waiting for PDF"
-                                   FontSize="12"
-                                   TextColor="{AppThemeBinding Light={StaticResource PanelHintTextColorLight}, Dark={StaticResource PanelHintTextColorDark}}"
-                                   VerticalTextAlignment="Center"
-                                   LineBreakMode="TailTruncation" />
-                        </Grid>
-                    </VerticalStackLayout>
-                </ScrollView>
+                <!-- Draw Toggle -->
+                <ImageButton Grid.Column="4" x:Name="DrawingToggleButton" Style="{StaticResource ToolButtonSelectedImg}" Source="icons/outline/pencil.svg" Clicked="OnDrawingToggleClicked"/>
             </Grid>
         </Border>
-    </Grid>
 
+        <!-- Drawing Toolbar (Bottom) -->
+        <Border x:Name="DrawingToolbarPanel"
+                Grid.Row="1"
+                IsVisible="False"
+                Margin="0,0,0,0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource ToolbarBgLight}, Dark={StaticResource ToolbarBgDark}}"
+                Padding="12,8">
+            <Grid RowDefinitions="Auto,Auto">
+                <!-- Tools Row -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="4" Margin="0,0,0,8">
+                    <!-- Pen Mode Toggle -->
+                    <ImageButton Grid.Column="0" x:Name="PenModeButton" Style="{StaticResource ToolButtonSelectedImg}" Source="icons/outline/pencil.svg" Clicked="OnPenModeClicked" ToolTipProperties.Text="Pen Mode"/>
+                    
+                    <!-- Highlighter -->
+                    <ImageButton Grid.Column="1" x:Name="HighlighterButton" Style="{StaticResource ToolButtonImg}" Source="icons/outline/brush.svg" Clicked="OnHighlighterClicked"/>
+                    
+                    <!-- Eraser -->
+                    <ImageButton Grid.Column="2" x:Name="EraserButton" Style="{StaticResource ToolButtonImg}" Source="icons/outline/eraser.svg" Clicked="OnEraserClicked"/>
+
+                    <BoxView Grid.Column="3" WidthRequest="1" BackgroundColor="#CBD5E1" Margin="8,8"/>
+
+                    <!-- Undo -->
+                    <ImageButton Grid.Column="4" x:Name="UndoButton" Style="{StaticResource ToolButtonImg}" Source="icons/outline/arrow-back-up.svg" Clicked="OnUndoClicked"/>
+                    
+                    <!-- Redo -->
+                    <ImageButton Grid.Column="5" x:Name="RedoButton" Style="{StaticResource ToolButtonImg}" Source="icons/outline/arrow-forward-up.svg" Clicked="OnRedoClicked"/>
+                    
+                    <!-- Clear -->
+                    <ImageButton Grid.Column="6" x:Name="ClearButton2" Style="{StaticResource ToolButtonImg}" Source="icons/outline/trash.svg" Clicked="OnClearClicked"/>
+                </Grid>
+
+                <!-- Color & Size Row -->
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <!-- Color Picker -->
+                    <StackLayout Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                        <Button x:Name="ColorBlack" Style="{StaticResource ColorButton}" BackgroundColor="#000000" Clicked="OnColorBlackClicked" WidthRequest="24" HeightRequest="24"/>
+                        <Button x:Name="ColorRed" Style="{StaticResource ColorButton}" BackgroundColor="#EF4444" Clicked="OnColorRedClicked" WidthRequest="24" HeightRequest="24"/>
+                        <Button x:Name="ColorBlue" Style="{StaticResource ColorButton}" BackgroundColor="#3B82F6" Clicked="OnColorBlueClicked" WidthRequest="24" HeightRequest="24"/>
+                        <Button x:Name="ColorGreen" Style="{StaticResource ColorButton}" BackgroundColor="#22C55E" Clicked="OnColorGreenClicked" WidthRequest="24" HeightRequest="24"/>
+                        <Button x:Name="ColorOrange" Style="{StaticResource ColorButton}" BackgroundColor="#F97316" Clicked="OnColorOrangeClicked" WidthRequest="24" HeightRequest="24"/>
+                        <Button x:Name="ColorWhite" Style="{StaticResource ColorButton}" BackgroundColor="#FFFFFF" BorderColor="#CBD5E1" BorderWidth="1" Clicked="OnColorWhiteClicked" WidthRequest="24" HeightRequest="24"/>
+                    </StackLayout>
+
+                    <!-- Stroke Width -->
+                    <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
+                        <Label Text="Size" VerticalOptions="Center" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
+                        <Slider x:Name="StrokeWidthSlider"
+                                WidthRequest="120"
+                                Minimum="1"
+                                Maximum="20"
+                                Value="3"
+                                ValueChanged="OnStrokeWidthChanged"
+                                VerticalOptions="Center"/>
+                        <Label x:Name="StrokeWidthLabel"
+                               Text="3"
+                               FontSize="12"
+                               WidthRequest="24"
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
+                    </StackLayout>
+
+                    <!-- Layer & Close -->
+                    <StackLayout Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                        <ImageButton Style="{StaticResource ToolButtonImg}" Source="icons/outline/layers-selected.svg" Clicked="OnLayerToggleClicked" ToolTipProperties.Text="Layers"/>
+                        <ImageButton Style="{StaticResource ToolButtonImg}" Source="icons/outline/x.svg" Clicked="OnDrawingToolbarCloseClicked"/>
+                    </StackLayout>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Layer Panel -->
+        <Border x:Name="LayerPanel"
+                Grid.Row="0"
+                IsVisible="False"
+                VerticalOptions="Fill"
+                HorizontalOptions="End"
+                WidthRequest="200"
+                Margin="0,60,12,100"
+                BackgroundColor="{AppThemeBinding Light={StaticResource ToolbarBgLight}, Dark={StaticResource ToolbarBgDark}}"
+                StrokeThickness="0"
+                Opacity="0.95"
+                Padding="12">
+            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+                <Label Grid.Row="0" Text="Layers" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
+
+                <ScrollView Grid.Row="1">
+                    <VerticalStackLayout x:Name="LayerList" Spacing="4"/>
+                </ScrollView>
+
+                <StackLayout Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalOptions="Center">
+                    <ImageButton WidthRequest="40" HeightRequest="40" Source="icons/outline/plus.svg" Clicked="OnAddLayerClicked"/>
+                    <ImageButton WidthRequest="40" HeightRequest="40" Source="icons/outline/minus.svg" Clicked="OnDeleteLayerClicked"/>
+                </StackLayout>
+            </Grid>
+        </Border>
+
+        <!-- Settings Panel -->
+        <Border x:Name="SettingsPanel"
+                Grid.Row="0"
+                IsVisible="False"
+                VerticalOptions="Fill"
+                HorizontalOptions="Start"
+                WidthRequest="280"
+                Margin="0,60,0,100"
+                BackgroundColor="{AppThemeBinding Light={StaticResource ToolbarBgLight}, Dark={StaticResource ToolbarBgDark}}"
+                StrokeThickness="0"
+                Opacity="0.95"
+                Padding="16">
+            <ScrollView>
+                <VerticalStackLayout Spacing="16">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Label Text="Settings" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
+                        <ImageButton Grid.Column="1" WidthRequest="30" HeightRequest="30" Source="icons/outline/x.svg" Clicked="OnSettingsCloseClicked"/>
+                    </Grid>
+
+                    <!-- File Section -->
+                    <Label Text="File" FontAttributes="Bold" FontSize="13" TextColor="#64748B"/>
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Entry x:Name="UrlEntry" Placeholder="PDF URL"/>
+                        <Button Grid.Column="1" x:Name="LoadUrlButton" Text="Load" Clicked="OnLoadUrlClicked"/>
+                    </Grid>
+
+                    <HorizontalStackLayout Spacing="8">
+                        <Button x:Name="LoadSampleButton" Text="Sample" Clicked="OnLoadSampleClicked"/>
+                        <Button x:Name="LocalFileButton" Text="Open" Clicked="OnPickFileClicked"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Search Section -->
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Entry x:Name="SearchEntry" Grid.Column="0" Placeholder="Search"/>
+                        <ImageButton x:Name="SearchButton" Grid.Column="1" WidthRequest="40" HeightRequest="40" Source="icons/outline/search.svg" Clicked="OnSearchClicked"/>
+                    </Grid>
+
+                    <HorizontalStackLayout Spacing="8">
+                        <ImageButton x:Name="SearchPrevButton" WidthRequest="40" HeightRequest="40" Source="icons/outline/arrow-left.svg" Clicked="OnSearchPrevClicked"/>
+                        <ImageButton x:Name="SearchNextButton" WidthRequest="40" HeightRequest="40" Source="icons/outline/arrow-right.svg" Clicked="OnSearchNextClicked"/>
+                        <Label x:Name="SearchStatusLabel" Text="" VerticalOptions="Center" FontSize="11"/>
+                    </HorizontalStackLayout>
+
+                    <!-- View Section -->
+                    <Label Text="View" FontAttributes="Bold" FontSize="13" TextColor="#64748B"/>
+
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <Picker x:Name="DisplayModePicker" Title="Mode"/>
+                        <Picker Grid.Column="1" x:Name="OrientationPicker" Title="Direction"/>
+                        <Picker Grid.Column="2" x:Name="FitPolicyPicker" Title="Fit"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Slider x:Name="ZoomSlider" Minimum="0.5" Maximum="4" Value="1" ValueChanged="OnZoomSliderValueChanged"/>
+                        <Label Grid.Column="1" x:Name="ZoomValueLabel" Text="1.0x" WidthRequest="50" VerticalOptions="Center"/>
+                    </Grid>
+
+                    <!-- Tools Section -->
+                    <Label Text="Tools" FontAttributes="Bold" FontSize="13" TextColor="#64748B"/>
+
+                    <FlexLayout Direction="Row" Wrap="Wrap">
+                        <StackLayout Orientation="Horizontal" Margin="0,0,16,6">
+                            <Label Text="Zoom" VerticalOptions="Center" FontSize="12"/>
+                            <Switch x:Name="EnableZoomSwitch" IsToggled="True" Toggled="OnEnableZoomToggled"/>
+                        </StackLayout>
+                        <StackLayout Orientation="Horizontal" Margin="0,0,16,6">
+                            <Label Text="Swipe" VerticalOptions="Center" FontSize="12"/>
+                            <Switch x:Name="EnableSwipeSwitch" IsToggled="True" Toggled="OnEnableSwipeToggled"/>
+                        </StackLayout>
+                        <StackLayout Orientation="Horizontal" Margin="0,0,16,6">
+                            <Label Text="Links" VerticalOptions="Center" FontSize="12"/>
+                            <Switch x:Name="EnableLinkSwitch" IsToggled="True" Toggled="OnEnableLinkToggled"/>
+                        </StackLayout>
+                        <StackLayout Orientation="Horizontal" Margin="0,0,16,6">
+                            <Label Text="Finger Draw" VerticalOptions="Center" FontSize="12"/>
+                            <Switch x:Name="EnableFingerDrawSwitch" IsToggled="False" Toggled="OnFingerDrawToggled"/>
+                        </StackLayout>
+                    </FlexLayout>
+
+                    <!-- Language -->
+                    <Label Text="Language" FontAttributes="Bold" FontSize="13" TextColor="#64748B"/>
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="English" Clicked="OnLangEnClicked"/>
+                        <Button Text="中文" Clicked="OnLangZhClicked"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Status -->
+                    <Label x:Name="EventInfoLabel" Text="Ready" FontSize="11" TextColor="#64748B"/>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Border>
+
+        <!-- Status Toast -->
+        <Border x:Name="StatusToast"
+                Grid.Row="0"
+                VerticalOptions="End"
+                HorizontalOptions="Center"
+                Margin="0,0,0,80"
+                BackgroundColor="{AppThemeBinding Light=#1E293B, Dark=#1E293B}"
+                Padding="16,8"
+                Opacity="0"
+                IsVisible="False">
+            <Label x:Name="StatusLabel" Text="" FontSize="12" TextColor="White"/>
+        </Border>
+    </Grid>
 </ContentPage>
