@@ -27,9 +27,11 @@ public partial class MainPage
         if (DrawingCanvas.EnableDrawing)
         {
             UpdateToolSelection("Pen");
+            DrawingToggleButton.BackgroundColor = IsDarkTheme ? Color.FromArgb("#324A6B") : Color.FromArgb("#DBE7FF");
         }
         else
         {
+            DrawingToggleButton.BackgroundColor = IsDarkTheme ? Color.FromArgb("#26344A") : Color.FromArgb("#F7FAFF");
             QueueInkSave();
         }
     }
@@ -85,9 +87,8 @@ public partial class MainPage
 
     private void UpdateToolSelection(string selectedTool)
     {
-        var selectedColor = ThemeSelectedBackground;
-        var normalColor = Colors.Transparent;
-        
+        var selectedColor = IsDarkTheme ? Color.FromArgb("#324A6B") : Color.FromArgb("#DBE7FF");
+        var normalColor = IsDarkTheme ? Color.FromArgb("#26344A") : Color.FromArgb("#F7FAFF");
         PenModeButton.BackgroundColor = (selectedTool == "Pen" || selectedTool == "Finger") ? selectedColor : normalColor;
         HighlighterButton.BackgroundColor = selectedTool == "Highlighter" ? selectedColor : normalColor;
         EraserButton.BackgroundColor = selectedTool == "Eraser" ? selectedColor : normalColor;

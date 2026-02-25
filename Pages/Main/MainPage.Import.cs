@@ -130,16 +130,13 @@ public partial class MainPage
 
     private void OnMenuClicked(object? sender, EventArgs e)
     {
-        SettingsPanel.IsVisible = !SettingsPanel.IsVisible;
-        if (SettingsPanel.IsVisible)
-        {
-            _ = RefreshWorkspaceViewsAsync();
-        }
+        SetSettingsVisible(false);
+        SetDrawerVisible(!HomeDrawerOverlay.IsVisible);
     }
 
     private void OnSettingsCloseClicked(object? sender, EventArgs e)
     {
-        SettingsPanel.IsVisible = false;
+        SetSettingsVisible(false);
     }
 
     private async void OnHomeClicked(object? sender, EventArgs e)

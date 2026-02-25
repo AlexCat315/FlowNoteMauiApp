@@ -3,441 +3,840 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FlowNoteMauiApp.MainPage">
     <ContentPage.Resources>
-        <Color x:Key="PrimaryColor">#2563EB</Color>
-        <Color x:Key="SurfaceColor">#FFFFFF</Color>
-        <Color x:Key="SurfaceDarkColor">#1E293B</Color>
-        <Color x:Key="ToolbarBgLight">#FFFFFF</Color>
-        <Color x:Key="ToolbarBgDark">#1E293B</Color>
-        <Color x:Key="SelectedColor">#DBEAFE</Color>
-        <Color x:Key="SelectedDarkColor">#1E3A5F</Color>
-        <Color x:Key="TextColorLight">#1E293B</Color>
-        <Color x:Key="TextColorDark">#F1F5F9</Color>
-        <Color x:Key="SecondaryTextLight">#64748B</Color>
-        <Color x:Key="SecondaryTextDark">#94A3B8</Color>
-        <Color x:Key="DividerLight">#CBD5E1</Color>
-        <Color x:Key="DividerDark">#475569</Color>
+        <Color x:Key="AccentBlue">#2B61FF</Color>
+        <Color x:Key="AccentBlueSoft">#E8EEFF</Color>
+        <Color x:Key="AccentBlueDark">#173785</Color>
+        <Color x:Key="AccentMint">#1BB6A9</Color>
+        <Color x:Key="PageBgLight">#F2F3F5</Color>
+        <Color x:Key="PageBgDark">#111827</Color>
+        <Color x:Key="PanelBgLight">#F7F7FA</Color>
+        <Color x:Key="PanelBgDark">#1F2937</Color>
+        <Color x:Key="CardBgLight">#FFFFFF</Color>
+        <Color x:Key="CardBgDark">#243244</Color>
+        <Color x:Key="StrokeLight">#E4E8F0</Color>
+        <Color x:Key="StrokeDark">#4A5D78</Color>
+        <Color x:Key="TextPrimaryLight">#101827</Color>
+        <Color x:Key="TextPrimaryDark">#E6EDF8</Color>
+        <Color x:Key="TextSecondaryLight">#6B7280</Color>
+        <Color x:Key="TextSecondaryDark">#9BA9C2</Color>
 
-        <Style TargetType="Button">
-            <Setter Property="TextColor" Value="{AppThemeBinding Light=#0F172A, Dark=#E2E8F0}" />
-            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#F1F5F9, Dark=#334155}" />
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="BorderColor" Value="Transparent"/>
-            <Setter Property="BorderWidth" Value="0"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="MinimumHeightRequest" Value="40"/>
-            <Setter Property="MinimumWidthRequest" Value="40"/>
-            <Setter Property="VisualStateManager.VisualStateGroups">
-                <VisualStateGroupList>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualState x:Name="Normal"/>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E2E8F0, Dark=#475569}"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Disabled">
-                            <VisualState.Setters>
-                                <Setter Property="Opacity" Value="0.45"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateGroupList>
+        <Style x:Key="BaseButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="OpenSansRegular" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#FFFFFF, Dark=#2A384C}" />
+            <Setter Property="BorderWidth" Value="0" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="MinimumHeightRequest" Value="38" />
+        </Style>
+
+        <Style x:Key="HeaderIconButton" TargetType="ImageButton">
+            <Setter Property="WidthRequest" Value="38" />
+            <Setter Property="HeightRequest" Value="38" />
+            <Setter Property="CornerRadius" Value="19" />
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="TintColor" Value="{AppThemeBinding Light=#171F2E, Dark=#D4DFEF}" />
+        </Style>
+
+        <Style x:Key="ToolbarIconButton" TargetType="ImageButton" BasedOn="{StaticResource HeaderIconButton}">
+            <Setter Property="WidthRequest" Value="42" />
+            <Setter Property="HeightRequest" Value="42" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="9" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#FFFFFF, Dark=#2C3B50}" />
+            <Setter Property="BorderColor" Value="{AppThemeBinding Light=#DFE5EF, Dark=#4A5D78}" />
+            <Setter Property="BorderWidth" Value="1" />
+        </Style>
+
+        <Style x:Key="ToolbarIconButtonSelected" TargetType="ImageButton" BasedOn="{StaticResource ToolbarIconButton}">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource AccentBlueSoft}, Dark={StaticResource AccentBlueDark}}" />
+            <Setter Property="BorderColor" Value="{AppThemeBinding Light=#C9D7FF, Dark=#3F5BAA}" />
+            <Setter Property="TintColor" Value="{AppThemeBinding Light={StaticResource AccentBlue}, Dark=#B5C8FF}" />
+        </Style>
+
+        <Style x:Key="PillChip" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="CornerRadius" Value="18" />
+            <Setter Property="Padding" Value="18,8" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=#1F2937, Dark=#DCE6F8}" />
+        </Style>
+
+        <Style x:Key="PanelCard" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource StrokeLight}, Dark={StaticResource StrokeDark}}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 18" />
+        </Style>
+
+        <Style x:Key="FloatingIconButton" TargetType="ImageButton">
+            <Setter Property="WidthRequest" Value="66" />
+            <Setter Property="HeightRequest" Value="66" />
+            <Setter Property="CornerRadius" Value="33" />
+            <Setter Property="Padding" Value="17" />
+            <Setter Property="BackgroundColor" Value="{StaticResource AccentBlue}" />
+            <Setter Property="TintColor" Value="White" />
+            <Setter Property="Shadow">
+                <Shadow Brush="#4D1D4ED8" Offset="0,4" Radius="14" Opacity="1" />
             </Setter>
         </Style>
-        
+
+        <Style x:Key="DrawerItemButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="HorizontalOptions" Value="Fill" />
+            <Setter Property="HorizontalTextAlignment" Value="Start" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="Padding" Value="6,10" />
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+
+        <Style x:Key="SettingRow" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#FFFFFF, Dark=#26374D}" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light=#E5E9F1, Dark=#4B607D}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 0" />
+            <Setter Property="Padding" Value="14,12" />
+        </Style>
+
         <Style x:Key="ColorButton" TargetType="Button">
-            <Setter Property="WidthRequest" Value="28"/>
-            <Setter Property="HeightRequest" Value="28"/>
-            <Setter Property="CornerRadius" Value="14"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="BorderWidth" Value="2"/>
-            <Setter Property="BorderColor" Value="Transparent"/>
-        </Style>
-
-        <Style x:Key="ToolButtonImg" TargetType="ImageButton">
-            <Setter Property="WidthRequest" Value="44"/>
-            <Setter Property="HeightRequest" Value="44"/>
-            <Setter Property="Padding" Value="8"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BackgroundColor" Value="Transparent"/>
-            <Setter Property="TintColor" Value="{AppThemeBinding Light=#1E293B, Dark=#F1F5F9}"/>
-            <Setter Property="VisualStateManager.VisualStateGroups">
-                <VisualStateGroupList>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualState x:Name="Normal"/>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E2E8F0, Dark=#334155}"/>
-                                <Setter Property="TintColor" Value="{AppThemeBinding Light=#0F172A, Dark=#FFFFFF}"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Disabled">
-                            <VisualState.Setters>
-                                <Setter Property="Opacity" Value="0.45"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateGroupList>
-            </Setter>
-        </Style>
-
-        <Style x:Key="ToolButtonSelectedImg" TargetType="ImageButton">
-            <Setter Property="WidthRequest" Value="44"/>
-            <Setter Property="HeightRequest" Value="44"/>
-            <Setter Property="Padding" Value="8"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#DBEAFE, Dark=#334155}"/>
-            <Setter Property="TintColor" Value="{AppThemeBinding Light=#2563EB, Dark=#93C5FD}"/>
-            <Setter Property="VisualStateManager.VisualStateGroups">
-                <VisualStateGroupList>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualState x:Name="Normal"/>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#BFDBFE, Dark=#1E3A5F}"/>
-                                <Setter Property="TintColor" Value="{AppThemeBinding Light=#1D4ED8, Dark=#BFDBFE}"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Disabled">
-                            <VisualState.Setters>
-                                <Setter Property="Opacity" Value="0.45"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateGroupList>
-            </Setter>
-        </Style>
-
-        <Style x:Key="ToolButton" TargetType="Button">
-            <Setter Property="WidthRequest" Value="44"/>
-            <Setter Property="HeightRequest" Value="44"/>
-            <Setter Property="Padding" Value="8"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BackgroundColor" Value="Transparent"/>
-            <Setter Property="TextColor" Value="{AppThemeBinding Light=#1E293B, Dark=#F1F5F9}"/>
-            <Setter Property="FontSize" Value="16"/>
-        </Style>
-
-        <Style x:Key="ToolButtonSelected" TargetType="Button">
-            <Setter Property="WidthRequest" Value="44"/>
-            <Setter Property="HeightRequest" Value="44"/>
-            <Setter Property="Padding" Value="8"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#DBEAFE, Dark=#334155}"/>
-            <Setter Property="TextColor" Value="{AppThemeBinding Light=#2563EB, Dark=#93C5FD}"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="WidthRequest" Value="34" />
+            <Setter Property="HeightRequest" Value="34" />
+            <Setter Property="CornerRadius" Value="17" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderWidth" Value="2" />
+            <Setter Property="BorderColor" Value="Transparent" />
         </Style>
     </ContentPage.Resources>
 
+    <ContentPage.Background>
+        <SolidColorBrush Color="{AppThemeBinding Light={StaticResource PageBgLight}, Dark={StaticResource PageBgDark}}" />
+    </ContentPage.Background>
+
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        
-        <!-- PDF and Drawing Container -->
-        <Grid x:Name="EditorHost" Grid.Row="0"/>
+        <Grid x:Name="EditorHost" />
 
-        <!-- Home Panel -->
-        <Border x:Name="HomePanel"
-                Grid.RowSpan="2"
-                IsVisible="True"
-                Margin="16,24,16,16"
-                BackgroundColor="{AppThemeBinding Light={StaticResource ToolbarBgLight}, Dark={StaticResource ToolbarBgDark}}"
-                StrokeThickness="0"
-                StrokeShape="RoundRectangle 16"
-                Padding="16">
-            <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
-                <VerticalStackLayout Grid.Row="0" Spacing="2">
-                    <Label Text="FlowNote"
-                           FontSize="28"
-                           FontAttributes="Bold"
-                           TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
-                    <Label Text="Import PDF and open an existing note"
-                           FontSize="13"
-                           TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
-                </VerticalStackLayout>
+        <Grid x:Name="HomePanel" IsVisible="True" RowDefinitions="Auto,Auto,*" RowSpacing="0">
+            <Border Grid.Row="0"
+                    BackgroundColor="{AppThemeBinding Light=#F6F7FA, Dark=#1A2536}"
+                    Stroke="{AppThemeBinding Light=#E5E7EE, Dark=#3E516F}"
+                    StrokeThickness="1"
+                    Padding="18,10,18,8">
+                <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_menu.svg" Clicked="OnMenuClicked" />
+                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_search.svg" Clicked="OnDrawerRecentClicked" />
+                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_folder.svg" Clicked="OnDrawerAllDocsClicked" />
+                    </HorizontalStackLayout>
 
-                <HorizontalStackLayout Grid.Row="1" Spacing="8">
-                    <Button Text="Import PDF" Clicked="OnHomeImportLocalClicked"/>
-                    <Button Text="Refresh" Clicked="OnHomeRefreshClicked"/>
-                    <Button Text="Settings" Clicked="OnMenuClicked"/>
+                    <Border Grid.Column="1"
+                            HorizontalOptions="Center"
+                            Padding="8,4"
+                            BackgroundColor="Transparent"
+                            StrokeShape="RoundRectangle 12">
+                        <Image Source="icon_file.svg"
+                               WidthRequest="24"
+                               HeightRequest="24"
+                               Opacity="0.75"
+                               TintColor="{AppThemeBinding Light=#1A273A, Dark=#C8D4E8}" />
+                    </Border>
+
+                    <HorizontalStackLayout Grid.Column="2" Spacing="6" VerticalOptions="Center">
+                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_eye.svg" Clicked="OnDrawerFavoriteClicked" />
+                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_search.svg" Clicked="OnHomeRefreshClicked" />
+                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_settings.svg" Clicked="OnOpenSettingsClicked" />
+                    </HorizontalStackLayout>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Padding="18,14,18,10" ColumnSpacing="10">
+                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Button x:Name="HomeFilterAllButton" Style="{StaticResource PillChip}" Text="全部" Clicked="OnHomeFilterAllClicked" />
+                    <Button x:Name="HomeFilterPdfButton" Style="{StaticResource PillChip}" Text="PDF" Clicked="OnHomeFilterPdfClicked" />
+                    <Button x:Name="HomeFilterNoteButton" Style="{StaticResource PillChip}" Text="笔记" Clicked="OnHomeFilterNoteClicked" />
+                    <Button x:Name="HomeFilterFolderButton" Style="{StaticResource PillChip}" Text="文件夹" Clicked="OnHomeFilterFolderClicked" />
                 </HorizontalStackLayout>
 
-                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                    <Entry x:Name="HomeUrlEntry" Placeholder="Paste PDF URL"/>
-                    <Button Grid.Column="1" Text="Import URL" Clicked="OnHomeImportUrlClicked"/>
+                <HorizontalStackLayout Grid.Column="1" Spacing="8" HorizontalOptions="End" VerticalOptions="Center">
+                    <Border WidthRequest="22"
+                            HeightRequest="22"
+                            StrokeShape="RoundRectangle 6"
+                            BackgroundColor="#4C6FFF"
+                            StrokeThickness="0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#D8435F" Offset="0" />
+                                <GradientStop Color="#3F7BFF" Offset="0.55" />
+                                <GradientStop Color="#41C79D" Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <ImageButton Style="{StaticResource HeaderIconButton}"
+                                 WidthRequest="32"
+                                 HeightRequest="32"
+                                 Padding="6"
+                                 Source="icon_layers_selected.svg"
+                                 Clicked="OnHomeSortClicked" />
+                    <Button x:Name="HomeSortButton"
+                            Text="排序"
+                            FontSize="15"
+                            Padding="6,0"
+                            BackgroundColor="Transparent"
+                            Clicked="OnHomeSortClicked" />
+                </HorizontalStackLayout>
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <ScrollView>
+                    <VerticalStackLayout Spacing="12" Padding="18,2,110,30">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Entry x:Name="HomeSearchEntry"
+                                   Grid.Column="0"
+                                   Placeholder="搜索文档、标签、文件夹..."
+                                   TextChanged="OnHomeSearchTextChanged"
+                                   FontSize="15"
+                                   ClearButtonVisibility="WhileEditing"
+                                   BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2A3A52}"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                   HeightRequest="44"
+                                   Margin="0,0,0,4" />
+                            <Border Grid.Column="1"
+                                    Padding="10,0"
+                                    VerticalOptions="Center"
+                                    BackgroundColor="Transparent"
+                                    StrokeShape="RoundRectangle 10">
+                                <Label x:Name="HomeCountLabel"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="14"
+                                       VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                                       Text="0 个文档" />
+                            </Border>
+                        </Grid>
+
+                        <FlexLayout x:Name="HomeNotesList"
+                                    Direction="Row"
+                                    Wrap="Wrap"
+                                    AlignItems="Start"
+                                    AlignContent="Start"
+                                    JustifyContent="Start" />
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <VerticalStackLayout HorizontalOptions="End"
+                                     VerticalOptions="End"
+                                     Spacing="16"
+                                     Margin="0,0,26,28">
+                    <ImageButton x:Name="QuickPenButton"
+                                 Style="{StaticResource FloatingIconButton}"
+                                 WidthRequest="58"
+                                 HeightRequest="58"
+                                 CornerRadius="29"
+                                 Padding="16"
+                                 BackgroundColor="#BFDFFF"
+                                 TintColor="#1A365B"
+                                 Source="icon_pencil.svg"
+                                 Clicked="OnHomeQuickPenClicked" />
+                    <ImageButton Style="{StaticResource FloatingIconButton}"
+                                 Source="icon_plus.svg"
+                                 Clicked="OnHomeImportLocalClicked" />
+                </VerticalStackLayout>
+
+                <Entry x:Name="HomeUrlEntry" IsVisible="False" />
+            </Grid>
+        </Grid>
+
+        <Border x:Name="TopBarPanel"
+                IsVisible="False"
+                HorizontalOptions="Fill"
+                VerticalOptions="Start"
+                Margin="16,8,16,0"
+                Padding="10,8"
+                Style="{StaticResource PanelCard}"
+                Opacity="0.98">
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                    <ImageButton Grid.Column="0"
+                                 Style="{StaticResource ToolbarIconButton}"
+                                 Source="icon_home.svg"
+                                 Clicked="OnHomeClicked" />
+
+                    <ScrollView Grid.Column="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout Spacing="8">
+                            <Border Padding="12,8"
+                                    BackgroundColor="{AppThemeBinding Light=#F2F4F8, Dark=#2D3D53}"
+                                    Stroke="{AppThemeBinding Light=#DFE5EF, Dark=#4B607D}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 14">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" MinWidthRequest="260">
+                                    <Image Source="icon_file.svg" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                                    <Label x:Name="EditorDocumentTitleLabel"
+                                           Grid.Column="1"
+                                           Text="未命名笔记"
+                                           VerticalOptions="Center"
+                                           FontFamily="OpenSansSemibold"
+                                           FontSize="16"
+                                           MaxLines="1"
+                                           LineBreakMode="TailTruncation"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                                    <ImageButton Grid.Column="2"
+                                                 WidthRequest="22"
+                                                 HeightRequest="22"
+                                                 BackgroundColor="Transparent"
+                                                 Padding="2"
+                                                 Source="icon_x.svg"
+                                                 TintColor="{AppThemeBinding Light=#6B7280, Dark=#AAB8CE}" />
+                                </Grid>
+                            </Border>
+
+                            <Border Padding="12,8"
+                                    BackgroundColor="{AppThemeBinding Light=#F2F4F8, Dark=#2D3D53}"
+                                    Stroke="{AppThemeBinding Light=#DFE5EF, Dark=#4B607D}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 14">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" MinWidthRequest="180">
+                                    <Image Source="icon_file.svg" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="160-180"
+                                           VerticalOptions="Center"
+                                           FontFamily="OpenSansSemibold"
+                                           FontSize="16"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                                    <ImageButton Grid.Column="2"
+                                                 WidthRequest="22"
+                                                 HeightRequest="22"
+                                                 BackgroundColor="Transparent"
+                                                 Padding="2"
+                                                 Source="icon_x.svg"
+                                                 TintColor="{AppThemeBinding Light=#6B7280, Dark=#AAB8CE}" />
+                                </Grid>
+                            </Border>
+
+                            <Border Padding="12,8"
+                                    BackgroundColor="{AppThemeBinding Light=#F2F4F8, Dark=#2D3D53}"
+                                    Stroke="{AppThemeBinding Light=#DFE5EF, Dark=#4B607D}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 14">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" MinWidthRequest="160">
+                                    <Label Text="200-220"
+                                           VerticalOptions="Center"
+                                           FontFamily="OpenSansSemibold"
+                                           FontSize="16"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                                    <ImageButton Grid.Column="1"
+                                                 WidthRequest="22"
+                                                 HeightRequest="22"
+                                                 BackgroundColor="Transparent"
+                                                 Padding="2"
+                                                 Source="icon_x.svg"
+                                                 TintColor="{AppThemeBinding Light=#6B7280, Dark=#AAB8CE}" />
+                                </Grid>
+                            </Border>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+
+                    <ImageButton Grid.Column="2"
+                                 Style="{StaticResource ToolbarIconButton}"
+                                 Source="icon_plus.svg"
+                                 Clicked="OnHomeImportLocalClicked" />
+                    <ImageButton Grid.Column="3"
+                                 Style="{StaticResource ToolbarIconButton}"
+                                 Source="icon_search.svg"
+                                 Clicked="OnOpenSettingsClicked" />
+                    <ImageButton Grid.Column="4"
+                                 Style="{StaticResource ToolbarIconButton}"
+                                 Source="icon_settings.svg"
+                                 Clicked="OnOpenSettingsClicked" />
+                    <ImageButton Grid.Column="5"
+                                 Style="{StaticResource ToolbarIconButton}"
+                                 Source="icon_menu.svg"
+                                 Clicked="OnLayerToggleClicked" />
                 </Grid>
 
-                <ScrollView Grid.Row="3">
-                    <VerticalStackLayout Spacing="10">
-                        <Label Text="Imported PDFs" FontAttributes="Bold" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
-                        <VerticalStackLayout x:Name="HomeNotesList" Spacing="6"/>
-                    </VerticalStackLayout>
+                <ScrollView Grid.Row="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout Spacing="8">
+                        <ImageButton x:Name="UndoButton" Style="{StaticResource ToolbarIconButton}" Source="icon_arrow_back_up.svg" Clicked="OnUndoClicked" />
+                        <ImageButton x:Name="RedoButton" Style="{StaticResource ToolbarIconButton}" Source="icon_arrow_forward_up.svg" Clicked="OnRedoClicked" />
+                        <ImageButton x:Name="PenModeButton" Style="{StaticResource ToolbarIconButtonSelected}" Source="icon_pencil.svg" Clicked="OnPenModeClicked" />
+                        <ImageButton x:Name="HighlighterButton" Style="{StaticResource ToolbarIconButton}" Source="icon_brush.svg" Clicked="OnHighlighterClicked" />
+                        <ImageButton x:Name="EraserButton" Style="{StaticResource ToolbarIconButton}" Source="icon_eraser.svg" Clicked="OnEraserClicked" />
+                        <ImageButton x:Name="ClearButton2" Style="{StaticResource ToolbarIconButton}" Source="icon_trash.svg" Clicked="OnClearClicked" />
+                        <ImageButton x:Name="DrawingToggleButton" Style="{StaticResource ToolbarIconButtonSelected}" Source="icon_pencil.svg" Clicked="OnDrawingToggleClicked" />
+                        <ImageButton Style="{StaticResource ToolbarIconButton}" Source="icon_layers_selected.svg" Clicked="OnLayerToggleClicked" />
+
+                        <ImageButton x:Name="PrevPageButton" Style="{StaticResource ToolbarIconButton}" Source="icon_arrow_left.svg" Clicked="OnPrevPageClicked" />
+                        <Border Padding="10,0"
+                                VerticalOptions="Center"
+                                BackgroundColor="{AppThemeBinding Light=#F7FAFF, Dark=#25344A}"
+                                Stroke="{AppThemeBinding Light=#D6E2F2, Dark=#48607E}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12">
+                            <Label x:Name="PageInfoLabel"
+                                   Text="1/1"
+                                   VerticalOptions="Center"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="13"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                        </Border>
+                        <ImageButton x:Name="NextPageButton" Style="{StaticResource ToolbarIconButton}" Source="icon_arrow_right.svg" Clicked="OnNextPageClicked" />
+
+                        <Button x:Name="ColorBlack" Style="{StaticResource ColorButton}" BackgroundColor="#000000" Clicked="OnColorBlackClicked" />
+                        <Button x:Name="ColorBlue" Style="{StaticResource ColorButton}" BackgroundColor="#1B5FCB" Clicked="OnColorBlueClicked" />
+                        <Button x:Name="ColorRed" Style="{StaticResource ColorButton}" BackgroundColor="#D4362B" Clicked="OnColorRedClicked" />
+                        <Button x:Name="ColorGreen" Style="{StaticResource ColorButton}" BackgroundColor="#22C55E" Clicked="OnColorGreenClicked" />
+                        <Button x:Name="ColorOrange" Style="{StaticResource ColorButton}" BackgroundColor="#F59E0B" Clicked="OnColorOrangeClicked" />
+                        <Button x:Name="ColorWhite" Style="{StaticResource ColorButton}" BackgroundColor="#FFFFFF" BorderColor="#CBD5E1" BorderWidth="1" Clicked="OnColorWhiteClicked" />
+                    </HorizontalStackLayout>
                 </ScrollView>
             </Grid>
         </Border>
 
-        <!-- Top Bar -->
-        <Border x:Name="TopBarPanel"
-                Grid.Row="0"
+        <Border x:Name="DrawingToolbarPanel"
                 IsVisible="False"
                 VerticalOptions="Start"
-                HorizontalOptions="Center"
-                Margin="16,12,16,0"
-                BackgroundColor="{AppThemeBinding Light={StaticResource ToolbarBgLight}, Dark={StaticResource ToolbarBgDark}}"
-                StrokeThickness="0"
-                Padding="8,4"
-                Opacity="0.95"
-                StrokeShape="RoundRectangle 12">
-            <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" ColumnSpacing="4">
-                <!-- Home -->
-                <ImageButton Grid.Column="0" Style="{StaticResource ToolButtonImg}" Source="icon_home.svg" Clicked="OnHomeClicked"/>
-
-                <!-- Menu -->
-                <ImageButton Grid.Column="1" Style="{StaticResource ToolButtonImg}" Source="icon_menu.svg" Clicked="OnMenuClicked"/>
-
-                <!-- Page Navigation -->
-                <ImageButton Grid.Column="2" Style="{StaticResource ToolButtonImg}" Source="icon_arrow_left.svg" Clicked="OnPrevPageClicked" x:Name="PrevPageButton"/>
-                <Label Grid.Column="3" x:Name="PageInfoLabel"
-                       Text="1/1"
-                       FontSize="13"
-                       HorizontalOptions="Center"
+                Margin="18,126,18,0"
+                Padding="12,10"
+                Style="{StaticResource PanelCard}">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                <Label Grid.Column="0"
                        VerticalOptions="Center"
-                       TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
-                <ImageButton Grid.Column="4" Style="{StaticResource ToolButtonImg}" Source="icon_arrow_right.svg" Clicked="OnNextPageClicked" x:Name="NextPageButton"/>
+                       Text="笔宽"
+                       FontFamily="OpenSansSemibold"
+                       FontSize="13"
+                       TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
 
-                <!-- Draw Toggle -->
-                <ImageButton Grid.Column="5" x:Name="DrawingToggleButton" Style="{StaticResource ToolButtonSelectedImg}" Source="icon_pencil.svg" Clicked="OnDrawingToggleClicked"/>
-            </Grid>
-        </Border>
-
-        <!-- Drawing Toolbar (Bottom) -->
-        <Border x:Name="DrawingToolbarPanel"
-                Grid.Row="1"
-                IsVisible="False"
-                Margin="0,0,0,0"
-                BackgroundColor="{AppThemeBinding Light={StaticResource ToolbarBgLight}, Dark={StaticResource ToolbarBgDark}}"
-                Padding="12,8">
-            <Grid RowDefinitions="Auto,Auto">
-                <!-- Tools Row -->
-                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="4" Margin="0,0,0,8">
-                    <!-- Pen Mode Toggle -->
-                    <ImageButton Grid.Column="0" x:Name="PenModeButton" Style="{StaticResource ToolButtonSelectedImg}" Source="icon_pencil.svg" Clicked="OnPenModeClicked" ToolTipProperties.Text="Pen Mode"/>
-                    
-                    <!-- Highlighter -->
-                    <ImageButton Grid.Column="1" x:Name="HighlighterButton" Style="{StaticResource ToolButtonImg}" Source="icon_brush.svg" Clicked="OnHighlighterClicked"/>
-                    
-                    <!-- Eraser -->
-                    <ImageButton Grid.Column="2" x:Name="EraserButton" Style="{StaticResource ToolButtonImg}" Source="icon_eraser.svg" Clicked="OnEraserClicked"/>
-
-                    <BoxView Grid.Column="3" WidthRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource DividerLight}, Dark={StaticResource DividerDark}}" Margin="8,8"/>
-
-                    <!-- Undo -->
-                    <ImageButton Grid.Column="4" x:Name="UndoButton" Style="{StaticResource ToolButtonImg}" Source="icon_arrow_back_up.svg" Clicked="OnUndoClicked"/>
-                    
-                    <!-- Redo -->
-                    <ImageButton Grid.Column="5" x:Name="RedoButton" Style="{StaticResource ToolButtonImg}" Source="icon_arrow_forward_up.svg" Clicked="OnRedoClicked"/>
-                    
-                    <!-- Clear -->
-                    <ImageButton Grid.Column="6" x:Name="ClearButton2" Style="{StaticResource ToolButtonImg}" Source="icon_trash.svg" Clicked="OnClearClicked"/>
-                </Grid>
-
-                <!-- Color & Size Row -->
-                <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                    <!-- Color Picker -->
-                    <StackLayout Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                        <Button x:Name="ColorBlack" Style="{StaticResource ColorButton}" BackgroundColor="#000000" Clicked="OnColorBlackClicked" WidthRequest="24" HeightRequest="24"/>
-                        <Button x:Name="ColorRed" Style="{StaticResource ColorButton}" BackgroundColor="#EF4444" Clicked="OnColorRedClicked" WidthRequest="24" HeightRequest="24"/>
-                        <Button x:Name="ColorBlue" Style="{StaticResource ColorButton}" BackgroundColor="#3B82F6" Clicked="OnColorBlueClicked" WidthRequest="24" HeightRequest="24"/>
-                        <Button x:Name="ColorGreen" Style="{StaticResource ColorButton}" BackgroundColor="#22C55E" Clicked="OnColorGreenClicked" WidthRequest="24" HeightRequest="24"/>
-                        <Button x:Name="ColorOrange" Style="{StaticResource ColorButton}" BackgroundColor="#F97316" Clicked="OnColorOrangeClicked" WidthRequest="24" HeightRequest="24"/>
-                        <Button x:Name="ColorWhite" Style="{StaticResource ColorButton}" BackgroundColor="#FFFFFF" BorderColor="#CBD5E1" BorderWidth="1" Clicked="OnColorWhiteClicked" WidthRequest="24" HeightRequest="24"/>
-                    </StackLayout>
-
-                    <!-- Stroke Width -->
-                    <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
-                        <Label Text="Size" VerticalOptions="Center" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
+                <Border Grid.Column="1"
+                        Padding="10,2"
+                        VerticalOptions="Center"
+                        BackgroundColor="{AppThemeBinding Light=#F8FBFF, Dark=#2A3A52}"
+                        Stroke="{AppThemeBinding Light=#DAE6F6, Dark=#4A6282}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 14">
+                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
                         <Slider x:Name="StrokeWidthSlider"
-                                WidthRequest="120"
+                                WidthRequest="180"
                                 Minimum="1"
                                 Maximum="20"
                                 Value="3"
                                 ValueChanged="OnStrokeWidthChanged"
-                                VerticalOptions="Center"/>
+                                VerticalOptions="Center" />
                         <Label x:Name="StrokeWidthLabel"
                                Text="3"
+                               WidthRequest="26"
+                               FontFamily="OpenSansSemibold"
                                FontSize="12"
-                               WidthRequest="24"
                                VerticalOptions="Center"
-                               TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
-                    </StackLayout>
+                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                    </HorizontalStackLayout>
+                </Border>
 
-                    <!-- Layer & Close -->
-                    <StackLayout Grid.Column="2" Orientation="Horizontal" Spacing="4">
-                        <ImageButton Style="{StaticResource ToolButtonImg}" Source="icon_layers_selected.svg" Clicked="OnLayerToggleClicked" ToolTipProperties.Text="Layers"/>
-                        <ImageButton Style="{StaticResource ToolButtonImg}" Source="icon_x.svg" Clicked="OnDrawingToolbarCloseClicked"/>
-                    </StackLayout>
-                </Grid>
+                <ImageButton Grid.Column="2"
+                             Style="{StaticResource ToolbarIconButton}"
+                             WidthRequest="40"
+                             HeightRequest="40"
+                             Source="icon_layers_selected.svg"
+                             Clicked="OnLayerToggleClicked" />
+                <ImageButton Grid.Column="3"
+                             Style="{StaticResource ToolbarIconButton}"
+                             WidthRequest="40"
+                             HeightRequest="40"
+                             Source="icon_x.svg"
+                             Clicked="OnDrawingToolbarCloseClicked" />
             </Grid>
         </Border>
 
-        <!-- Layer Panel -->
         <Border x:Name="LayerPanel"
-                Grid.Row="0"
                 IsVisible="False"
                 VerticalOptions="Fill"
                 HorizontalOptions="End"
-                WidthRequest="200"
-                Margin="0,60,12,100"
-                BackgroundColor="{AppThemeBinding Light={StaticResource ToolbarBgLight}, Dark={StaticResource ToolbarBgDark}}"
-                StrokeThickness="0"
-                Opacity="0.95"
-                Padding="12">
+                WidthRequest="236"
+                Margin="0,70,14,100"
+                Padding="12"
+                Style="{StaticResource PanelCard}">
             <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
-                <Label Grid.Row="0" Text="Layers" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
-
+                <Label Grid.Row="0"
+                       Text="图层"
+                       FontFamily="OpenSansSemibold"
+                       FontSize="16"
+                       TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
                 <ScrollView Grid.Row="1">
-                    <VerticalStackLayout x:Name="LayerList" Spacing="4"/>
+                    <VerticalStackLayout x:Name="LayerList" Spacing="6" />
                 </ScrollView>
-
-                <StackLayout Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalOptions="Center">
-                    <ImageButton Style="{StaticResource ToolButtonImg}" WidthRequest="40" HeightRequest="40" Source="icon_plus.svg" Clicked="OnAddLayerClicked"/>
-                    <ImageButton Style="{StaticResource ToolButtonImg}" WidthRequest="40" HeightRequest="40" Source="icon_minus.svg" Clicked="OnDeleteLayerClicked"/>
-                </StackLayout>
+                <HorizontalStackLayout Grid.Row="2" Spacing="8" HorizontalOptions="Center">
+                    <ImageButton Style="{StaticResource ToolbarIconButton}"
+                                 WidthRequest="40"
+                                 HeightRequest="40"
+                                 Source="icon_plus.svg"
+                                 Clicked="OnAddLayerClicked" />
+                    <ImageButton Style="{StaticResource ToolbarIconButton}"
+                                 WidthRequest="40"
+                                 HeightRequest="40"
+                                 Source="icon_minus.svg"
+                                 Clicked="OnDeleteLayerClicked" />
+                </HorizontalStackLayout>
             </Grid>
         </Border>
 
-        <!-- Settings Panel -->
-        <Border x:Name="SettingsPanel"
-                Grid.Row="0"
-                IsVisible="False"
-                VerticalOptions="Fill"
-                HorizontalOptions="Start"
-                WidthRequest="280"
-                Margin="0,60,0,100"
-                BackgroundColor="{AppThemeBinding Light={StaticResource ToolbarBgLight}, Dark={StaticResource ToolbarBgDark}}"
-                StrokeThickness="0"
-                Opacity="0.95"
-                Padding="16">
-            <ScrollView>
-                <VerticalStackLayout Spacing="16">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Label Text="Settings" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextColorLight}, Dark={StaticResource TextColorDark}}"/>
-                        <ImageButton Grid.Column="1" Style="{StaticResource ToolButtonImg}" WidthRequest="30" HeightRequest="30" Source="icon_x.svg" Clicked="OnSettingsCloseClicked"/>
+        <Grid x:Name="HomeDrawerOverlay"
+              IsVisible="False"
+              BackgroundColor="#95000000">
+            <Grid ColumnDefinitions="300,*">
+                <Border Grid.Column="0"
+                        BackgroundColor="{AppThemeBinding Light=#F6F7FA, Dark=#1E2B3D}"
+                        Stroke="{AppThemeBinding Light=#E4E8F0, Dark=#3F5370}"
+                        StrokeThickness="1"
+                        Padding="16,10,16,16">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
+                        <Grid Grid.Row="0" Padding="0,8,0,10" ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Border WidthRequest="44"
+                                    HeightRequest="44"
+                                    StrokeShape="RoundRectangle 22"
+                                    Stroke="{AppThemeBinding Light=#D3DAE8, Dark=#4B607D}"
+                                    StrokeThickness="1"
+                                    BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2A3A52}">
+                                <Image Source="icon_file.svg" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" HorizontalOptions="Center" />
+                            </Border>
+                            <Label Grid.Column="1"
+                                   Text="登录/注册"
+                                   VerticalOptions="Center"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="16"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                        </Grid>
+
+                        <Button Grid.Row="1" Style="{StaticResource DrawerItemButton}" Text="所有文档" Clicked="OnDrawerAllDocsClicked" />
+                        <Button Grid.Row="2" Style="{StaticResource DrawerItemButton}" Text="最近使用" Clicked="OnDrawerRecentClicked" />
+                        <Button Grid.Row="3" Style="{StaticResource DrawerItemButton}" Text="我的收藏" Clicked="OnDrawerFavoriteClicked" />
+                        <Button Grid.Row="4" Style="{StaticResource DrawerItemButton}" Text="回收站" Clicked="OnDrawerTrashClicked" />
+
+                        <VerticalStackLayout Grid.Row="5" Spacing="8">
+                            <Border Margin="0,6,0,0"
+                                    Stroke="{AppThemeBinding Light=#E2E6EF, Dark=#405471}"
+                                    StrokeThickness="1"
+                                    Padding="0,10,0,0">
+                                <VerticalStackLayout Spacing="6">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Padding="0,0,0,2">
+                                        <Label Text="我的标签"
+                                               FontFamily="OpenSansSemibold"
+                                               FontSize="15"
+                                               TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                                        <Button Grid.Column="1"
+                                                Text="编辑标签"
+                                                FontSize="13"
+                                                BackgroundColor="Transparent"
+                                                Clicked="OnDrawerEditTagsClicked" />
+                                    </Grid>
+                                    <Button Style="{StaticResource DrawerItemButton}" Text="创建新标签" Clicked="OnDrawerCreateTagClicked" />
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <Label Margin="0,10,0,0"
+                                   Text="我的应用"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="15"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                            <Button Style="{StaticResource DrawerItemButton}" Text="帮助中心" Clicked="OnDrawerHelpClicked" />
+                            <Button Style="{StaticResource DrawerItemButton}" Text="关于我们" Clicked="OnDrawerAboutClicked" />
+                            <Button Style="{StaticResource DrawerItemButton}" Text="获取折扣" Clicked="OnDrawerDiscountClicked" />
+
+                            <Border Margin="0,10,0,0"
+                                    Padding="12"
+                                    BackgroundColor="#335062FF"
+                                    Stroke="Transparent"
+                                    StrokeShape="RoundRectangle 12">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                    <Image Source="icon_file.svg" WidthRequest="40" HeightRequest="40" Opacity="0.85" />
+                                    <Label Grid.Column="1"
+                                           Text="注册即领\n免费试用全功能"
+                                           FontFamily="OpenSansSemibold"
+                                           FontSize="14"
+                                           TextColor="White" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
                     </Grid>
+                </Border>
 
-                    <!-- File Section -->
-                    <Label Text="File" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
+                <BoxView Grid.Column="1" Color="Transparent">
+                    <BoxView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnDrawerBackdropTapped" />
+                    </BoxView.GestureRecognizers>
+                </BoxView>
+            </Grid>
+        </Grid>
 
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Entry x:Name="UrlEntry" Placeholder="PDF URL"/>
-                        <Button Grid.Column="1" x:Name="LoadUrlButton" Text="Load" Clicked="OnLoadUrlClicked"/>
-                    </Grid>
+        <Grid x:Name="SettingsOverlay"
+              IsVisible="False"
+              BackgroundColor="#8A000000">
+            <BoxView Color="Transparent">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnSettingsOverlayTapped" />
+                </BoxView.GestureRecognizers>
+            </BoxView>
 
-                    <HorizontalStackLayout Spacing="8">
-                        <Button x:Name="LoadSampleButton" Text="Sample" Clicked="OnLoadSampleClicked"/>
-                        <Button x:Name="LocalFileButton" Text="Open" Clicked="OnPickFileClicked"/>
-                    </HorizontalStackLayout>
+            <Border x:Name="SettingsPanel"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    WidthRequest="680"
+                    MaximumWidthRequest="820"
+                    Margin="18"
+                    Padding="18,14,18,16"
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#1F2C3E}"
+                    Stroke="{AppThemeBinding Light=#D8DEE9, Dark=#435975}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 24">
+                <ScrollView>
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Label Text="设置"
+                                   HorizontalTextAlignment="Center"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="40"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                            <ImageButton Grid.Column="1"
+                                         WidthRequest="54"
+                                         HeightRequest="54"
+                                         CornerRadius="27"
+                                         Padding="13"
+                                         BackgroundColor="Transparent"
+                                         BorderColor="{AppThemeBinding Light=#A4ACBC, Dark=#697F9F}"
+                                         BorderWidth="1"
+                                         Source="icon_x.svg"
+                                         Clicked="OnSettingsCloseClicked" />
+                        </Grid>
 
-                    <!-- Workspace Section -->
-                    <Label Text="Workspace" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
+                        <Label Text="文档设置"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="17"
+                               TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
 
-                    <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
-                        <Button Grid.Column="0" Text="Root" Clicked="OnWorkspaceRootClicked"/>
-                        <Button Grid.Column="1" Text="Up" Clicked="OnWorkspaceUpClicked"/>
-                        <Entry Grid.Column="2" x:Name="WorkspaceFolderEntry" Placeholder="/"/>
-                        <Button Grid.Column="3" Text="Go" Clicked="OnWorkspaceOpenFolderClicked"/>
-                    </Grid>
+                        <Border Style="{StaticResource PanelCard}" Padding="0">
+                            <VerticalStackLayout Spacing="0">
+                                <Border Style="{StaticResource SettingRow}" AutomationId="页面设置">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                        <Image Source="icon_file.svg" WidthRequest="24" HeightRequest="24" />
+                                        <Label Grid.Column="1" Text="页面设置" FontSize="18" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="›" FontSize="28" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource SettingRow}" AutomationId="工具设置">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                        <Image Source="icon_menu.svg" WidthRequest="24" HeightRequest="24" />
+                                        <Label Grid.Column="1" Text="工具设置" FontSize="18" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="›" FontSize="28" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource SettingRow}" AutomationId="辅助线与图形">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                        <Image Source="icon_layers_selected.svg" WidthRequest="24" HeightRequest="24" />
+                                        <Label Grid.Column="1" Text="辅助线与图形" FontSize="18" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="›" FontSize="28" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+                        </Border>
 
-                    <HorizontalStackLayout Spacing="8">
-                        <Entry x:Name="WorkspaceNewFolderEntry" Placeholder="New folder" HorizontalOptions="FillAndExpand"/>
-                        <Button Text="Create" Clicked="OnWorkspaceCreateFolderClicked"/>
-                        <Button Text="Refresh" Clicked="OnWorkspaceRefreshClicked"/>
-                    </HorizontalStackLayout>
+                        <Label Text="同步/备份"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="17"
+                               TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
 
-                    <Label Text="Recent" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
-                    <VerticalStackLayout x:Name="RecentNotesList" Spacing="4"/>
+                        <Border Style="{StaticResource PanelCard}" Padding="0">
+                            <VerticalStackLayout Spacing="0">
+                                <Border Style="{StaticResource SettingRow}" AutomationId="云同步">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                        <Image Source="icon_folder.svg" WidthRequest="24" HeightRequest="24" />
+                                        <Label Grid.Column="1" Text="云同步" FontSize="18" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="未开启" VerticalOptions="Center" FontSize="16" TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                        <Label Grid.Column="3" Text="›" FontSize="28" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource SettingRow}" AutomationId="网盘备份">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                        <Image Source="icon_folder.svg" WidthRequest="24" HeightRequest="24" />
+                                        <Label Grid.Column="1" Text="网盘备份" FontSize="18" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="未开启" VerticalOptions="Center" FontSize="16" TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                        <Label Grid.Column="3" Text="›" FontSize="28" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource SettingRow}" AutomationId="本地备份">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                        <Image Source="icon_home.svg" WidthRequest="24" HeightRequest="24" />
+                                        <Label Grid.Column="1" Text="本地备份" FontSize="18" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="›" FontSize="28" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+                        </Border>
 
-                    <Label Text="Folders" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
-                    <VerticalStackLayout x:Name="WorkspaceFolderList" Spacing="4"/>
+                        <Label Text="其他"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="17"
+                               TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
 
-                    <Label Text="Notes" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
-                    <VerticalStackLayout x:Name="WorkspaceNoteList" Spacing="4"/>
+                        <Border Style="{StaticResource PanelCard}" Padding="0">
+                            <VerticalStackLayout Spacing="0">
+                                <Border Style="{StaticResource SettingRow}" AutomationId="显示">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                        <Image Source="icon_eye.svg" WidthRequest="24" HeightRequest="24" />
+                                        <Label Grid.Column="1" Text="显示" FontSize="18" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="›" FontSize="28" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource SettingRow}" AutomationId="语言">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                        <Image Source="icon_search.svg" WidthRequest="24" HeightRequest="24" />
+                                        <Label Grid.Column="1" Text="语言" FontSize="18" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="简体中文" VerticalOptions="Center" FontSize="16" TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                        <Label Grid.Column="3" Text="›" FontSize="28" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource SettingRow}" AutomationId="手势设置">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                        <Image Source="icon_arrow_forward_up.svg" WidthRequest="24" HeightRequest="24" />
+                                        <Label Grid.Column="1" Text="手势设置" FontSize="18" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="›" FontSize="28" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource SettingRow}" AutomationId="手写笔设置">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                        <Image Source="icon_pencil.svg" WidthRequest="24" HeightRequest="24" />
+                                        <Label Grid.Column="1" Text="手写笔设置" FontSize="18" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="›" FontSize="28" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+                        </Border>
 
-                    <!-- Search Section -->
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Entry x:Name="SearchEntry" Grid.Column="0" Placeholder="Search"/>
-                        <ImageButton x:Name="SearchButton" Grid.Column="1" Style="{StaticResource ToolButtonImg}" WidthRequest="40" HeightRequest="40" Source="icon_search.svg" Clicked="OnSearchClicked"/>
-                    </Grid>
+                        <Button Text="还原初始设置"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="18"
+                                HeightRequest="60"
+                                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#25344A}"
+                                TextColor="#EC4F74"
+                                CornerRadius="30"
+                                Clicked="OnResetSettingsClicked" />
 
-                    <HorizontalStackLayout Spacing="8">
-                        <ImageButton x:Name="SearchPrevButton" Style="{StaticResource ToolButtonImg}" WidthRequest="40" HeightRequest="40" Source="icon_arrow_left.svg" Clicked="OnSearchPrevClicked"/>
-                        <ImageButton x:Name="SearchNextButton" Style="{StaticResource ToolButtonImg}" WidthRequest="40" HeightRequest="40" Source="icon_arrow_right.svg" Clicked="OnSearchNextClicked"/>
-                        <Label x:Name="SearchStatusLabel" Text="" VerticalOptions="Center" FontSize="11"/>
-                    </HorizontalStackLayout>
+                        <VerticalStackLayout IsVisible="False" Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <Entry x:Name="UrlEntry" Placeholder="PDF URL" />
+                                <Button x:Name="LoadUrlButton" Grid.Column="1" Text="加载" Clicked="OnLoadUrlClicked" />
+                            </Grid>
+                            <HorizontalStackLayout Spacing="8">
+                                <Button x:Name="LoadSampleButton" Text="示例" Clicked="OnLoadSampleClicked" />
+                                <Button x:Name="LocalFileButton" Text="本地打开" Clicked="OnPickFileClicked" />
+                            </HorizontalStackLayout>
 
-                    <!-- View Section -->
-                    <Label Text="View" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
+                            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="6">
+                                <Button Grid.Column="0" Text="根目录" Clicked="OnWorkspaceRootClicked" />
+                                <Button Grid.Column="1" Text="上级" Clicked="OnWorkspaceUpClicked" />
+                                <Entry Grid.Column="2" x:Name="WorkspaceFolderEntry" Placeholder="/" />
+                                <Button Grid.Column="3" Text="打开" Clicked="OnWorkspaceOpenFolderClicked" />
+                            </Grid>
+                            <HorizontalStackLayout Spacing="8">
+                                <Entry x:Name="WorkspaceNewFolderEntry" Placeholder="新建文件夹" HorizontalOptions="FillAndExpand" />
+                                <Button Text="创建" Clicked="OnWorkspaceCreateFolderClicked" />
+                                <Button Text="刷新" Clicked="OnWorkspaceRefreshClicked" />
+                            </HorizontalStackLayout>
+                            <VerticalStackLayout x:Name="RecentNotesList" Spacing="4" />
+                            <VerticalStackLayout x:Name="WorkspaceFolderList" Spacing="4" />
+                            <VerticalStackLayout x:Name="WorkspaceNoteList" Spacing="4" />
 
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                        <Picker x:Name="DisplayModePicker" Title="Mode"/>
-                        <Picker Grid.Column="1" x:Name="OrientationPicker" Title="Direction"/>
-                        <Picker Grid.Column="2" x:Name="FitPolicyPicker" Title="Fit"/>
-                    </Grid>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <Entry x:Name="SearchEntry" Grid.Column="0" Placeholder="关键词" />
+                                <ImageButton x:Name="SearchButton"
+                                             Grid.Column="1"
+                                             WidthRequest="40"
+                                             HeightRequest="40"
+                                             Source="icon_search.svg"
+                                             Clicked="OnSearchClicked" />
+                            </Grid>
+                            <HorizontalStackLayout Spacing="8">
+                                <ImageButton x:Name="SearchPrevButton" WidthRequest="40" HeightRequest="40" Source="icon_arrow_left.svg" Clicked="OnSearchPrevClicked" />
+                                <ImageButton x:Name="SearchNextButton" WidthRequest="40" HeightRequest="40" Source="icon_arrow_right.svg" Clicked="OnSearchNextClicked" />
+                                <Label x:Name="SearchStatusLabel" VerticalOptions="Center" FontSize="11" />
+                            </HorizontalStackLayout>
 
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Slider x:Name="ZoomSlider" Minimum="0.5" Maximum="4" Value="1" ValueChanged="OnZoomSliderValueChanged"/>
-                        <Label Grid.Column="1" x:Name="ZoomValueLabel" Text="1.0x" WidthRequest="50" VerticalOptions="Center"/>
-                    </Grid>
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                <Picker x:Name="DisplayModePicker" Title="模式" SelectedIndexChanged="OnDisplayModeChanged" />
+                                <Picker Grid.Column="1" x:Name="OrientationPicker" Title="方向" SelectedIndexChanged="OnOrientationChanged" />
+                                <Picker Grid.Column="2" x:Name="FitPolicyPicker" Title="适配" SelectedIndexChanged="OnFitPolicyChanged" />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <Slider x:Name="ZoomSlider" Minimum="0.5" Maximum="4" Value="1" ValueChanged="OnZoomSliderValueChanged" />
+                                <Label x:Name="ZoomValueLabel" Grid.Column="1" Text="1.0x" WidthRequest="50" VerticalOptions="Center" />
+                            </Grid>
 
-                    <!-- Tools Section -->
-                    <Label Text="Tools" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
+                            <HorizontalStackLayout Spacing="8">
+                                <Label Text="缩放" VerticalOptions="Center" FontSize="12" />
+                                <Switch x:Name="EnableZoomSwitch" IsToggled="True" Toggled="OnEnableZoomToggled" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="8">
+                                <Label Text="翻页" VerticalOptions="Center" FontSize="12" />
+                                <Switch x:Name="EnableSwipeSwitch" IsToggled="True" Toggled="OnEnableSwipeToggled" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="8">
+                                <Label Text="链接" VerticalOptions="Center" FontSize="12" />
+                                <Switch x:Name="EnableLinkSwitch" IsToggled="True" Toggled="OnEnableLinkToggled" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="8">
+                                <Label Text="手指绘制" VerticalOptions="Center" FontSize="12" />
+                                <Switch x:Name="EnableFingerDrawSwitch" IsToggled="False" Toggled="OnFingerDrawToggled" />
+                            </HorizontalStackLayout>
 
-                    <FlexLayout Direction="Row" Wrap="Wrap">
-                        <StackLayout Orientation="Horizontal" Margin="0,0,16,6">
-                            <Label Text="Zoom" VerticalOptions="Center" FontSize="12"/>
-                            <Switch x:Name="EnableZoomSwitch" IsToggled="True" Toggled="OnEnableZoomToggled"/>
-                        </StackLayout>
-                        <StackLayout Orientation="Horizontal" Margin="0,0,16,6">
-                            <Label Text="Swipe" VerticalOptions="Center" FontSize="12"/>
-                            <Switch x:Name="EnableSwipeSwitch" IsToggled="True" Toggled="OnEnableSwipeToggled"/>
-                        </StackLayout>
-                        <StackLayout Orientation="Horizontal" Margin="0,0,16,6">
-                            <Label Text="Links" VerticalOptions="Center" FontSize="12"/>
-                            <Switch x:Name="EnableLinkSwitch" IsToggled="True" Toggled="OnEnableLinkToggled"/>
-                        </StackLayout>
-                        <StackLayout Orientation="Horizontal" Margin="0,0,16,6">
-                            <Label Text="Finger Draw" VerticalOptions="Center" FontSize="12"/>
-                            <Switch x:Name="EnableFingerDrawSwitch" IsToggled="False" Toggled="OnFingerDrawToggled"/>
-                        </StackLayout>
-                    </FlexLayout>
+                            <Label x:Name="EventInfoLabel" Text="Ready" FontSize="11" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Border>
+        </Grid>
 
-                    <!-- Language -->
-                    <Label Text="Language" FontAttributes="Bold" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
-                    <HorizontalStackLayout Spacing="8">
-                        <Button Text="English" Clicked="OnLangEnClicked"/>
-                        <Button Text="中文" Clicked="OnLangZhClicked"/>
-                    </HorizontalStackLayout>
-
-                    <!-- Status -->
-                    <Label x:Name="EventInfoLabel" Text="Ready" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextLight}, Dark={StaticResource SecondaryTextDark}}"/>
-                </VerticalStackLayout>
-            </ScrollView>
-        </Border>
-
-        <!-- Status Toast -->
         <Border x:Name="StatusToast"
-                Grid.Row="0"
                 VerticalOptions="End"
                 HorizontalOptions="Center"
-                Margin="0,0,0,80"
-                BackgroundColor="{AppThemeBinding Light=#1E293B, Dark=#1E293B}"
+                Margin="0,0,0,24"
                 Padding="16,8"
+                BackgroundColor="#DA0B1830"
+                Stroke="#2AFFFFFF"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 18"
                 Opacity="0"
                 IsVisible="False">
-            <Label x:Name="StatusLabel" Text="" FontSize="12" TextColor="White"/>
+            <Label x:Name="StatusLabel"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="12"
+                   TextColor="White" />
         </Border>
     </Grid>
 </ContentPage>

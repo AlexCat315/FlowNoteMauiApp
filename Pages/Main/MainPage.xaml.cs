@@ -173,6 +173,8 @@ public partial class MainPage : ContentPage
         UpdateColorSelection("Black");
         UpdateToolSelection("Pen");
         WorkspaceFolderEntry.Text = _workspaceFolder;
+        UpdateHomeSortLabel();
+        UpdateHomeFilterButtons();
     }
 
     private async void OnPageLoaded(object? sender, EventArgs e)
