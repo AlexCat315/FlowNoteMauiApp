@@ -26,7 +26,6 @@ public partial class MainPage
     private string _homeSearchKeyword = string.Empty;
     private IReadOnlyList<WorkspaceNote> _cachedHomeNotes = Array.Empty<WorkspaceNote>();
     private IReadOnlyList<string> _cachedHomeFolders = Array.Empty<string>();
-    private bool _isUpdatingHomeFilterSegment;
 
     private void SetDrawerVisible(bool visible)
     {
@@ -117,69 +116,50 @@ public partial class MainPage
 
     private void UpdateHomeFilterButtons()
     {
-        if (_isUpdatingHomeFilterSegment)
-            return;
-
-        _isUpdatingHomeFilterSegment = true;
-        try
-        {
-            var index = GetHomeFilterIndex(_homeFilter);
-            if (HomeFilterSegmentedControl.SelectedIndex != index)
-            {
-                HomeFilterSegmentedControl.SelectedIndex = index;
-            }
-        }
-        finally
-        {
-            _isUpdatingHomeFilterSegment = false;
-        }
+        UpdateHomeFilterVisual(FilterAllButton, FilterAllIndicator, _homeFilter == HomeFilterType.All);
+        UpdateHomeFilterVisual(FilterPdfButton, FilterPdfIndicator, _homeFilter == HomeFilterType.Pdf);
+        UpdateHomeFilterVisual(FilterNoteButton, FilterNoteIndicator, _homeFilter == HomeFilterType.Note);
+        UpdateHomeFilterVisual(FilterFolderButton, FilterFolderIndicator, _homeFilter == HomeFilterType.Folder);
     }
 
-    private void UpdateHomeSortLabel()
+    private void UpdateHomeFilterVisual(Button button, BoxView indicator, bool selected)
     {
-        var mode = _homeSort switch
+        button.TextColor = selected
+            ? Color.FromArgb("#4A90E2")
+            : (IsDarkTheme ? Color.FromArgb("#F2F2F7") : Color.FromArgb("#1C1C1E"));
+        indicator.IsVisible = selected;
+    }
+
+    private void SetHomeFilter(HomeFilterType filter)
+    {
+        if (_homeFilter == filter)
+            return;
+
+        _homeFilter = filter;
+        RefreshHomeFeed();
+    }
+
+    private string GetHomeSortDescription()
+    {
+        var modeText = _homeSort switch
         {
             HomeSortType.Name => "名称",
             HomeSortType.Created => "创建时间",
             _ => "最近"
         };
 
-        HomeSortButton.Text = $"{mode} {(_isHomeSortDescending ? "↓" : "↑")}";
+        return $"{modeText} {(_isHomeSortDescending ? "降序" : "升序")}";
     }
 
-    private int GetHomeFilterIndex(HomeFilterType filter) => filter switch
+    private void UpdateHomeSortLabel()
     {
-        HomeFilterType.Pdf => 1,
-        HomeFilterType.Note => 2,
-        HomeFilterType.Folder => 3,
-        _ => 0
-    };
-
-    private static HomeFilterType GetHomeFilterByIndex(int index) => index switch
-    {
-        1 => HomeFilterType.Pdf,
-        2 => HomeFilterType.Note,
-        3 => HomeFilterType.Folder,
-        _ => HomeFilterType.All
-    };
-
-    private void OnHomeFilterSegmentChanged(object? sender, Syncfusion.Maui.Toolkit.SegmentedControl.SelectionChangedEventArgs e)
-    {
-        if (_isUpdatingHomeFilterSegment)
-            return;
-
-        var newIndexObject = (object?)e.NewIndex;
-        if (newIndexObject is null)
-            return;
-
-        var newIndex = Convert.ToInt32(newIndexObject, CultureInfo.InvariantCulture);
-        var nextFilter = GetHomeFilterByIndex(newIndex);
-        if (_homeFilter == nextFilter)
-            return;
-
-        _homeFilter = nextFilter;
-        RefreshHomeFeed();
+        HomeSortButton.Text = "排序";
     }
+
+    private void OnHomeFilterAllClicked(object? sender, EventArgs e) => SetHomeFilter(HomeFilterType.All);
+    private void OnHomeFilterPdfClicked(object? sender, EventArgs e) => SetHomeFilter(HomeFilterType.Pdf);
+    private void OnHomeFilterNoteClicked(object? sender, EventArgs e) => SetHomeFilter(HomeFilterType.Note);
+    private void OnHomeFilterFolderClicked(object? sender, EventArgs e) => SetHomeFilter(HomeFilterType.Folder);
 
     private void OnHomeSortClicked(object? sender, EventArgs e)
     {
@@ -194,7 +174,7 @@ public partial class MainPage
             _isHomeSortDescending = !_isHomeSortDescending;
 
         RefreshHomeFeed();
-        ShowStatus($"当前排序: {HomeSortButton.Text}");
+        ShowStatus($"当前排序: {GetHomeSortDescription()}");
     }
 
     private void OnHomeSearchTextChanged(object? sender, TextChangedEventArgs e)

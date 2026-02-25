@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:segmented="clr-namespace:Syncfusion.Maui.Toolkit.SegmentedControl;assembly=Syncfusion.Maui.Toolkit"
-             x:Class="FlowNoteMauiApp.MainPage">
+             x:Class="FlowNoteMauiApp.MainPage"
+             BackgroundColor="{AppThemeBinding Light=#F8F8FA, Dark=#182434}">
     <ContentPage.Resources>
         <Color x:Key="AccentBlue">#4A90E2</Color>
         <Color x:Key="AccentBlueSoft">#E8F4FD</Color>
@@ -113,177 +113,138 @@
             <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
             <Setter Property="StrokeThickness" Value="1" />
         </Style>
-    </ContentPage.Resources>
 
-    <ContentPage.Background>
-        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#F8FBFF" Offset="0" />
-            <GradientStop Color="#F1F7FF" Offset="0.45" />
-            <GradientStop Color="#FDFEFF" Offset="1" />
-        </LinearGradientBrush>
-    </ContentPage.Background>
+        <Style x:Key="FlatTopIconButton" TargetType="ImageButton">
+            <Setter Property="WidthRequest" Value="28" />
+            <Setter Property="HeightRequest" Value="28" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="BorderWidth" Value="0" />
+            <Setter Property="TintColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}" />
+        </Style>
+
+        <Style x:Key="FilterTabButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="Padding" Value="4,0" />
+            <Setter Property="MinimumHeightRequest" Value="34" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}" />
+        </Style>
+    </ContentPage.Resources>
 
     <Grid>
         <Grid x:Name="EditorHost" />
 
-        <Grid x:Name="HomePanel" IsVisible="True" RowDefinitions="Auto,Auto,*" RowSpacing="10" Padding="14,10,14,0">
-            <Border Grid.Row="0"
-                    Style="{StaticResource PanelCard}"
-                    Padding="14,12"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}">
-                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
-                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_menu.svg" Clicked="OnMenuClicked" />
-                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_folder.svg" Clicked="OnDrawerAllDocsClicked" />
+        <Grid x:Name="HomePanel" IsVisible="True" RowDefinitions="Auto,Auto,*" RowSpacing="0">
+            <Grid Grid.Row="0" RowDefinitions="Auto,1" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2C3E}">
+                <Grid Grid.Row="0" Padding="24,10,24,10" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <HorizontalStackLayout Spacing="14" VerticalOptions="Center">
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_menu.svg" Clicked="OnMenuClicked" />
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_eye_off.svg" Clicked="OnDrawerRecentClicked" />
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_folder.svg" Clicked="OnDrawerAllDocsClicked" />
                     </HorizontalStackLayout>
 
-                    <VerticalStackLayout Grid.Column="1"
-                                         Spacing="0"
-                                         HorizontalOptions="Center"
-                                         VerticalOptions="Center">
-                        <Label Text="FlowNote"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="20"
-                               TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}" />
-                        <Label Text="你的学习文档中心"
-                               FontSize="12"
-                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
-                    </VerticalStackLayout>
+                    <Image Grid.Column="1"
+                           Source="icon_file.svg"
+                           WidthRequest="21"
+                           HeightRequest="21"
+                           Opacity="0.86"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
 
-                    <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
-                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_eye.svg" Clicked="OnDrawerFavoriteClicked" />
-                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_search.svg" Clicked="OnHomeRefreshClicked" />
-                        <ImageButton Style="{StaticResource HeaderIconButton}" Source="icon_settings.svg" Clicked="OnOpenSettingsClicked" />
+                    <HorizontalStackLayout Grid.Column="2" Spacing="14" VerticalOptions="Center">
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_eye.svg" Clicked="OnDrawerFavoriteClicked" />
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_search.svg" Clicked="OnHomeRefreshClicked" />
+                        <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_settings.svg" Clicked="OnOpenSettingsClicked" />
                     </HorizontalStackLayout>
                 </Grid>
-            </Border>
+                <BoxView Grid.Row="1" Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}" />
+            </Grid>
 
-            <Border Grid.Row="1"
-                    Style="{StaticResource PanelCard}"
-                    Padding="12">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                    <segmented:SfSegmentedControl x:Name="HomeFilterSegmentedControl"
-                                                  SegmentHeight="38"
-                                                  VisibleSegmentsCount="4"
-                                                  SelectedIndex="0"
-                                                  SegmentCornerRadius="12"
-                                                  CornerRadius="12"
-                                                  Stroke="{StaticResource Gray200}"
-                                                  StrokeThickness="1"
-                                                  SegmentBackground="{StaticResource WhiteBrush}"
-                                                  SelectionChanged="OnHomeFilterSegmentChanged"
-                                                  HorizontalOptions="Fill"
-                                                  VerticalOptions="Center"
-                                                  MinimumWidthRequest="280">
-                        <segmented:SfSegmentedControl.ItemsSource>
-                            <x:Array Type="{x:Type x:String}">
-                                <x:String>全部</x:String>
-                                <x:String>PDF</x:String>
-                                <x:String>笔记</x:String>
-                                <x:String>文件夹</x:String>
-                            </x:Array>
-                        </segmented:SfSegmentedControl.ItemsSource>
-                        <segmented:SfSegmentedControl.TextStyle>
-                            <segmented:SegmentTextStyle FontFamily="OpenSansSemibold"
-                                                        FontSize="14"
-                                                        TextColor="{StaticResource Gray600}" />
-                        </segmented:SfSegmentedControl.TextStyle>
-                        <segmented:SfSegmentedControl.SelectionIndicatorSettings>
-                            <segmented:SelectionIndicatorSettings Background="{StaticResource PrimaryBrush}"
-                                                                  TextColor="{StaticResource BackgroundPrimary}"
-                                                                  Stroke="{StaticResource PrimaryBlueDark}"
-                                                                  StrokeThickness="0" />
-                        </segmented:SfSegmentedControl.SelectionIndicatorSettings>
-                    </segmented:SfSegmentedControl>
-
-                    <Border Grid.Column="1" Style="{StaticResource SubtleLabelChip}">
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
-                            <Image Source="icon_layers_selected.svg"
-                                   WidthRequest="16"
-                                   HeightRequest="16"
-                                   VerticalOptions="Center"
-                                   Opacity="0.85" />
-                            <Button x:Name="HomeSortButton"
-                                    Grid.Column="1"
-                                    Text="排序"
-                                    FontSize="14"
-                                    Padding="4,0"
-                                    HeightRequest="32"
-                                    BackgroundColor="Transparent"
-                                    Clicked="OnHomeSortClicked" />
-                        </Grid>
-                    </Border>
-                </Grid>
-            </Border>
-
-            <Grid Grid.Row="2" RowDefinitions="Auto,*" RowSpacing="0">
-                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,0,0,10">
-                    <Border Grid.Column="0"
-                            Style="{StaticResource PanelCard}"
-                            Padding="12,4">
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                            <Image Source="icon_search.svg"
-                                   WidthRequest="18"
-                                   HeightRequest="18"
-                                   VerticalOptions="Center"
-                                   Opacity="0.72" />
-                            <Entry x:Name="HomeSearchEntry"
-                                   Grid.Column="1"
-                                   Placeholder="搜索文档、标签、文件夹..."
-                                   TextChanged="OnHomeSearchTextChanged"
-                                   FontSize="15"
-                                   ClearButtonVisibility="WhileEditing"
-                                   BackgroundColor="Transparent"
-                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
-                                   HeightRequest="42" />
-                        </Grid>
-                    </Border>
-
-                    <Border Grid.Column="1"
-                            Style="{StaticResource SubtleLabelChip}"
-                            VerticalOptions="Center">
-                        <Label x:Name="HomeCountLabel"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="13"
-                               VerticalOptions="Center"
-                               TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
-                               Text="0 个文档" />
-                    </Border>
-                </Grid>
-
-                <Grid Grid.Row="1">
-                    <ScrollView>
-                        <VerticalStackLayout Spacing="12" Padding="0,0,92,24">
-                            <FlexLayout x:Name="HomeNotesList"
-                                        Direction="Row"
-                                        Wrap="Wrap"
-                                        AlignItems="Start"
-                                        AlignContent="Start"
-                                        JustifyContent="Start" />
-                        </VerticalStackLayout>
-                    </ScrollView>
-
-                    <VerticalStackLayout HorizontalOptions="End"
-                                         VerticalOptions="End"
-                                         Spacing="12"
-                                         Margin="0,0,8,20">
-                        <ImageButton x:Name="QuickPenButton"
-                                     Style="{StaticResource FloatingIconButton}"
-                                     WidthRequest="56"
-                                     HeightRequest="56"
-                                     CornerRadius="28"
-                                     Padding="15"
-                                     BackgroundColor="{StaticResource PrimaryBlueLight}"
-                                     TintColor="{StaticResource PrimaryBlueDark}"
-                                     Source="icon_pencil.svg"
-                                     Clicked="OnHomeQuickPenClicked" />
-                        <ImageButton Style="{StaticResource FloatingIconButton}"
-                                     Source="icon_plus.svg"
-                                     Clicked="OnHomeImportLocalClicked" />
+            <Grid Grid.Row="1" Padding="24,16,24,10" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="26">
+                    <VerticalStackLayout Spacing="5">
+                        <Button x:Name="FilterAllButton" Style="{StaticResource FilterTabButton}" Text="全部" Clicked="OnHomeFilterAllClicked" />
+                        <BoxView x:Name="FilterAllIndicator" HeightRequest="3" WidthRequest="40" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" />
                     </VerticalStackLayout>
+                    <VerticalStackLayout Spacing="5">
+                        <Button x:Name="FilterPdfButton" Style="{StaticResource FilterTabButton}" Text="PDF" Clicked="OnHomeFilterPdfClicked" />
+                        <BoxView x:Name="FilterPdfIndicator" HeightRequest="3" WidthRequest="40" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" IsVisible="False" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Spacing="5">
+                        <Button x:Name="FilterNoteButton" Style="{StaticResource FilterTabButton}" Text="笔记" Clicked="OnHomeFilterNoteClicked" />
+                        <BoxView x:Name="FilterNoteIndicator" HeightRequest="3" WidthRequest="40" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" IsVisible="False" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Spacing="5">
+                        <Button x:Name="FilterFolderButton" Style="{StaticResource FilterTabButton}" Text="文件夹" Clicked="OnHomeFilterFolderClicked" />
+                        <BoxView x:Name="FilterFolderIndicator" HeightRequest="3" WidthRequest="48" HorizontalOptions="Center" Color="{StaticResource PrimaryBlue}" IsVisible="False" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
 
-                    <Entry x:Name="HomeUrlEntry" IsVisible="False" />
-                </Grid>
+                <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
+                    <Border WidthRequest="20"
+                            HeightRequest="20"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 5">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#E95077" Offset="0" />
+                                <GradientStop Color="#3E76FF" Offset="0.55" />
+                                <GradientStop Color="#48C39F" Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_layers_selected.svg" Clicked="OnHomeSortClicked" />
+                    <ImageButton Style="{StaticResource FlatTopIconButton}" Source="icon_menu.svg" Clicked="OnHomeSortClicked" />
+                    <Button x:Name="HomeSortButton"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Text="排序"
+                            FontSize="16"
+                            Padding="0"
+                            BackgroundColor="Transparent"
+                            Clicked="OnHomeSortClicked" />
+                </HorizontalStackLayout>
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <ScrollView>
+                    <VerticalStackLayout Spacing="10" Padding="56,6,56,120">
+                        <FlexLayout x:Name="HomeNotesList"
+                                    Direction="Row"
+                                    Wrap="Wrap"
+                                    AlignItems="Start"
+                                    AlignContent="Start"
+                                    JustifyContent="Start" />
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <VerticalStackLayout HorizontalOptions="End"
+                                     VerticalOptions="End"
+                                     Spacing="14"
+                                     Margin="0,0,30,24">
+                    <ImageButton x:Name="QuickPenButton"
+                                 Style="{StaticResource FloatingIconButton}"
+                                 WidthRequest="56"
+                                 HeightRequest="56"
+                                 CornerRadius="28"
+                                 Padding="15"
+                                 BackgroundColor="{StaticResource PrimaryBlueLight}"
+                                 TintColor="{StaticResource PrimaryBlueDark}"
+                                 Source="icon_pencil.svg"
+                                 Clicked="OnHomeQuickPenClicked" />
+                    <ImageButton Style="{StaticResource FloatingIconButton}"
+                                 WidthRequest="64"
+                                 HeightRequest="64"
+                                 Source="icon_plus.svg"
+                                 Clicked="OnHomeImportLocalClicked" />
+                </VerticalStackLayout>
+
+                <Entry x:Name="HomeSearchEntry"
+                       IsVisible="False"
+                       TextChanged="OnHomeSearchTextChanged" />
+                <Label x:Name="HomeCountLabel" IsVisible="False" Text="0 个文档" />
+                <Entry x:Name="HomeUrlEntry" IsVisible="False" />
             </Grid>
         </Grid>
 

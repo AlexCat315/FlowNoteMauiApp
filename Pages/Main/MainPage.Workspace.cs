@@ -107,66 +107,46 @@ public partial class MainPage
         }
     }
 
-    private Color HomeCardBackground => IsDarkTheme ? Color.FromArgb("#1F2C3D") : Color.FromArgb("#FFFFFF");
-    private Color HomeCardStroke => IsDarkTheme ? Color.FromArgb("#3F5470") : Color.FromArgb("#E2EAF5");
-    private Color HomePreviewBackground => IsDarkTheme ? Color.FromArgb("#293B53") : Color.FromArgb("#F1F7FF");
-    private Color HomePreviewStroke => IsDarkTheme ? Color.FromArgb("#4E6888") : Color.FromArgb("#D6E4F7");
-    private Color HomeInnerPreviewBackground => IsDarkTheme ? Color.FromArgb("#324862") : Color.FromArgb("#FFFFFF");
+    private Color HomePreviewBackground => IsDarkTheme ? Color.FromArgb("#2A3B55") : Color.FromArgb("#E7EEF7");
+    private Color HomePreviewStroke => IsDarkTheme ? Color.FromArgb("#4B6281") : Color.FromArgb("#D3DCE9");
+    private Color HomePreviewPaperBackground => IsDarkTheme ? Color.FromArgb("#374D69") : Color.FromArgb("#FFFFFF");
 
     private void RenderHomeEmptyState(string title, string description)
     {
         HomeNotesList.Children.Add(new Border
         {
-            WidthRequest = 340,
-            Margin = new Thickness(0, 0, 12, 12),
-            BackgroundColor = HomeCardBackground,
-            Stroke = HomeCardStroke,
+            WidthRequest = 280,
+            Margin = new Thickness(0, 8, 24, 18),
+            BackgroundColor = IsDarkTheme ? Color.FromArgb("#223349") : Color.FromArgb("#FFFFFF"),
+            Stroke = HomePreviewStroke,
             StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 18 },
-            Padding = new Thickness(20, 18),
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+            Padding = new Thickness(16, 14),
             Content = new VerticalStackLayout
             {
-                Spacing = 12,
+                Spacing = 8,
                 Children =
                 {
-                    new Border
-                    {
-                        WidthRequest = 50,
-                        HeightRequest = 50,
-                        StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 14 },
-                        BackgroundColor = IsDarkTheme ? Color.FromArgb("#2C4568") : Color.FromArgb("#E8F4FD"),
-                        Stroke = IsDarkTheme ? Color.FromArgb("#54749A") : Color.FromArgb("#CAE1FB"),
-                        StrokeThickness = 1,
-                        Content = new Image
-                        {
-                            Source = "icon_file.svg",
-                            WidthRequest = 24,
-                            HeightRequest = 24,
-                            HorizontalOptions = LayoutOptions.Center,
-                            VerticalOptions = LayoutOptions.Center,
-                            Opacity = 0.82
-                        }
-                    },
                     new Label
                     {
                         Text = title,
                         FontFamily = "OpenSansSemibold",
-                        FontSize = 20,
+                        FontSize = 16,
                         TextColor = ThemePrimaryText
                     },
                     new Label
                     {
                         Text = description,
                         FontFamily = "OpenSansRegular",
-                        FontSize = 13,
+                        FontSize = 12,
                         TextColor = ThemeSecondaryText
                     },
                     new Button
                     {
                         Text = "导入 PDF",
-                        FontSize = 14,
-                        Padding = new Thickness(16, 10),
-                        CornerRadius = 12,
+                        FontSize = 13,
+                        Padding = new Thickness(12, 8),
+                        CornerRadius = 8,
                         HorizontalOptions = LayoutOptions.Start,
                         BackgroundColor = Color.FromArgb("#4A90E2"),
                         TextColor = Colors.White,
@@ -183,85 +163,108 @@ public partial class MainPage
 
         var card = new Border
         {
-            WidthRequest = 252,
-            Margin = new Thickness(0, 0, 12, 12),
-            BackgroundColor = HomeCardBackground,
-            Stroke = HomeCardStroke,
-            StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 18 },
-            Padding = new Thickness(12)
+            WidthRequest = 146,
+            Margin = new Thickness(0, 0, 26, 24),
+            BackgroundColor = Colors.Transparent,
+            StrokeThickness = 0,
+            Padding = new Thickness(0)
         };
 
         var content = new Grid
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = new GridLength(118) },
-                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = new GridLength(160) },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }
             },
-            RowSpacing = 6
+            RowSpacing = 8
         };
 
         var preview = new Border
         {
+            WidthRequest = 110,
+            HeightRequest = 160,
+            HorizontalOptions = LayoutOptions.Center,
             BackgroundColor = HomePreviewBackground,
             Stroke = HomePreviewStroke,
             StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 14 },
-            Padding = new Thickness(12)
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+            Padding = new Thickness(10)
         };
-        var previewGrid = new Grid();
-        previewGrid.Children.Add(new Border
+        preview.Content = new Border
         {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            HeightRequest = 5,
-            BackgroundColor = Color.FromArgb("#95B7E8"),
-            StrokeThickness = 0,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 3 }
-        });
-        previewGrid.Children.Add(new Image
-        {
-            Source = "icon_folder.svg",
-            WidthRequest = 52,
-            HeightRequest = 52,
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Center,
-            Opacity = 0.84
-        });
-        preview.Content = previewGrid;
+            BackgroundColor = HomePreviewPaperBackground,
+            Stroke = IsDarkTheme ? Color.FromArgb("#5D779A") : Color.FromArgb("#D8E1EE"),
+            StrokeThickness = 1,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+            Content = new Image
+            {
+                Source = "icon_folder.svg",
+                WidthRequest = 50,
+                HeightRequest = 50,
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center,
+                Opacity = 0.85
+            }
+        };
         content.Add(preview);
         Grid.SetRow(preview, 0);
 
-        var titleLabel = new Label
+        var titleRow = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto }
+            }
+        };
+        titleRow.Children.Add(new Label
         {
             Text = folderName,
             FontFamily = "OpenSansSemibold",
-            FontSize = 17,
-            MaxLines = 1,
-            LineBreakMode = LineBreakMode.TailTruncation,
+            FontSize = 14,
+            MaxLines = 2,
+            LineBreakMode = LineBreakMode.WordWrap,
+            HorizontalTextAlignment = TextAlignment.Center,
             TextColor = ThemePrimaryText
-        };
-        content.Add(titleLabel);
-        Grid.SetRow(titleLabel, 1);
-
-        var pathLabel = new Label
+        });
+        var moreLabel = new Label
         {
-            Text = folderPath,
-            FontFamily = "OpenSansRegular",
-            FontSize = 12,
-            MaxLines = 1,
-            LineBreakMode = LineBreakMode.TailTruncation,
+            Text = "⋮",
+            FontSize = 18,
             TextColor = ThemeSecondaryText
         };
-        content.Add(pathLabel);
-        Grid.SetRow(pathLabel, 2);
+        titleRow.Children.Add(moreLabel);
+        Grid.SetColumn(moreLabel, 1);
+        content.Add(titleRow);
+        Grid.SetRow(titleRow, 1);
 
-        var folderChip = CreateMetaChip("文件夹");
-        content.Add(folderChip);
-        Grid.SetRow(folderChip, 3);
+        var metaGrid = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Star }
+            }
+        };
+        metaGrid.Children.Add(new Label
+        {
+            Text = "文件夹",
+            FontSize = 12,
+            TextColor = ThemeSecondaryText
+        });
+        var dateLabel = new Label
+        {
+            Text = DateTime.Now.ToString("yy/MM/dd"),
+            HorizontalTextAlignment = TextAlignment.End,
+            FontSize = 12,
+            TextColor = ThemeSecondaryText
+        };
+        metaGrid.Children.Add(dateLabel);
+        Grid.SetColumn(dateLabel, 1);
+        content.Add(metaGrid);
+        Grid.SetRow(metaGrid, 2);
 
         card.Content = content;
         card.GestureRecognizers.Add(new TapGestureRecognizer
@@ -284,67 +287,52 @@ public partial class MainPage
         var selected = note.Id == _currentNoteId;
         var card = new Border
         {
-            WidthRequest = 252,
-            Margin = new Thickness(0, 0, 12, 12),
-            BackgroundColor = HomeCardBackground,
-            Stroke = selected ? Color.FromArgb("#4A90E2") : HomeCardStroke,
-            StrokeThickness = selected ? 1.8 : 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 18 },
-            Padding = new Thickness(12)
+            WidthRequest = 146,
+            Margin = new Thickness(0, 0, 26, 24),
+            BackgroundColor = Colors.Transparent,
+            StrokeThickness = 0,
+            Padding = new Thickness(0)
         };
 
         var content = new Grid
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = new GridLength(128) },
-                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = new GridLength(160) },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }
             },
-            RowSpacing = 6
+            RowSpacing = 8
         };
 
         var preview = new Border
         {
+            WidthRequest = 110,
+            HeightRequest = 160,
+            HorizontalOptions = LayoutOptions.Center,
             BackgroundColor = HomePreviewBackground,
-            Stroke = HomePreviewStroke,
-            StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 14 },
+            Stroke = selected ? Color.FromArgb("#4A90E2") : HomePreviewStroke,
+            StrokeThickness = selected ? 1.5 : 1,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
             Padding = new Thickness(10)
         };
 
-        var previewGrid = new Grid();
-        previewGrid.Children.Add(new Border
+        preview.Content = new Border
         {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            HeightRequest = 5,
-            BackgroundColor = selected ? Color.FromArgb("#4A90E2") : Color.FromArgb("#9BBCE8"),
-            StrokeThickness = 0,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 3 }
-        });
-        previewGrid.Children.Add(new Border
-        {
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Center,
-            WidthRequest = 156,
-            HeightRequest = 108,
-            BackgroundColor = HomeInnerPreviewBackground,
-            Stroke = IsDarkTheme ? Color.FromArgb("#60779A") : Color.FromArgb("#DFEAF8"),
+            BackgroundColor = HomePreviewPaperBackground,
+            Stroke = IsDarkTheme ? Color.FromArgb("#5D779A") : Color.FromArgb("#D8E1EE"),
             StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
             Content = new Image
             {
                 Source = "icon_file.svg",
-                WidthRequest = 52,
-                HeightRequest = 52,
+                WidthRequest = 48,
+                HeightRequest = 48,
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center,
-                Opacity = 0.72
+                Opacity = 0.76
             }
-        });
-        preview.Content = previewGrid;
+        };
         content.Add(preview);
         Grid.SetRow(preview, 0);
 
@@ -360,16 +348,16 @@ public partial class MainPage
         {
             Text = note.Name,
             FontFamily = "OpenSansSemibold",
-            FontSize = 17,
+            FontSize = 14,
             MaxLines = 2,
             LineBreakMode = LineBreakMode.WordWrap,
+            HorizontalTextAlignment = TextAlignment.Center,
             TextColor = ThemePrimaryText
         });
         var chevron = new Label
         {
-            Text = "›",
-            FontSize = 22,
-            Margin = new Thickness(8, -2, 0, 0),
+            Text = "⋮",
+            FontSize = 18,
             TextColor = ThemeSecondaryText,
             VerticalOptions = LayoutOptions.Start
         };
@@ -378,30 +366,31 @@ public partial class MainPage
         content.Add(titleGrid);
         Grid.SetRow(titleGrid, 1);
 
-        var pathLabel = new Label
+        var metaGrid = new Grid
         {
-            Text = string.IsNullOrWhiteSpace(note.FolderPath) ? "/" : note.FolderPath,
-            FontFamily = "OpenSansRegular",
-            FontSize = 12,
-            MaxLines = 1,
-            LineBreakMode = LineBreakMode.TailTruncation,
-            TextColor = ThemeSecondaryText
-        };
-        content.Add(pathLabel);
-        Grid.SetRow(pathLabel, 2);
-
-        var metaRow = new HorizontalStackLayout
-        {
-            Spacing = 6,
-            Children =
+            ColumnDefinitions =
             {
-                CreateMetaChip($"{EstimatePages(note)}页"),
-                CreateMetaChip("PDF笔记"),
-                CreateMetaChip(FormatRelativeTime(note.LastOpenedAtUtc))
+                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Star }
             }
         };
-        content.Add(metaRow);
-        Grid.SetRow(metaRow, 3);
+        metaGrid.Children.Add(new Label
+        {
+            Text = $"{EstimatePages(note)}页",
+            FontSize = 12,
+            TextColor = ThemeSecondaryText
+        });
+        var dateLabel = new Label
+        {
+            Text = note.LastOpenedAtUtc.ToLocalTime().ToString("yy/MM/dd"),
+            HorizontalTextAlignment = TextAlignment.End,
+            FontSize = 12,
+            TextColor = ThemeSecondaryText
+        };
+        metaGrid.Children.Add(dateLabel);
+        Grid.SetColumn(dateLabel, 1);
+        content.Add(metaGrid);
+        Grid.SetRow(metaGrid, 2);
 
         card.Content = content;
         card.GestureRecognizers.Add(new TapGestureRecognizer
@@ -422,25 +411,6 @@ public partial class MainPage
         return card;
     }
 
-    private Border CreateMetaChip(string text)
-    {
-        return new Border
-        {
-            Padding = new Thickness(8, 3),
-            BackgroundColor = IsDarkTheme ? Color.FromArgb("#2E415A") : Color.FromArgb("#F2F6FD"),
-            Stroke = IsDarkTheme ? Color.FromArgb("#4B6281") : Color.FromArgb("#D8E4F5"),
-            StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 9 },
-            Content = new Label
-            {
-                Text = text,
-                FontSize = 11,
-                FontFamily = "OpenSansSemibold",
-                TextColor = ThemeSecondaryText
-            }
-        };
-    }
-
     private static int EstimatePages(WorkspaceNote note)
     {
         var seed = StringComparer.Ordinal.GetHashCode(note.Id);
@@ -448,20 +418,6 @@ public partial class MainPage
             seed = 0;
         seed = Math.Abs(seed);
         return 8 + (seed % 38);
-    }
-
-    private static string FormatRelativeTime(DateTime utc)
-    {
-        var delta = DateTime.UtcNow - utc;
-        if (delta.TotalMinutes < 1)
-            return "刚刚";
-        if (delta.TotalHours < 1)
-            return $"{Math.Max(1, (int)delta.TotalMinutes)}分钟前";
-        if (delta.TotalDays < 1)
-            return $"{Math.Max(1, (int)delta.TotalHours)}小时前";
-        if (delta.TotalDays < 7)
-            return $"{Math.Max(1, (int)delta.TotalDays)}天前";
-        return utc.ToLocalTime().ToString("MM-dd");
     }
 
     private void RenderRecentNotes(IReadOnlyList<WorkspaceNote> recent)
