@@ -8,6 +8,22 @@ namespace FlowNoteMauiApp.Controls;
 
 public class DrawingCanvas : SKCanvasView
 {
+    public enum TwoFingerSwipeDirection
+    {
+        PreviousPage,
+        NextPage
+    }
+
+    public sealed class TwoFingerSwipeEventArgs : EventArgs
+    {
+        public TwoFingerSwipeEventArgs(TwoFingerSwipeDirection direction)
+        {
+            Direction = direction;
+        }
+
+        public TwoFingerSwipeDirection Direction { get; }
+    }
+
     public static readonly BindableProperty LayersProperty =
         BindableProperty.Create(nameof(Layers), typeof(ObservableCollection<DrawingLayer>), typeof(DrawingCanvas),
             propertyChanged: OnLayersChanged);
@@ -55,11 +71,16 @@ public class DrawingCanvas : SKCanvasView
     private readonly Stack<StrokeHistoryEntry> _undoStack = new();
     private readonly Stack<StrokeHistoryEntry> _redoStack = new();
     private readonly HashSet<long> _activeTouchIds = new();
+    private readonly Dictionary<long, SKPoint> _activeTouchPoints = new();
     private DrawingStroke? _currentStroke;
     private bool _isDrawing;
     private bool _suspendDrawingUntilTouchesReleased;
+    private bool _isTwoFingerGestureActive;
+    private SKPoint _twoFingerAnchor;
+    private const float TwoFingerSwipeThreshold = 120f;
 
     public event EventHandler? StrokeCommitted;
+    public event EventHandler<TwoFingerSwipeEventArgs>? TwoFingerSwipe;
 
     private readonly record struct StrokeHistoryEntry(int LayerIndex, DrawingStroke Stroke);
 
@@ -477,14 +498,15 @@ public class DrawingCanvas : SKCanvasView
         {
             CancelCurrentStroke();
             _suspendDrawingUntilTouchesReleased = true;
-            e.Handled = false;
+            HandleTwoFingerGesture();
+            e.Handled = true;
             InvalidateSurface();
             return;
         }
 
         if (_suspendDrawingUntilTouchesReleased)
         {
-            e.Handled = false;
+            e.Handled = true;
             return;
         }
 
@@ -538,10 +560,27 @@ public class DrawingCanvas : SKCanvasView
         {
             case SKTouchAction.Pressed:
                 _activeTouchIds.Add(e.Id);
+                _activeTouchPoints[e.Id] = e.Location;
+                if (!IsPenMode && _activeTouchIds.Count >= 2 && !_isTwoFingerGestureActive)
+                {
+                    _isTwoFingerGestureActive = true;
+                    _twoFingerAnchor = GetTouchCenter();
+                }
+                break;
+            case SKTouchAction.Moved:
+                if (_activeTouchIds.Contains(e.Id))
+                {
+                    _activeTouchPoints[e.Id] = e.Location;
+                }
                 break;
             case SKTouchAction.Released:
             case SKTouchAction.Cancelled:
                 _activeTouchIds.Remove(e.Id);
+                _activeTouchPoints.Remove(e.Id);
+                if (_activeTouchIds.Count < 2)
+                {
+                    _isTwoFingerGestureActive = false;
+                }
                 break;
         }
     }
@@ -549,8 +588,54 @@ public class DrawingCanvas : SKCanvasView
     private void ResetTouchTracking()
     {
         _activeTouchIds.Clear();
+        _activeTouchPoints.Clear();
         _suspendDrawingUntilTouchesReleased = false;
+        _isTwoFingerGestureActive = false;
         CancelCurrentStroke();
+    }
+
+    private SKPoint GetTouchCenter()
+    {
+        if (_activeTouchPoints.Count == 0)
+            return SKPoint.Empty;
+
+        float x = 0;
+        float y = 0;
+        foreach (var point in _activeTouchPoints.Values)
+        {
+            x += point.X;
+            y += point.Y;
+        }
+
+        var count = _activeTouchPoints.Count;
+        return new SKPoint(x / count, y / count);
+    }
+
+    private void HandleTwoFingerGesture()
+    {
+        if (_activeTouchPoints.Count < 2)
+            return;
+
+        var center = GetTouchCenter();
+        if (!_isTwoFingerGestureActive)
+        {
+            _isTwoFingerGestureActive = true;
+            _twoFingerAnchor = center;
+            return;
+        }
+
+        var deltaX = center.X - _twoFingerAnchor.X;
+        var deltaY = center.Y - _twoFingerAnchor.Y;
+
+        if (Math.Abs(deltaY) < TwoFingerSwipeThreshold || Math.Abs(deltaY) <= Math.Abs(deltaX))
+            return;
+
+        var direction = deltaY < 0
+            ? TwoFingerSwipeDirection.NextPage
+            : TwoFingerSwipeDirection.PreviousPage;
+
+        _twoFingerAnchor = center;
+        TwoFingerSwipe?.Invoke(this, new TwoFingerSwipeEventArgs(direction));
     }
 
     private void CancelCurrentStroke()

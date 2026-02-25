@@ -8,6 +8,14 @@ namespace FlowNoteMauiApp;
 
 public partial class MainPage
 {
+    private void OnEditorSearchClicked(object? sender, EventArgs e)
+    {
+        if (!EnsurePdfLoaded(showHint: true))
+            return;
+
+        ShowStatus("文档搜索入口已打开（详细搜索面板可在设置中继续完善）");
+    }
+
     private async void OnSearchClicked(object? sender, EventArgs e)
     {
         if (!EnsurePdfLoaded(showHint: true))

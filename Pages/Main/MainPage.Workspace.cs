@@ -5,6 +5,206 @@ namespace FlowNoteMauiApp;
 
 public partial class MainPage
 {
+    private sealed class EditorTabInfo
+    {
+        public required string NoteId { get; init; }
+        public required string Name { get; init; }
+        public required string FolderPath { get; init; }
+    }
+
+    private readonly List<EditorTabInfo> _editorTabs = new();
+    private const int MaxEditorTabCount = 12;
+
+    private void UpsertEditorTab(WorkspaceNote note)
+    {
+        var existingIndex = _editorTabs.FindIndex(t => string.Equals(t.NoteId, note.Id, StringComparison.Ordinal));
+        var tab = new EditorTabInfo
+        {
+            NoteId = note.Id,
+            Name = note.Name,
+            FolderPath = note.FolderPath
+        };
+
+        if (existingIndex >= 0)
+        {
+            _editorTabs[existingIndex] = tab;
+            return;
+        }
+
+        _editorTabs.Add(tab);
+        if (_editorTabs.Count > MaxEditorTabCount)
+        {
+            _editorTabs.RemoveAt(0);
+        }
+    }
+
+    private string NormalizeEditorTabTitle(string title)
+    {
+        var text = string.IsNullOrWhiteSpace(title) ? "未命名文档" : title.Trim();
+        return text.Length <= 20 ? text : text[..20] + "...";
+    }
+
+    private void RefreshEditorTabsVisual()
+    {
+        EditorTabsHost.Children.Clear();
+        if (_editorTabs.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var tab in _editorTabs)
+        {
+            var isActive = string.Equals(tab.NoteId, _currentNoteId, StringComparison.Ordinal);
+
+            var tabBorder = new Border
+            {
+                Padding = new Thickness(10, 6),
+                Margin = new Thickness(0, 0, 2, 0),
+                BackgroundColor = isActive
+                    ? (IsDarkTheme ? Color.FromArgb("#2D4361") : Color.FromArgb("#EEF4FF"))
+                    : (IsDarkTheme ? Color.FromArgb("#1D2B3E") : Color.FromArgb("#F4F6FA")),
+                Stroke = isActive
+                    ? Color.FromArgb("#4A90E2")
+                    : (IsDarkTheme ? Color.FromArgb("#4C6484") : Color.FromArgb("#D7DEE9")),
+                StrokeThickness = 1,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 12 },
+                MinimumWidthRequest = 180
+            };
+
+            var tabGrid = new Grid
+            {
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition { Width = GridLength.Auto },
+                    new ColumnDefinition { Width = GridLength.Star },
+                    new ColumnDefinition { Width = GridLength.Auto }
+                },
+                ColumnSpacing = 8
+            };
+
+            tabGrid.Children.Add(new Image
+            {
+                Source = "icon_file.svg",
+                WidthRequest = 13,
+                HeightRequest = 13,
+                VerticalOptions = LayoutOptions.Center,
+                Opacity = 0.86
+            });
+
+            var titleLabel = new Label
+            {
+                Text = NormalizeEditorTabTitle(tab.Name),
+                VerticalOptions = LayoutOptions.Center,
+                FontFamily = "OpenSansSemibold",
+                FontSize = 13,
+                MaxLines = 1,
+                LineBreakMode = LineBreakMode.TailTruncation,
+                TextColor = ThemePrimaryText
+            };
+            tabGrid.Children.Add(titleLabel);
+            Grid.SetColumn(titleLabel, 1);
+
+            var closeButton = new ImageButton
+            {
+                Source = "icon_x.svg",
+                WidthRequest = 20,
+                HeightRequest = 20,
+                Padding = 4,
+                CornerRadius = 10,
+                BackgroundColor = Colors.Transparent,
+                BorderWidth = 0,
+                CommandParameter = tab.NoteId
+            };
+            closeButton.Clicked += OnEditorTabCloseClicked;
+            tabGrid.Children.Add(closeButton);
+            Grid.SetColumn(closeButton, 2);
+
+            tabBorder.Content = tabGrid;
+            var openTab = new TapGestureRecognizer();
+            openTab.Tapped += async (_, _) => await ActivateEditorTabAsync(tab.NoteId);
+            tabBorder.GestureRecognizers.Add(openTab);
+
+            EditorTabsHost.Children.Add(tabBorder);
+        }
+    }
+
+    private async Task ActivateEditorTabAsync(string noteId)
+    {
+        if (string.IsNullOrWhiteSpace(noteId))
+            return;
+
+        if (string.Equals(_currentNoteId, noteId, StringComparison.Ordinal))
+        {
+            RefreshEditorTabsVisual();
+            return;
+        }
+
+        var note = _cachedHomeNotes.FirstOrDefault(n => string.Equals(n.Id, noteId, StringComparison.Ordinal))
+            ?? await _workspaceService.GetNoteAsync(noteId);
+        if (note is null)
+        {
+            _editorTabs.RemoveAll(t => string.Equals(t.NoteId, noteId, StringComparison.Ordinal));
+            RefreshEditorTabsVisual();
+            ShowStatus("标签页文档不存在，已自动移除");
+            return;
+        }
+
+        await OpenWorkspaceNoteAsync(note);
+    }
+
+    private async void OnEditorTabCloseClicked(object? sender, EventArgs e)
+    {
+        if (sender is not ImageButton button || button.CommandParameter is not string noteId)
+            return;
+
+        await CloseEditorTabAsync(noteId);
+    }
+
+    private async Task CloseEditorTabAsync(string noteId)
+    {
+        if (string.IsNullOrWhiteSpace(noteId))
+            return;
+
+        var removeIndex = _editorTabs.FindIndex(t => string.Equals(t.NoteId, noteId, StringComparison.Ordinal));
+        if (removeIndex < 0)
+            return;
+
+        var wasActive = string.Equals(_currentNoteId, noteId, StringComparison.Ordinal);
+        _editorTabs.RemoveAt(removeIndex);
+
+        if (!wasActive)
+        {
+            RefreshEditorTabsVisual();
+            return;
+        }
+
+        if (_editorTabs.Count == 0)
+        {
+            _currentNoteId = null;
+            await RefreshWorkspaceViewsAsync();
+            ShowHomeScreen();
+            return;
+        }
+
+        var nextIndex = Math.Clamp(removeIndex - 1, 0, _editorTabs.Count - 1);
+        var nextTab = _editorTabs[nextIndex];
+        var nextNote = await _workspaceService.GetNoteAsync(nextTab.NoteId);
+        if (nextNote is null)
+        {
+            _editorTabs.RemoveAt(nextIndex);
+            RefreshEditorTabsVisual();
+            if (_editorTabs.Count == 0)
+            {
+                _currentNoteId = null;
+                await RefreshWorkspaceViewsAsync();
+                ShowHomeScreen();
+            }
+            return;
+        }
+
+        await OpenWorkspaceNoteAsync(nextNote);
+    }
+
     private async Task OpenWorkspaceNoteAsync(WorkspaceNote note)
     {
         await SaveCurrentDrawingStateAsync();
@@ -17,13 +217,14 @@ public partial class MainPage
 
         _currentNoteId = note.Id;
         _workspaceFolder = note.FolderPath;
+        UpsertEditorTab(note);
         WorkspaceFolderEntry.Text = _workspaceFolder;
         await _workspaceService.MarkOpenedAsync(note.Id);
 
         EnsureEditorInitialized();
-        EditorDocumentTitleLabel.Text = note.Name;
         PdfViewer.Source = new BytesPdfSource(bytes);
         ShowEditorScreen();
+        RefreshEditorTabsVisual();
         await LoadDrawingForCurrentNoteAsync();
         await RefreshWorkspaceViewsAsync();
         ShowStatus($"Opened: {note.Name}");
@@ -71,6 +272,9 @@ public partial class MainPage
         SetDrawerVisible(false);
         SetSettingsVisible(false);
         PdfViewer.IsVisible = true;
+        ApplyInputMode(
+            _drawingInputMode == DrawingInputMode.TapRead ? DrawingInputMode.PenStylus : _drawingInputMode,
+            activateDrawing: true);
     }
 
     private void RenderHomeNotes(IReadOnlyList<WorkspaceNote> notes)

@@ -1,4 +1,5 @@
 using SkiaSharp;
+using FlowNoteMauiApp.Controls;
 
 namespace FlowNoteMauiApp;
 
@@ -35,17 +36,7 @@ public partial class MainPage
             return;
         }
 
-        DrawingCanvas.EnableDrawing = !DrawingCanvas.EnableDrawing;
-        DrawingCanvas.IsVisible = DrawingCanvas.EnableDrawing;
-        DrawingToolbarPanel.IsVisible = DrawingCanvas.EnableDrawing;
-
-        if (!DrawingCanvas.EnableDrawing)
-        {
-            QueueInkSave();
-        }
-
-        UpdateDrawingToggleVisual(DrawingCanvas.EnableDrawing);
-        UpdateToolSelection(_drawingInputMode == DrawingInputMode.FingerCapacitive ? "Finger" : "Pen");
+        ApplyInputMode(DrawingInputMode.TapRead, showStatus: true, activateDrawing: false);
     }
 
     private void OnDrawingToolbarCloseClicked(object? sender, EventArgs e)
@@ -66,6 +57,13 @@ public partial class MainPage
     {
         if (!EnsureDrawingReady())
             return;
+
+        if (_drawingInputMode != DrawingInputMode.PenStylus)
+        {
+            ApplyInputMode(DrawingInputMode.PenStylus, showStatus: true);
+            SetInputModePanelVisible(false);
+            return;
+        }
 
         SetInputModePanelVisible(!InputModePanel.IsVisible);
     }
@@ -428,6 +426,41 @@ public partial class MainPage
             e.Value ? DrawingInputMode.FingerCapacitive : DrawingInputMode.PenStylus,
             showStatus: IsEditorInitialized,
             activateDrawing: false);
+    }
+
+    private void OnTextToolClicked(object? sender, EventArgs e)
+    {
+        ShowStatus("文本工具即将支持");
+    }
+
+    private void OnImageToolClicked(object? sender, EventArgs e)
+    {
+        ShowStatus("图片插入即将支持");
+    }
+
+    private void OnShapeToolClicked(object? sender, EventArgs e)
+    {
+        ShowStatus("图形工具即将支持");
+    }
+
+    private void OnDrawingCanvasTwoFingerSwipe(object? sender, DrawingCanvas.TwoFingerSwipeEventArgs e)
+    {
+        if (!EnsurePdfLoaded())
+            return;
+
+        if (e.Direction == DrawingCanvas.TwoFingerSwipeDirection.NextPage)
+        {
+            if (_currentPageIndex + 1 < _totalPageCount)
+            {
+                PdfViewer.GoToPage(_currentPageIndex + 1);
+            }
+            return;
+        }
+
+        if (_currentPageIndex > 0)
+        {
+            PdfViewer.GoToPage(_currentPageIndex - 1);
+        }
     }
 
     private void OnDrawingStrokeCommitted(object? sender, EventArgs e)

@@ -147,7 +147,8 @@ public partial class MainPage
 
     private async void OnHomeImportLocalClicked(object? sender, EventArgs e)
     {
-        await PickAndImportPdfAsync(openAfterImport: false);
+        var openAfterImport = TopBarPanel.IsVisible;
+        await PickAndImportPdfAsync(openAfterImport);
     }
 
     private async void OnHomeImportUrlClicked(object? sender, EventArgs e)

@@ -89,6 +89,7 @@ public partial class MainPage : ContentPage
 
         _drawingCanvas.Layers.CollectionChanged += (_, _) => RefreshLayerList();
         _drawingCanvas.StrokeCommitted += OnDrawingStrokeCommitted;
+        _drawingCanvas.TwoFingerSwipe += OnDrawingCanvasTwoFingerSwipe;
 
         EditorHost.Children.Add(_pdfViewer);
         EditorHost.Children.Add(_drawingCanvas);
@@ -192,6 +193,7 @@ public partial class MainPage : ContentPage
         UpdateColorSelection("Black");
         ApplyInputMode(_drawingInputMode, activateDrawing: false);
         WorkspaceFolderEntry.Text = _workspaceFolder;
+        RefreshEditorTabsVisual();
         UpdateHomeSortLabel();
         UpdateHomeFilterButtons();
     }
