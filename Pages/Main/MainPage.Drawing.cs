@@ -1,5 +1,6 @@
 using SkiaSharp;
 using FlowNoteMauiApp.Controls;
+using System.Diagnostics;
 
 namespace FlowNoteMauiApp;
 
@@ -11,6 +12,13 @@ public partial class MainPage
         FingerCapacitive,
         TapRead
     }
+
+    private const double PanInertiaFrameIntervalMs = 16d;
+    private const double PanInertiaVelocityStopThreshold = 8d;
+    private CancellationTokenSource? _panInertiaCts;
+    private DateTime _lastPanSampleUtc = DateTime.UtcNow;
+    private double _panVelocityX;
+    private double _panVelocityY;
 
     private bool EnsureDrawingReady(bool showHint = false)
     {
@@ -44,6 +52,7 @@ public partial class MainPage
         if (!EnsureDrawingReady())
             return;
 
+        StopTwoFingerInertia();
         SetInputModePanelVisible(false);
         DrawingCanvas.EnableDrawing = false;
         DrawingCanvas.IsVisible = false;
@@ -103,6 +112,7 @@ public partial class MainPage
 
     private void ApplyInputMode(DrawingInputMode mode, bool showStatus = false, bool activateDrawing = true)
     {
+        StopTwoFingerInertia();
         _drawingInputMode = mode;
         UpdateInputModeSelectionVisual();
         SetFingerDrawSwitchState(mode == DrawingInputMode.FingerCapacitive);
@@ -477,6 +487,19 @@ public partial class MainPage
         if (_drawingInputMode != DrawingInputMode.FingerCapacitive)
             return;
 
+        switch (e.Phase)
+        {
+            case DrawingCanvas.TwoFingerPanPhase.Begin:
+                StopTwoFingerInertia();
+                _panVelocityX = 0d;
+                _panVelocityY = 0d;
+                _lastPanSampleUtc = DateTime.UtcNow;
+                break;
+            case DrawingCanvas.TwoFingerPanPhase.End:
+                StartTwoFingerInertiaIfNeeded();
+                return;
+        }
+
         if (e.HasZoom)
         {
             PdfViewer.ZoomBy(e.ScaleFactor, e.CenterX, e.CenterY);
@@ -484,8 +507,113 @@ public partial class MainPage
 
         if (e.HasPan)
         {
-            PdfViewer.PanBy(e.DeltaX, e.DeltaY);
+            var adjustedX = ApplyPanResistance(e.DeltaX);
+            var adjustedY = ApplyPanResistance(e.DeltaY);
+            PdfViewer.PanBy(adjustedX, adjustedY);
+            UpdatePanVelocity(adjustedX, adjustedY);
         }
+    }
+
+    private double ApplyPanResistance(double delta)
+    {
+        if (!_pageFreeMoveEnabled)
+            return delta;
+
+        var normalizedResistance = Math.Clamp(_pageMoveResistancePercent / 100d, 0d, 1d);
+        var factor = Math.Clamp(1d - (normalizedResistance * 0.62d), 0.28d, 1d);
+        return delta * factor;
+    }
+
+    private void UpdatePanVelocity(double deltaX, double deltaY)
+    {
+        var now = DateTime.UtcNow;
+        var seconds = Math.Max(0.001d, (now - _lastPanSampleUtc).TotalSeconds);
+        _lastPanSampleUtc = now;
+
+        var sampleVx = deltaX / seconds;
+        var sampleVy = deltaY / seconds;
+        const double smoothing = 0.24d;
+        _panVelocityX = (_panVelocityX * (1d - smoothing)) + (sampleVx * smoothing);
+        _panVelocityY = (_panVelocityY * (1d - smoothing)) + (sampleVy * smoothing);
+    }
+
+    private void StartTwoFingerInertiaIfNeeded()
+    {
+        if (!_pageFreeMoveEnabled)
+        {
+            _panVelocityX = 0d;
+            _panVelocityY = 0d;
+            return;
+        }
+
+        var speed = Math.Sqrt((_panVelocityX * _panVelocityX) + (_panVelocityY * _panVelocityY));
+        if (speed < 150d)
+        {
+            _panVelocityX = 0d;
+            _panVelocityY = 0d;
+            return;
+        }
+
+        StopTwoFingerInertia();
+        _panInertiaCts = new CancellationTokenSource();
+        var token = _panInertiaCts.Token;
+        var resistance = Math.Clamp(_pageMoveResistancePercent / 100d, 0d, 1d);
+        var damping = Math.Clamp(0.93d - (resistance * 0.2d), 0.68d, 0.93d);
+        var velocityX = _panVelocityX;
+        var velocityY = _panVelocityY;
+
+        _ = Task.Run(async () =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var last = stopwatch.Elapsed;
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(PanInertiaFrameIntervalMs), token);
+                    var current = stopwatch.Elapsed;
+                    var deltaSeconds = Math.Clamp((current - last).TotalSeconds, 0.008d, 0.04d);
+                    last = current;
+
+                    velocityX *= damping;
+                    velocityY *= damping;
+                    var currentSpeed = Math.Sqrt((velocityX * velocityX) + (velocityY * velocityY));
+                    if (currentSpeed < PanInertiaVelocityStopThreshold)
+                        break;
+
+                    var deltaX = velocityX * deltaSeconds;
+                    var deltaY = velocityY * deltaSeconds;
+
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        if (HasLoadedDocument)
+                        {
+                            PdfViewer.PanBy(deltaX, deltaY);
+                        }
+                    });
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    _panVelocityX = 0d;
+                    _panVelocityY = 0d;
+                });
+            }
+        }, token);
+    }
+
+    private void StopTwoFingerInertia()
+    {
+        _panInertiaCts?.Cancel();
+        _panInertiaCts?.Dispose();
+        _panInertiaCts = null;
+        _panVelocityX = 0d;
+        _panVelocityY = 0d;
     }
 
     private void OnDrawingStrokeCommitted(object? sender, EventArgs e)

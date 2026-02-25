@@ -131,11 +131,19 @@ public partial class MainPage
         if (DisplayModePicker.SelectedIndex < 0)
             return;
 
-        if (!IsEditorInitialized)
-            return;
+        _savedDisplayMode = (PdfDisplayMode)DisplayModePicker.SelectedIndex;
 
-        PdfViewer.DisplayMode = (PdfDisplayMode)DisplayModePicker.SelectedIndex;
+        if (!IsEditorInitialized)
+        {
+            SavePersistedAppSettings();
+            RefreshSettingsUiState();
+            return;
+        }
+
+        PdfViewer.DisplayMode = _savedDisplayMode;
         UpdateTwoFingerNavigationPolicy();
+        SavePersistedAppSettings();
+        RefreshSettingsUiState();
     }
 
     private void OnOrientationChanged(object? sender, EventArgs e)
@@ -143,10 +151,18 @@ public partial class MainPage
         if (OrientationPicker.SelectedIndex < 0)
             return;
 
-        if (!IsEditorInitialized)
-            return;
+        _savedScrollOrientation = (PdfScrollOrientation)OrientationPicker.SelectedIndex;
 
-        PdfViewer.ScrollOrientation = (PdfScrollOrientation)OrientationPicker.SelectedIndex;
+        if (!IsEditorInitialized)
+        {
+            SavePersistedAppSettings();
+            RefreshSettingsUiState();
+            return;
+        }
+
+        PdfViewer.ScrollOrientation = _savedScrollOrientation;
+        SavePersistedAppSettings();
+        RefreshSettingsUiState();
     }
 
     private void OnFitPolicyChanged(object? sender, EventArgs e)
@@ -154,25 +170,39 @@ public partial class MainPage
         if (FitPolicyPicker.SelectedIndex < 0)
             return;
 
-        if (!IsEditorInitialized)
-            return;
+        _savedFitPolicy = (FitPolicy)FitPolicyPicker.SelectedIndex;
 
-        PdfViewer.FitPolicy = (FitPolicy)FitPolicyPicker.SelectedIndex;
+        if (!IsEditorInitialized)
+        {
+            SavePersistedAppSettings();
+            RefreshSettingsUiState();
+            return;
+        }
+
+        PdfViewer.FitPolicy = _savedFitPolicy;
+        SavePersistedAppSettings();
+        RefreshSettingsUiState();
     }
 
     private void OnEnableZoomToggled(object? sender, ToggledEventArgs e)
     {
         ApplyViewerSettingsFromUi();
+        SavePersistedAppSettings();
+        RefreshSettingsUiState();
     }
 
     private void OnEnableSwipeToggled(object? sender, ToggledEventArgs e)
     {
         ApplyViewerSettingsFromUi();
+        SavePersistedAppSettings();
+        RefreshSettingsUiState();
     }
 
     private void OnEnableLinkToggled(object? sender, ToggledEventArgs e)
     {
         ApplyViewerSettingsFromUi();
+        SavePersistedAppSettings();
+        RefreshSettingsUiState();
     }
 
     private void OnZoomSliderValueChanged(object? sender, ValueChangedEventArgs e)
@@ -190,6 +220,9 @@ public partial class MainPage
         PdfViewer.MaxZoom = EditorMaxZoom;
         PdfViewer.Zoom = zoom;
         DrawingCanvas.ViewportZoom = zoom;
+        _savedZoom = zoom;
+        SavePersistedAppSettings();
+        RefreshSettingsUiState();
     }
 
     private void OnDocumentLoaded(object? sender, DocumentLoadedEventArgs e)

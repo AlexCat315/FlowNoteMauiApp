@@ -627,13 +627,27 @@
                     StrokeShape="RoundRectangle 24">
                 <ScrollView>
                     <VerticalStackLayout Spacing="14">
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                            <Label Text="设置"
-                                   VerticalOptions="End"
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <ImageButton x:Name="SettingsBackButton"
+                                         WidthRequest="44"
+                                         HeightRequest="44"
+                                         CornerRadius="22"
+                                         Padding="10"
+                                         IsVisible="False"
+                                         BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2B3D57}"
+                                         BorderColor="{AppThemeBinding Light=#D5DBE8, Dark=#697F9F}"
+                                         BorderWidth="1"
+                                         Source="icon_arrow_left.svg"
+                                         Clicked="OnSettingsBackClicked" />
+                            <Label x:Name="SettingsTitleLabel"
+                                   Grid.Column="1"
+                                   Text="设置"
+                                   VerticalOptions="Center"
+                                   HorizontalTextAlignment="Center"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="30"
                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-                            <ImageButton Grid.Column="1"
+                            <ImageButton Grid.Column="2"
                                          WidthRequest="44"
                                          HeightRequest="44"
                                          CornerRadius="22"
@@ -644,145 +658,340 @@
                                          Source="icon_x.svg"
                                          Clicked="OnSettingsCloseClicked" />
                         </Grid>
-                        <Label Text="页面、工具和同步相关配置"
-                               Margin="0,-6,0,0"
-                               FontSize="12"
-                               TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
 
-                        <Label Text="文档设置"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="15"
-                               TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                        <VerticalStackLayout x:Name="SettingsHomeView" Spacing="12">
+                            <Label x:Name="SettingsHomeHintLabel"
+                                   Text="页面、显示和语言设置"
+                                   Margin="0,-6,0,0"
+                                   FontSize="12"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
 
-                        <Border Style="{StaticResource PanelCard}" Padding="0">
-                            <VerticalStackLayout Spacing="0">
-                                <Border Style="{StaticResource SettingRow}" AutomationId="页面设置">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
-                                    </Border.GestureRecognizers>
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <Image Source="icon_file.svg" WidthRequest="24" HeightRequest="24" />
-                                        <Label Grid.Column="1" Text="页面设置" FontSize="16" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="›" FontSize="22" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
-                                    </Grid>
-                                </Border>
-                                <Border Style="{StaticResource SettingRow}" AutomationId="工具设置">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
-                                    </Border.GestureRecognizers>
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <Image Source="icon_menu.svg" WidthRequest="24" HeightRequest="24" />
-                                        <Label Grid.Column="1" Text="工具设置" FontSize="16" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="›" FontSize="22" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
-                                    </Grid>
-                                </Border>
-                                <Border Style="{StaticResource SettingRow}" AutomationId="辅助线与图形">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
-                                    </Border.GestureRecognizers>
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <Image Source="icon_layers_selected.svg" WidthRequest="24" HeightRequest="24" />
-                                        <Label Grid.Column="1" Text="辅助线与图形" FontSize="16" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="›" FontSize="22" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
-                                    </Grid>
-                                </Border>
-                            </VerticalStackLayout>
-                        </Border>
+                            <Border Style="{StaticResource PanelCard}" Padding="0">
+                                <VerticalStackLayout Spacing="0">
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnOpenPageSettingsTapped" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                            <Image Source="icon_file.svg" WidthRequest="24" HeightRequest="24" />
+                                            <Label Grid.Column="1" Text="页面设置" FontSize="16" VerticalOptions="Center" />
+                                            <Label x:Name="PageSettingsSummaryLabel"
+                                                   Grid.Column="2"
+                                                   Text="连续滚动"
+                                                   FontSize="15"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                            <Label Grid.Column="3"
+                                                   Text="›"
+                                                   FontSize="22"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnOpenDisplaySettingsTapped" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                            <Image Source="icon_eye.svg" WidthRequest="24" HeightRequest="24" />
+                                            <Label Grid.Column="1" Text="显示" FontSize="16" VerticalOptions="Center" />
+                                            <Label x:Name="DisplaySettingsSummaryLabel"
+                                                   Grid.Column="2"
+                                                   Text="跟随系统"
+                                                   FontSize="15"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                            <Label Grid.Column="3"
+                                                   Text="›"
+                                                   FontSize="22"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnOpenLanguageSettingsTapped" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                            <Image Source="icon_search.svg" WidthRequest="24" HeightRequest="24" />
+                                            <Label Grid.Column="1" Text="语言与日期" FontSize="16" VerticalOptions="Center" />
+                                            <Label x:Name="LanguageSettingsSummaryLabel"
+                                                   Grid.Column="2"
+                                                   Text="简体中文"
+                                                   FontSize="15"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                            <Label Grid.Column="3"
+                                                   Text="›"
+                                                   FontSize="22"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                        </Grid>
+                                    </Border>
+                                </VerticalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
 
-                        <Label Text="同步/备份"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="15"
-                               TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                        <VerticalStackLayout x:Name="PageSettingsView" IsVisible="False" Spacing="12">
+                            <Border Style="{StaticResource PanelCard}" Padding="0">
+                                <VerticalStackLayout Spacing="0">
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                            <Label Text="翻页方向" FontSize="16" VerticalOptions="Center" />
+                                            <Button x:Name="PageDirectionVerticalButton"
+                                                    Grid.Column="1"
+                                                    Text="竖向"
+                                                    FontSize="13"
+                                                    CornerRadius="8"
+                                                    Padding="10,6"
+                                                    Clicked="OnPageDirectionVerticalClicked" />
+                                            <Button x:Name="PageDirectionHorizontalButton"
+                                                    Grid.Column="2"
+                                                    Text="横向"
+                                                    FontSize="13"
+                                                    CornerRadius="8"
+                                                    Padding="10,6"
+                                                    Clicked="OnPageDirectionHorizontalClicked" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnPageModeTapped" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                            <Label Text="翻页方式" FontSize="16" VerticalOptions="Center" />
+                                            <Label x:Name="PageModeValueLabel"
+                                                   Grid.Column="1"
+                                                   FontSize="16"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                            <Label Grid.Column="2"
+                                                   Text="›"
+                                                   FontSize="22"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnFitModeTapped" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                            <Label Text="加页方式" FontSize="16" VerticalOptions="Center" />
+                                            <Label x:Name="FitModeValueLabel"
+                                                   Grid.Column="1"
+                                                   FontSize="16"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                            <Label Grid.Column="2"
+                                                   Text="›"
+                                                   FontSize="22"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnPageNumberPositionTapped" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                            <Label Text="页码位置" FontSize="16" VerticalOptions="Center" />
+                                            <Label x:Name="PageNumberPositionValueLabel"
+                                                   Grid.Column="1"
+                                                   FontSize="16"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                            <Label Grid.Column="2"
+                                                   Text="›"
+                                                   FontSize="22"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnTextSelectionTapped" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                            <Label Text="文字选取与编辑" FontSize="16" VerticalOptions="Center" />
+                                            <Label x:Name="TextSelectionValueLabel"
+                                                   Grid.Column="1"
+                                                   FontSize="16"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                            <Label Grid.Column="2"
+                                                   Text="›"
+                                                   FontSize="22"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                        </Grid>
+                                    </Border>
+                                </VerticalStackLayout>
+                            </Border>
 
-                        <Border Style="{StaticResource PanelCard}" Padding="0">
-                            <VerticalStackLayout Spacing="0">
-                                <Border Style="{StaticResource SettingRow}" AutomationId="云同步">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
-                                    </Border.GestureRecognizers>
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-                                        <Image Source="icon_folder.svg" WidthRequest="24" HeightRequest="24" />
-                                        <Label Grid.Column="1" Text="云同步" FontSize="16" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="未开启" VerticalOptions="Center" FontSize="16" TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
-                                        <Label Grid.Column="3" Text="›" FontSize="22" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                            <Border Style="{StaticResource PanelCard}" Padding="20,16">
+                                <VerticalStackLayout Spacing="16">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                        <Label Text="页面自由移动"
+                                               FontFamily="OpenSansSemibold"
+                                               FontSize="18"
+                                               VerticalOptions="Center" />
+                                        <Switch x:Name="PageFreeMoveSwitch"
+                                                Grid.Column="1"
+                                                VerticalOptions="Center"
+                                                Toggled="OnPageFreeMoveToggled" />
                                     </Grid>
-                                </Border>
-                                <Border Style="{StaticResource SettingRow}" AutomationId="网盘备份">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
-                                    </Border.GestureRecognizers>
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-                                        <Image Source="icon_folder.svg" WidthRequest="24" HeightRequest="24" />
-                                        <Label Grid.Column="1" Text="网盘备份" FontSize="16" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="未开启" VerticalOptions="Center" FontSize="16" TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
-                                        <Label Grid.Column="3" Text="›" FontSize="22" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
-                                    </Grid>
-                                </Border>
-                                <Border Style="{StaticResource SettingRow}" AutomationId="本地备份">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
-                                    </Border.GestureRecognizers>
+                                    <Label Text="开启后，在双指滑动结束时继续惯性滚动，可通过阻力控制滑动衰减。"
+                                           FontSize="13"
+                                           TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <Image Source="icon_home.svg" WidthRequest="24" HeightRequest="24" />
-                                        <Label Grid.Column="1" Text="本地备份" FontSize="16" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="›" FontSize="22" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                        <Label Text="阻力" FontSize="16" VerticalOptions="Center" />
+                                        <Slider x:Name="PageMoveResistanceSlider"
+                                                Grid.Column="1"
+                                                Minimum="0"
+                                                Maximum="100"
+                                                ValueChanged="OnPageMoveResistanceChanged" />
+                                        <Label x:Name="PageMoveResistanceValueLabel"
+                                               Grid.Column="2"
+                                               FontSize="16"
+                                               VerticalOptions="Center"
+                                               WidthRequest="56"
+                                               HorizontalTextAlignment="End" />
                                     </Grid>
-                                </Border>
-                            </VerticalStackLayout>
-                        </Border>
+                                </VerticalStackLayout>
+                            </Border>
 
-                        <Label Text="其他"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="15"
-                               TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                            <Border Style="{StaticResource PanelCard}" Padding="20,16">
+                                <VerticalStackLayout Spacing="14">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                        <Label Text="缩放跟随"
+                                               FontFamily="OpenSansSemibold"
+                                               FontSize="18"
+                                               VerticalOptions="Center" />
+                                        <Switch x:Name="ZoomFollowSwitch"
+                                                Grid.Column="1"
+                                                VerticalOptions="Center"
+                                                Toggled="OnZoomFollowToggled" />
+                                    </Grid>
+                                    <Label Text="开启后，笔迹粗细会跟随页面缩放变化；关闭后保持屏幕像素粗细。"
+                                           FontSize="13"
+                                           TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
 
-                        <Border Style="{StaticResource PanelCard}" Padding="0">
-                            <VerticalStackLayout Spacing="0">
-                                <Border Style="{StaticResource SettingRow}" AutomationId="显示">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
-                                    </Border.GestureRecognizers>
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <Image Source="icon_eye.svg" WidthRequest="24" HeightRequest="24" />
-                                        <Label Grid.Column="1" Text="显示" FontSize="16" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="›" FontSize="22" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
-                                    </Grid>
-                                </Border>
-                                <Border Style="{StaticResource SettingRow}" AutomationId="语言">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
-                                    </Border.GestureRecognizers>
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-                                        <Image Source="icon_search.svg" WidthRequest="24" HeightRequest="24" />
-                                        <Label Grid.Column="1" Text="语言" FontSize="16" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="简体中文" VerticalOptions="Center" FontSize="16" TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
-                                        <Label Grid.Column="3" Text="›" FontSize="22" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
-                                    </Grid>
-                                </Border>
-                                <Border Style="{StaticResource SettingRow}" AutomationId="手势设置">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
-                                    </Border.GestureRecognizers>
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <Image Source="icon_arrow_forward_up.svg" WidthRequest="24" HeightRequest="24" />
-                                        <Label Grid.Column="1" Text="手势设置" FontSize="16" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="›" FontSize="22" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
-                                    </Grid>
-                                </Border>
-                                <Border Style="{StaticResource SettingRow}" AutomationId="手写笔设置">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnSettingsQuickItemTapped" />
-                                    </Border.GestureRecognizers>
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <Image Source="icon_pencil.svg" WidthRequest="24" HeightRequest="24" />
-                                        <Label Grid.Column="1" Text="手写笔设置" FontSize="16" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="›" FontSize="22" VerticalOptions="Center" TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
-                                    </Grid>
-                                </Border>
-                            </VerticalStackLayout>
-                        </Border>
+                        <VerticalStackLayout x:Name="DisplaySettingsView" IsVisible="False" Spacing="12">
+                            <Border Style="{StaticResource PanelCard}" Padding="0">
+                                <VerticalStackLayout Spacing="0">
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+                                            <Label Text="显示模式" FontSize="16" VerticalOptions="Center" />
+                                            <Button x:Name="ThemeLightButton"
+                                                    Grid.Column="1"
+                                                    Text="浅色"
+                                                    FontSize="13"
+                                                    CornerRadius="8"
+                                                    Padding="10,6"
+                                                    Clicked="OnThemeLightClicked" />
+                                            <Button x:Name="ThemeDarkButton"
+                                                    Grid.Column="2"
+                                                    Text="深色"
+                                                    FontSize="13"
+                                                    CornerRadius="8"
+                                                    Padding="10,6"
+                                                    Clicked="OnThemeDarkClicked" />
+                                            <Button x:Name="ThemeSystemButton"
+                                                    Grid.Column="3"
+                                                    Text="跟随"
+                                                    FontSize="13"
+                                                    CornerRadius="8"
+                                                    Padding="10,6"
+                                                    Clicked="OnThemeSystemClicked" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnDateFormatTapped" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                            <Label Text="日期格式" FontSize="16" VerticalOptions="Center" />
+                                            <Label x:Name="DateFormatValueLabel"
+                                                   Grid.Column="1"
+                                                   FontSize="16"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                            <Label Grid.Column="2"
+                                                   Text="›"
+                                                   FontSize="22"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#939DAC, Dark=#9FB0C9}" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                            <Label Text="保持屏幕常亮" FontSize="16" VerticalOptions="Center" />
+                                            <Switch x:Name="KeepScreenOnSwitch"
+                                                    Grid.Column="1"
+                                                    VerticalOptions="Center"
+                                                    Toggled="OnKeepScreenOnToggled" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                            <Label Text="暗黑模式颜色反转" FontSize="16" VerticalOptions="Center" />
+                                            <Switch x:Name="DarkModeInvertSwitch"
+                                                    Grid.Column="1"
+                                                    VerticalOptions="Center"
+                                                    Toggled="OnDarkInvertToggled" />
+                                        </Grid>
+                                    </Border>
+                                </VerticalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
 
-                        <Button Text="还原初始设置"
+                        <VerticalStackLayout x:Name="LanguageSettingsView" IsVisible="False" Spacing="12">
+                            <Border Style="{StaticResource PanelCard}" Padding="0">
+                                <VerticalStackLayout Spacing="0">
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                            <Label Text="语言" FontSize="16" VerticalOptions="Center" />
+                                            <Button x:Name="LanguageChineseButton"
+                                                    Grid.Column="1"
+                                                    Text="简体中文"
+                                                    FontSize="13"
+                                                    CornerRadius="8"
+                                                    Padding="10,6"
+                                                    Clicked="OnLanguageChineseClicked" />
+                                            <Button x:Name="LanguageEnglishButton"
+                                                    Grid.Column="2"
+                                                    Text="English"
+                                                    FontSize="13"
+                                                    CornerRadius="8"
+                                                    Padding="10,6"
+                                                    Clicked="OnLanguageEnglishClicked" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Style="{StaticResource SettingRow}">
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                            <Label Text="日期格式" FontSize="16" VerticalOptions="Center" />
+                                            <Label x:Name="LanguageDateFormatValueLabel"
+                                                   Grid.Column="1"
+                                                   FontSize="16"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                            <Label Grid.Column="2"
+                                                   Text="在显示页设置"
+                                                   FontSize="14"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=#9AA3B2, Dark=#9FB0C9}" />
+                                        </Grid>
+                                    </Border>
+                                </VerticalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Button x:Name="ResetSettingsButton"
+                                Text="还原初始设置"
                                 FontFamily="OpenSansSemibold"
                                 FontSize="16"
                                 HeightRequest="52"

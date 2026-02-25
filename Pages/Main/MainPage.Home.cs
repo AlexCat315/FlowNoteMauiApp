@@ -36,6 +36,11 @@ public partial class MainPage
     {
         SettingsOverlay.IsVisible = visible;
         SettingsPanel.IsVisible = visible;
+        if (visible)
+        {
+            SetSettingsSection(SettingsSection.Home);
+            RefreshSettingsUiState();
+        }
     }
 
     private void RefreshHomeFeed()
@@ -315,15 +320,24 @@ public partial class MainPage
 
     private void OnResetSettingsClicked(object? sender, EventArgs e)
     {
-        DisplayModePicker.SelectedIndex = (int)Flow.PDFView.Abstractions.PdfDisplayMode.SinglePageContinuous;
-        OrientationPicker.SelectedIndex = (int)Flow.PDFView.Abstractions.PdfScrollOrientation.Vertical;
-        FitPolicyPicker.SelectedIndex = (int)Flow.PDFView.Abstractions.FitPolicy.Width;
+        ResetAppSettingValuesToDefault();
 
-        ZoomSlider.Value = 1;
-        EnableZoomSwitch.IsToggled = true;
-        EnableSwipeSwitch.IsToggled = true;
-        EnableLinkSwitch.IsToggled = true;
+        DisplayModePicker.SelectedIndex = (int)_savedDisplayMode;
+        OrientationPicker.SelectedIndex = (int)_savedScrollOrientation;
+        FitPolicyPicker.SelectedIndex = (int)_savedFitPolicy;
+
+        ZoomSlider.Value = _savedZoom;
+        EnableZoomSwitch.IsToggled = _savedEnableZoom;
+        EnableSwipeSwitch.IsToggled = _savedEnableSwipe;
+        EnableLinkSwitch.IsToggled = _savedEnableLink;
         ApplyInputMode(DrawingInputMode.PenStylus, activateDrawing: false);
+        if (IsEditorInitialized)
+        {
+            DrawingCanvas.ZoomAffectsStrokeWidth = _zoomFollowEnabled;
+        }
+
+        ApplyGlobalSettings();
+        ApplyDarkModeInversion();
         StrokeWidthSlider.Value = 3;
 
         _homeFilter = HomeFilterType.All;
@@ -333,6 +347,8 @@ public partial class MainPage
         HomeSearchEntry.Text = string.Empty;
 
         RefreshHomeFeed();
+        SavePersistedAppSettings();
+        RefreshSettingsUiState();
         SetSettingsVisible(false);
         ShowStatus("已还原初始设置");
     }

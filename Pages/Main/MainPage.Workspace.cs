@@ -460,7 +460,7 @@ public partial class MainPage
         });
         var dateLabel = new Label
         {
-            Text = DateTime.Now.ToString("yy/MM/dd"),
+            Text = FormatDateForHome(DateTime.Now),
             HorizontalTextAlignment = TextAlignment.End,
             FontSize = 10,
             TextColor = ThemeSecondaryText
@@ -586,7 +586,7 @@ public partial class MainPage
         });
         var dateLabel = new Label
         {
-            Text = note.LastOpenedAtUtc.ToLocalTime().ToString("yy/MM/dd"),
+            Text = FormatDateForHome(note.LastOpenedAtUtc),
             HorizontalTextAlignment = TextAlignment.End,
             FontSize = 10,
             TextColor = ThemeSecondaryText
@@ -636,7 +636,7 @@ public partial class MainPage
         foreach (var note in recent)
         {
             RecentNotesList.Children.Add(CreateWorkspaceButton(
-                $"{note.Name} · {note.LastOpenedAtUtc.ToLocalTime():MM-dd HH:mm}",
+                $"{note.Name} · {FormatDateTimeForRecent(note.LastOpenedAtUtc)}",
                 async () => await OpenWorkspaceNoteAsync(note),
                 note.Id == _currentNoteId));
         }

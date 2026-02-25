@@ -8,6 +8,20 @@ namespace FlowNoteMauiApp.Controls;
 
 public class DrawingCanvas : SKCanvasView
 {
+    private enum TwoFingerGestureIntent
+    {
+        None,
+        Pan,
+        Zoom
+    }
+
+    public enum TwoFingerPanPhase
+    {
+        Begin,
+        Update,
+        End
+    }
+
     public enum TwoFingerSwipeDirection
     {
         PreviousPage,
@@ -26,13 +40,20 @@ public class DrawingCanvas : SKCanvasView
 
     public sealed class TwoFingerPanEventArgs : EventArgs
     {
-        public TwoFingerPanEventArgs(float deltaX, float deltaY, float scaleFactor, float centerX, float centerY)
+        public TwoFingerPanEventArgs(
+            float deltaX,
+            float deltaY,
+            float scaleFactor,
+            float centerX,
+            float centerY,
+            TwoFingerPanPhase phase)
         {
             DeltaX = deltaX;
             DeltaY = deltaY;
             ScaleFactor = scaleFactor;
             CenterX = centerX;
             CenterY = centerY;
+            Phase = phase;
 
             HasPan = Math.Abs(deltaX) > float.Epsilon || Math.Abs(deltaY) > float.Epsilon;
             HasZoom = Math.Abs(scaleFactor - 1f) > float.Epsilon;
@@ -43,6 +64,7 @@ public class DrawingCanvas : SKCanvasView
         public float ScaleFactor { get; }
         public float CenterX { get; }
         public float CenterY { get; }
+        public TwoFingerPanPhase Phase { get; }
         public bool HasPan { get; }
         public bool HasZoom { get; }
     }
@@ -95,6 +117,10 @@ public class DrawingCanvas : SKCanvasView
         BindableProperty.Create(nameof(EnableTwoFingerSwipeNavigation), typeof(bool), typeof(DrawingCanvas),
             defaultValue: true);
 
+    public static readonly BindableProperty ZoomAffectsStrokeWidthProperty =
+        BindableProperty.Create(nameof(ZoomAffectsStrokeWidth), typeof(bool), typeof(DrawingCanvas),
+            defaultValue: true, propertyChanged: OnDrawingPropertyChanged);
+
     private readonly Stack<StrokeHistoryEntry> _undoStack = new();
     private readonly Stack<StrokeHistoryEntry> _redoStack = new();
     private readonly HashSet<long> _activeTouchIds = new();
@@ -106,8 +132,14 @@ public class DrawingCanvas : SKCanvasView
     private SKPoint _twoFingerAnchor;
     private float _twoFingerDistance;
     private const float TwoFingerSwipeThreshold = 120f;
-    private const float TwoFingerPanMinDelta = 0.5f;
+    private const float TwoFingerPanMinDelta = 1.2f;
     private const float TwoFingerScaleMinDelta = 0.01f;
+    private const float TwoFingerScaleMinDistanceDelta = 2f;
+    private const float TwoFingerScaleSwitchDelta = 0.06f;
+    private const float TwoFingerScaleSwitchDistanceDelta = 9f;
+    private const float TwoFingerPanSwitchDelta = 10f;
+    private const float TwoFingerZoomDominanceRatio = 1.25f;
+    private TwoFingerGestureIntent _twoFingerGestureIntent = TwoFingerGestureIntent.None;
 
     public event EventHandler? StrokeCommitted;
     public event EventHandler<TwoFingerSwipeEventArgs>? TwoFingerSwipe;
@@ -197,6 +229,12 @@ public class DrawingCanvas : SKCanvasView
     {
         get => (bool)GetValue(EnableTwoFingerSwipeNavigationProperty);
         set => SetValue(EnableTwoFingerSwipeNavigationProperty, value);
+    }
+
+    public bool ZoomAffectsStrokeWidth
+    {
+        get => (bool)GetValue(ZoomAffectsStrokeWidthProperty);
+        set => SetValue(ZoomAffectsStrokeWidthProperty, value);
     }
 
     public bool CanUndo => _undoStack.Count > 0;
@@ -432,6 +470,7 @@ public class DrawingCanvas : SKCanvasView
             StrokeCap = SKStrokeCap.Round,
             StrokeJoin = SKStrokeJoin.Round
         };
+        var strokeWidthScale = ZoomAffectsStrokeWidth ? 1f : (1f / zoom);
 
         for (var i = 0; i < Layers.Count; i++)
         {
@@ -445,7 +484,7 @@ public class DrawingCanvas : SKCanvasView
                     continue;
 
                 layerPaint.Color = stroke.Color.WithAlpha((byte)(stroke.Color.Alpha * layer.Opacity * stroke.Opacity));
-                layerPaint.StrokeWidth = stroke.StrokeWidth;
+                layerPaint.StrokeWidth = stroke.StrokeWidth * strokeWidthScale;
                 layerPaint.BlendMode = GetBlendMode(stroke);
 
                 var path = stroke.CreatePath();
@@ -455,7 +494,7 @@ public class DrawingCanvas : SKCanvasView
             if (i == CurrentLayerIndex && _currentStroke != null && _currentStroke.Points.Count >= 2)
             {
                 layerPaint.Color = _currentStroke.Color;
-                layerPaint.StrokeWidth = _currentStroke.StrokeWidth;
+                layerPaint.StrokeWidth = _currentStroke.StrokeWidth * strokeWidthScale;
                 layerPaint.BlendMode = GetBlendMode(_currentStroke);
 
                 var path = _currentStroke.CreatePath();
@@ -603,6 +642,17 @@ public class DrawingCanvas : SKCanvasView
                     _isTwoFingerGestureActive = true;
                     _twoFingerAnchor = GetTouchCenter();
                     _twoFingerDistance = GetTwoTouchDistance();
+                    _twoFingerGestureIntent = TwoFingerGestureIntent.None;
+                    if (!EnableTwoFingerSwipeNavigation)
+                    {
+                        TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
+                            0f,
+                            0f,
+                            1f,
+                            _twoFingerAnchor.X,
+                            _twoFingerAnchor.Y,
+                            TwoFingerPanPhase.Begin));
+                    }
                 }
                 break;
             case SKTouchAction.Moved:
@@ -617,8 +667,22 @@ public class DrawingCanvas : SKCanvasView
                 _activeTouchPoints.Remove(e.Id);
                 if (_activeTouchIds.Count < 2)
                 {
+                    if (!EnableTwoFingerSwipeNavigation
+                        && _isTwoFingerGestureActive
+                        && _twoFingerGestureIntent != TwoFingerGestureIntent.None)
+                    {
+                        TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
+                            0f,
+                            0f,
+                            1f,
+                            _twoFingerAnchor.X,
+                            _twoFingerAnchor.Y,
+                            TwoFingerPanPhase.End));
+                    }
+
                     _isTwoFingerGestureActive = false;
                     _twoFingerDistance = 0f;
+                    _twoFingerGestureIntent = TwoFingerGestureIntent.None;
                 }
                 break;
         }
@@ -631,6 +695,7 @@ public class DrawingCanvas : SKCanvasView
         _suspendDrawingUntilTouchesReleased = false;
         _isTwoFingerGestureActive = false;
         _twoFingerDistance = 0f;
+        _twoFingerGestureIntent = TwoFingerGestureIntent.None;
         CancelCurrentStroke();
     }
 
@@ -681,38 +746,82 @@ public class DrawingCanvas : SKCanvasView
             _isTwoFingerGestureActive = true;
             _twoFingerAnchor = center;
             _twoFingerDistance = GetTwoTouchDistance();
+            _twoFingerGestureIntent = TwoFingerGestureIntent.None;
             return;
         }
 
+        var previousDistance = _twoFingerDistance;
         var distance = GetTwoTouchDistance();
         var deltaX = center.X - _twoFingerAnchor.X;
         var deltaY = center.Y - _twoFingerAnchor.Y;
-        var scaleFactor = _twoFingerDistance > float.Epsilon && distance > float.Epsilon
-            ? distance / _twoFingerDistance
+        var scaleFactor = previousDistance > float.Epsilon && distance > float.Epsilon
+            ? distance / previousDistance
             : 1f;
+        var panMagnitude = MathF.Sqrt((deltaX * deltaX) + (deltaY * deltaY));
+        var scaleDelta = MathF.Abs(scaleFactor - 1f);
+        var distanceDelta = MathF.Abs(distance - previousDistance);
 
         _twoFingerAnchor = center;
         _twoFingerDistance = distance;
 
         if (!EnableTwoFingerSwipeNavigation)
         {
-            var hasPan = Math.Abs(deltaX) >= TwoFingerPanMinDelta || Math.Abs(deltaY) >= TwoFingerPanMinDelta;
-            var hasZoom = Math.Abs(scaleFactor - 1f) >= TwoFingerScaleMinDelta;
-            if (!hasPan && !hasZoom)
+            var panCandidate = panMagnitude >= TwoFingerPanMinDelta;
+            var zoomCandidate = scaleDelta >= TwoFingerScaleMinDelta && distanceDelta >= TwoFingerScaleMinDistanceDelta;
+
+            if (_twoFingerGestureIntent == TwoFingerGestureIntent.None)
+            {
+                if (!panCandidate && !zoomCandidate)
+                    return;
+
+                _twoFingerGestureIntent = zoomCandidate
+                    && (!panCandidate || distanceDelta >= panMagnitude * TwoFingerZoomDominanceRatio)
+                    ? TwoFingerGestureIntent.Zoom
+                    : TwoFingerGestureIntent.Pan;
+            }
+            else if (_twoFingerGestureIntent == TwoFingerGestureIntent.Pan)
+            {
+                var zoomSwitch = scaleDelta >= TwoFingerScaleSwitchDelta
+                    && distanceDelta >= TwoFingerScaleSwitchDistanceDelta
+                    && distanceDelta >= panMagnitude * TwoFingerZoomDominanceRatio;
+                if (zoomSwitch)
+                {
+                    _twoFingerGestureIntent = TwoFingerGestureIntent.Zoom;
+                }
+            }
+            else
+            {
+                var panSwitch = panMagnitude >= TwoFingerPanSwitchDelta
+                    && panMagnitude >= distanceDelta * TwoFingerZoomDominanceRatio;
+                if (panSwitch)
+                {
+                    _twoFingerGestureIntent = TwoFingerGestureIntent.Pan;
+                }
+            }
+
+            var emitPan = _twoFingerGestureIntent == TwoFingerGestureIntent.Pan && panCandidate;
+            var emitZoom = _twoFingerGestureIntent == TwoFingerGestureIntent.Zoom && zoomCandidate;
+            if (!emitPan && !emitZoom)
                 return;
 
-            if (!hasPan)
+            if (!emitPan)
             {
                 deltaX = 0f;
                 deltaY = 0f;
             }
 
-            if (!hasZoom)
+            if (!emitZoom)
             {
                 scaleFactor = 1f;
             }
 
-            TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(deltaX, deltaY, scaleFactor, center.X, center.Y));
+            TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
+                deltaX,
+                deltaY,
+                scaleFactor,
+                center.X,
+                center.Y,
+                TwoFingerPanPhase.Update));
             return;
         }
 

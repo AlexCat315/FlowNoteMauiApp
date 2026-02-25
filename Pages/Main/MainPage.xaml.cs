@@ -37,10 +37,17 @@ public partial class MainPage : ContentPage
         _workspaceService = services?.GetService<IWorkspaceService>() ?? new WorkspaceService();
         _drawingPersistenceService = services?.GetService<IDrawingPersistenceService>() ?? new DrawingPersistenceService();
 
+        LoadPersistedAppSettings();
+        ApplyGlobalSettings();
         InitializeControls();
+        RefreshSettingsUiState();
         UpdateLocalizedStrings();
         Loaded += OnPageLoaded;
         LanguageManager.LanguageChanged += OnLanguageChanged;
+        if (Application.Current != null)
+        {
+            Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+        }
     }
 
     private bool IsEditorInitialized => _pdfViewer is not null && _drawingCanvas is not null;
@@ -84,7 +91,8 @@ public partial class MainPage : ContentPage
             IsVisible = false,
             InputTransparent = false,
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill
+            VerticalOptions = LayoutOptions.Fill,
+            ZoomAffectsStrokeWidth = _zoomFollowEnabled
         };
 
         _drawingCanvas.Layers.CollectionChanged += (_, _) => RefreshLayerList();
@@ -97,6 +105,7 @@ public partial class MainPage : ContentPage
 
         ApplyViewerSettingsFromUi();
         UpdateTwoFingerNavigationPolicy();
+        ApplyDarkModeInversion();
         _drawingCanvas.ViewportZoom = _pdfViewer.Zoom <= 0f ? 1f : _pdfViewer.Zoom;
         ApplyInputMode(_drawingInputMode, activateDrawing: false);
         RefreshLayerList();
@@ -141,6 +150,8 @@ public partial class MainPage : ContentPage
     private void OnLanguageChanged()
     {
         UpdateLocalizedStrings();
+        RefreshSettingsUiState();
+        RefreshHomeFeed();
     }
 
     private bool IsDarkTheme => Application.Current?.RequestedTheme == AppTheme.Dark;
@@ -187,15 +198,17 @@ public partial class MainPage : ContentPage
         foreach (var item in Enum.GetNames<FitPolicy>())
             FitPolicyPicker.Items.Add(item);
 
-        DisplayModePicker.SelectedIndex = (int)PdfDisplayMode.SinglePageContinuous;
-        OrientationPicker.SelectedIndex = (int)PdfScrollOrientation.Vertical;
-        FitPolicyPicker.SelectedIndex = (int)FitPolicy.Width;
+        DisplayModePicker.SelectedIndex = (int)_savedDisplayMode;
+        OrientationPicker.SelectedIndex = (int)_savedScrollOrientation;
+        FitPolicyPicker.SelectedIndex = (int)_savedFitPolicy;
         ZoomSlider.Minimum = EditorMinZoom;
         ZoomSlider.Maximum = EditorMaxZoom;
-        ZoomSlider.Value = 1f;
-        ZoomValueLabel.Text = "1.00x";
+        ZoomSlider.Value = Math.Clamp(_savedZoom, EditorMinZoom, EditorMaxZoom);
+        ZoomValueLabel.Text = $"{ZoomSlider.Value:0.00}x";
 
-        EnableLinkSwitch.IsToggled = true;
+        EnableZoomSwitch.IsToggled = _savedEnableZoom;
+        EnableSwipeSwitch.IsToggled = _savedEnableSwipe;
+        EnableLinkSwitch.IsToggled = _savedEnableLink;
         ApplyViewerSettingsFromUi();
         
         UpdatePageIndicators();
@@ -233,6 +246,7 @@ public partial class MainPage : ContentPage
     protected override async void OnDisappearing()
     {
         base.OnDisappearing();
+        StopTwoFingerInertia();
         await SaveCurrentDrawingStateAsync();
     }
 }
