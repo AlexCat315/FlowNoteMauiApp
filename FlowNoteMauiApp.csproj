@@ -71,7 +71,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\FlowPDFView\Flow.PDFView.csproj" />
+		<ProjectReference Include="..\pdfview\FlowPDFView\FlowPDFView\Flow.PDFView.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

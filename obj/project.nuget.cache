@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "uBLdXVKsreA=",
+  "dgSpecHash": "yTT/YKBM8+E=",
   "success": true,
-  "projectFilePath": "/Users/alexcat/dev/FlowNoteMauiApp/ExampleMauiApp.csproj",
+  "projectFilePath": "/Users/alexcat/dev/FlowNoteMauiApp/FlowNoteMauiApp.csproj",
   "expectedPackageFiles": [
     "/Users/alexcat/.nuget/packages/googlegson/2.13.1.1/googlegson.2.13.1.1.nupkg.sha512",
     "/Users/alexcat/.nuget/packages/microsoft.extensions.configuration/10.0.0/microsoft.extensions.configuration.10.0.0.nupkg.sha512",
@@ -19,6 +19,7 @@
     "/Users/alexcat/.nuget/packages/microsoft.extensions.primitives/10.0.0/microsoft.extensions.primitives.10.0.0.nupkg.sha512",
     "/Users/alexcat/.nuget/packages/microsoft.maui.controls/10.0.20/microsoft.maui.controls.10.0.20.nupkg.sha512",
     "/Users/alexcat/.nuget/packages/microsoft.maui.controls.build.tasks/10.0.20/microsoft.maui.controls.build.tasks.10.0.20.nupkg.sha512",
+    "/Users/alexcat/.nuget/packages/microsoft.maui.controls.compatibility/10.0.0/microsoft.maui.controls.compatibility.10.0.0.nupkg.sha512",
     "/Users/alexcat/.nuget/packages/microsoft.maui.controls.core/10.0.20/microsoft.maui.controls.core.10.0.20.nupkg.sha512",
     "/Users/alexcat/.nuget/packages/microsoft.maui.controls.xaml/10.0.20/microsoft.maui.controls.xaml.10.0.20.nupkg.sha512",
     "/Users/alexcat/.nuget/packages/microsoft.maui.core/10.0.20/microsoft.maui.core.10.0.20.nupkg.sha512",

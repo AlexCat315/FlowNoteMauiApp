@@ -271,6 +271,25 @@
           "buildTransitive/netstandard2.0/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".aar;.pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".aar;.pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -2483,6 +2502,59 @@
           "lib/net10.0-android36.0/Xamarin.KotlinX.Serialization.Core.Jvm.dll": {
             "related": ".aar;.pdb;.xml"
           }
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Android.Binding": "1.0.2",
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Android.Binding/1.0.2": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Xamarin.Kotlin.StdLib": "2.1.21"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Android.Binding.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Android.Binding.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -2756,6 +2828,25 @@
           "buildTransitive/netstandard2.0/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".aar;.pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".aar;.pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -4968,6 +5059,59 @@
           "lib/net10.0-android36.0/Xamarin.KotlinX.Serialization.Core.Jvm.dll": {
             "related": ".aar;.pdb;.xml"
           }
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Android.Binding": "1.0.2",
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Android.Binding/1.0.2": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Xamarin.Kotlin.StdLib": "2.1.21"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Android.Binding.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Android.Binding.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -5241,6 +5385,25 @@
           "buildTransitive/netstandard2.0/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".aar;.pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".aar;.pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -7453,6 +7616,59 @@
           "lib/net10.0-android36.0/Xamarin.KotlinX.Serialization.Core.Jvm.dll": {
             "related": ".aar;.pdb;.xml"
           }
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Android.Binding": "1.0.2",
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Android.Binding/1.0.2": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Xamarin.Kotlin.StdLib": "2.1.21"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Android.Binding.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Android.Binding.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -7726,6 +7942,25 @@
           "buildTransitive/netstandard2.0/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".aar;.pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".aar;.pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -9938,6 +10173,59 @@
           "lib/net10.0-android36.0/Xamarin.KotlinX.Serialization.Core.Jvm.dll": {
             "related": ".aar;.pdb;.xml"
           }
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Android.Binding": "1.0.2",
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Android.Binding/1.0.2": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Xamarin.Kotlin.StdLib": "2.1.21"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Android.Binding.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Android.Binding.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -10211,6 +10499,25 @@
           "buildTransitive/netstandard2.0/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".aar;.pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".aar;.pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -12424,6 +12731,59 @@
             "related": ".aar;.pdb;.xml"
           }
         }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Android.Binding": "1.0.2",
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Android.Binding/1.0.2": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Xamarin.Kotlin.StdLib": "2.1.21"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Android.Binding.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Android.Binding.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        }
       }
     },
     "net10.0-ios26.2": {
@@ -12680,6 +13040,25 @@
           "buildTransitive/net6.0-ios10.0/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -12888,6 +13267,45 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -13145,6 +13563,25 @@
           "buildTransitive/net6.0-ios10.0/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -13353,6 +13790,45 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -13610,6 +14086,25 @@
           "buildTransitive/net6.0-ios10.0/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -13818,6 +14313,45 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -14075,6 +14609,25 @@
           "buildTransitive/net6.0-ios10.0/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -14283,6 +14836,45 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -14540,6 +15132,25 @@
           "buildTransitive/net6.0-ios10.0/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -14748,6 +15359,45 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -15005,6 +15655,25 @@
           "buildTransitive/net6.0-maccatalyst13.1/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -15213,6 +15882,45 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -15470,6 +16178,25 @@
           "buildTransitive/net6.0-maccatalyst13.1/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -15678,6 +16405,45 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -15935,6 +16701,25 @@
           "buildTransitive/net6.0-maccatalyst13.1/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -16143,6 +16928,45 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -16400,6 +17224,25 @@
           "buildTransitive/net6.0-maccatalyst13.1/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -16608,6 +17451,45 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     },
@@ -16865,6 +17747,25 @@
           "buildTransitive/net6.0-maccatalyst13.1/Microsoft.Maui.Controls.Build.Tasks.targets": {}
         }
       },
+      "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Microsoft.Maui.Controls.Core/10.0.20": {
         "type": "package",
         "dependencies": {
@@ -17073,6 +17974,45 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Flow.PDFView/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Controls": "1.0.0",
+          "Flow.PDFView.Core": "1.0.0",
+          "Microsoft.Maui.Controls": "10.0.0",
+          "Microsoft.Maui.Controls.Compatibility": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.dll": {}
+        }
+      },
+      "Flow.PDFView.Controls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Flow.PDFView.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Controls.dll": {}
+        }
+      },
+      "Flow.PDFView.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Flow.PDFView.Core.dll": {}
         }
       }
     }
@@ -17618,6 +18558,48 @@
         "buildTransitive/netstandard2.0/zh-Hant/Microsoft.Maui.Controls.Build.Tasks.resources.dll",
         "microsoft.maui.controls.build.tasks.10.0.20.nupkg.sha512",
         "microsoft.maui.controls.build.tasks.nuspec"
+      ]
+    },
+    "Microsoft.Maui.Controls.Compatibility/10.0.0": {
+      "sha512": "iqBCyhsw7cb0vyTcJC3XU3EuqARdke/dcFJ9ZtXnRShU84qzBaffQDuO1u5qxLTE/EjqlV1GJKA8ZGt1Pp+iGQ==",
+      "type": "package",
+      "path": "microsoft.maui.controls.compatibility/10.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "README.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.aar",
+        "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.dll",
+        "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.pdb",
+        "lib/net10.0-android36.0/Microsoft.Maui.Controls.Compatibility.xml",
+        "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.dll",
+        "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.pdb",
+        "lib/net10.0-ios26.0/Microsoft.Maui.Controls.Compatibility.xml",
+        "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.dll",
+        "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.pdb",
+        "lib/net10.0-maccatalyst26.0/Microsoft.Maui.Controls.Compatibility.xml",
+        "lib/net10.0-windows10.0.19041/Microsoft.Maui.Controls.Compatibility.dll",
+        "lib/net10.0-windows10.0.19041/Microsoft.Maui.Controls.Compatibility.pdb",
+        "lib/net10.0-windows10.0.19041/Microsoft.Maui.Controls.Compatibility.pri",
+        "lib/net10.0-windows10.0.19041/Microsoft.Maui.Controls.Compatibility.xml",
+        "lib/net10.0-windows10.0.20348/Microsoft.Maui.Controls.Compatibility.dll",
+        "lib/net10.0-windows10.0.20348/Microsoft.Maui.Controls.Compatibility.pdb",
+        "lib/net10.0-windows10.0.20348/Microsoft.Maui.Controls.Compatibility.pri",
+        "lib/net10.0-windows10.0.20348/Microsoft.Maui.Controls.Compatibility.xml",
+        "lib/net10.0/Microsoft.Maui.Controls.Compatibility.dll",
+        "lib/net10.0/Microsoft.Maui.Controls.Compatibility.pdb",
+        "lib/net10.0/Microsoft.Maui.Controls.Compatibility.xml",
+        "lib/netstandard2.0/Microsoft.Maui.Controls.Compatibility.dll",
+        "lib/netstandard2.0/Microsoft.Maui.Controls.Compatibility.pdb",
+        "lib/netstandard2.0/Microsoft.Maui.Controls.Compatibility.xml",
+        "lib/netstandard2.1/Microsoft.Maui.Controls.Compatibility.dll",
+        "lib/netstandard2.1/Microsoft.Maui.Controls.Compatibility.pdb",
+        "lib/netstandard2.1/Microsoft.Maui.Controls.Compatibility.xml",
+        "microsoft.maui.controls.compatibility.10.0.0.nupkg.sha512",
+        "microsoft.maui.controls.compatibility.nuspec"
       ]
     },
     "Microsoft.Maui.Controls.Core/10.0.20": {
@@ -20723,20 +21705,43 @@
         "xamarin.kotlinx.serialization.core.jvm.1.9.0.1.nupkg.sha512",
         "xamarin.kotlinx.serialization.core.jvm.nuspec"
       ]
+    },
+    "Flow.PDFView/1.0.0": {
+      "type": "project",
+      "path": "../pdfview/FlowPDFView/FlowPDFView/Flow.PDFView.csproj",
+      "msbuildProject": "../pdfview/FlowPDFView/FlowPDFView/Flow.PDFView.csproj"
+    },
+    "Flow.PDFView.Android.Binding/1.0.2": {
+      "type": "project",
+      "path": "../pdfview/FlowPDFView/FlowPDFView.Android.Binding/Flow.PDFView.Android.Binding.csproj",
+      "msbuildProject": "../pdfview/FlowPDFView/FlowPDFView.Android.Binding/Flow.PDFView.Android.Binding.csproj"
+    },
+    "Flow.PDFView.Controls/1.0.0": {
+      "type": "project",
+      "path": "../pdfview/FlowPDFView/Flow.PDFView.Controls/Flow.PDFView.Controls.csproj",
+      "msbuildProject": "../pdfview/FlowPDFView/Flow.PDFView.Controls/Flow.PDFView.Controls.csproj"
+    },
+    "Flow.PDFView.Core/1.0.0": {
+      "type": "project",
+      "path": "../pdfview/FlowPDFView/Flow.PDFView.Core/Flow.PDFView.Core.csproj",
+      "msbuildProject": "../pdfview/FlowPDFView/Flow.PDFView.Core/Flow.PDFView.Core.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0-android36.0": [
+      "Flow.PDFView >= 1.0.0",
       "Microsoft.Extensions.Logging.Debug >= 10.0.0",
       "Microsoft.Maui.Controls >= 10.0.20",
       "Microsoft.NET.ILLink.Tasks >= 10.0.3"
     ],
     "net10.0-ios26.2": [
+      "Flow.PDFView >= 1.0.0",
       "Microsoft.Extensions.Logging.Debug >= 10.0.0",
       "Microsoft.Maui.Controls >= 10.0.20",
       "Microsoft.NET.ILLink.Tasks >= 10.0.3"
     ],
     "net10.0-maccatalyst26.2": [
+      "Flow.PDFView >= 1.0.0",
       "Microsoft.Extensions.Logging.Debug >= 10.0.0",
       "Microsoft.Maui.Controls >= 10.0.20",
       "Microsoft.NET.ILLink.Tasks >= 10.0.3"
@@ -20748,9 +21753,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/alexcat/dev/FlowNoteMauiApp/ExampleMauiApp.csproj",
-      "projectName": "ExampleMauiApp",
-      "projectPath": "/Users/alexcat/dev/FlowNoteMauiApp/ExampleMauiApp.csproj",
+      "projectUniqueName": "/Users/alexcat/dev/FlowNoteMauiApp/FlowNoteMauiApp.csproj",
+      "projectName": "FlowNoteMauiApp",
+      "projectPath": "/Users/alexcat/dev/FlowNoteMauiApp/FlowNoteMauiApp.csproj",
       "packagesPath": "/Users/alexcat/.nuget/packages/",
       "outputPath": "/Users/alexcat/dev/FlowNoteMauiApp/obj/",
       "projectStyle": "PackageReference",
@@ -20770,15 +21775,27 @@
       "frameworks": {
         "net10.0-android36.0": {
           "targetAlias": "net10.0-android",
-          "projectReferences": {}
+          "projectReferences": {
+            "/Users/alexcat/dev/pdfview/FlowPDFView/FlowPDFView/Flow.PDFView.csproj": {
+              "projectPath": "/Users/alexcat/dev/pdfview/FlowPDFView/FlowPDFView/Flow.PDFView.csproj"
+            }
+          }
         },
         "net10.0-ios26.2": {
           "targetAlias": "net10.0-ios",
-          "projectReferences": {}
+          "projectReferences": {
+            "/Users/alexcat/dev/pdfview/FlowPDFView/FlowPDFView/Flow.PDFView.csproj": {
+              "projectPath": "/Users/alexcat/dev/pdfview/FlowPDFView/FlowPDFView/Flow.PDFView.csproj"
+            }
+          }
         },
         "net10.0-maccatalyst26.2": {
           "targetAlias": "net10.0-maccatalyst",
-          "projectReferences": {}
+          "projectReferences": {
+            "/Users/alexcat/dev/pdfview/FlowPDFView/FlowPDFView/Flow.PDFView.csproj": {
+              "projectPath": "/Users/alexcat/dev/pdfview/FlowPDFView/FlowPDFView/Flow.PDFView.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
