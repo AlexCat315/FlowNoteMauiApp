@@ -3,7 +3,6 @@ using FlowNoteMauiApp.Models;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
-using Microsoft.Maui.Controls;
 
 namespace FlowNoteMauiApp.Controls;
 
@@ -41,6 +40,10 @@ public class DrawingCanvas : SKCanvasView
         BindableProperty.Create(nameof(ScrollY), typeof(double), typeof(DrawingCanvas),
             defaultValue: 0.0, propertyChanged: OnScrollChanged);
 
+    public static readonly BindableProperty ViewportZoomProperty =
+        BindableProperty.Create(nameof(ViewportZoom), typeof(float), typeof(DrawingCanvas),
+            defaultValue: 1f, propertyChanged: OnScrollChanged);
+
     public static readonly BindableProperty IsPenModeProperty =
         BindableProperty.Create(nameof(IsPenMode), typeof(bool), typeof(DrawingCanvas),
             defaultValue: true, propertyChanged: OnPenModeChanged);
@@ -48,6 +51,27 @@ public class DrawingCanvas : SKCanvasView
     public static readonly BindableProperty EnableDrawingProperty =
         BindableProperty.Create(nameof(EnableDrawing), typeof(bool), typeof(DrawingCanvas),
             defaultValue: false, propertyChanged: OnEnableDrawingChanged);
+
+    private readonly Stack<StrokeHistoryEntry> _undoStack = new();
+    private readonly Stack<StrokeHistoryEntry> _redoStack = new();
+    private DrawingStroke? _currentStroke;
+    private bool _isDrawing;
+
+    public event EventHandler? StrokeCommitted;
+
+    private readonly record struct StrokeHistoryEntry(int LayerIndex, DrawingStroke Stroke);
+
+    public DrawingCanvas()
+    {
+        Layers = new ObservableCollection<DrawingLayer>
+        {
+            new() { Name = "Layer 1" }
+        };
+
+        IgnorePixelScaling = false;
+        EnableTouchEvents = true;
+        Touch += OnCanvasTouch;
+    }
 
     public ObservableCollection<DrawingLayer> Layers
     {
@@ -97,6 +121,12 @@ public class DrawingCanvas : SKCanvasView
         set => SetValue(ScrollYProperty, value);
     }
 
+    public float ViewportZoom
+    {
+        get => (float)GetValue(ViewportZoomProperty);
+        set => SetValue(ViewportZoomProperty, value);
+    }
+
     public bool IsPenMode
     {
         get => (bool)GetValue(IsPenModeProperty);
@@ -109,21 +139,269 @@ public class DrawingCanvas : SKCanvasView
         set => SetValue(EnableDrawingProperty, value);
     }
 
-    private DrawingStroke? _currentStroke;
-    private bool _isDrawing;
-    private bool _isStylus;
-    private bool _isTwoFingerMode;
+    public bool CanUndo => _undoStack.Count > 0;
+    public bool CanRedo => _redoStack.Count > 0;
 
-    public DrawingCanvas()
+    public void AddLayer(string name = "Layer")
     {
-        Layers = new ObservableCollection<DrawingLayer>
+        var newLayer = new DrawingLayer
         {
-            new DrawingLayer { Name = "Layer 1" }
+            Name = $"{name} {Layers.Count + 1}"
         };
-        IgnorePixelScaling = false;
-        EnableTouchEvents = true;
-        
-        Touch += OnCanvasTouch;
+        Layers.Add(newLayer);
+        CurrentLayerIndex = Layers.Count - 1;
+        InvalidateSurface();
+        StrokeCommitted?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void RemoveLayer(int index)
+    {
+        if (index < 0 || index >= Layers.Count)
+            return;
+        if (Layers.Count <= 1)
+            return;
+
+        Layers.RemoveAt(index);
+        CurrentLayerIndex = Math.Clamp(CurrentLayerIndex, 0, Layers.Count - 1);
+        ResetHistory();
+        InvalidateSurface();
+        StrokeCommitted?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void ClearCurrentLayer()
+    {
+        if (Layers.Count == 0 || CurrentLayerIndex < 0 || CurrentLayerIndex >= Layers.Count)
+            return;
+
+        Layers[CurrentLayerIndex].Clear();
+        ResetHistory();
+        InvalidateSurface();
+        StrokeCommitted?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void ClearAllLayers()
+    {
+        foreach (var layer in Layers)
+        {
+            layer.Clear();
+        }
+        ResetHistory();
+        InvalidateSurface();
+        StrokeCommitted?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Undo()
+    {
+        if (_undoStack.Count == 0)
+            return;
+
+        var entry = _undoStack.Pop();
+        if (entry.LayerIndex < 0 || entry.LayerIndex >= Layers.Count)
+            return;
+
+        var layer = Layers[entry.LayerIndex];
+        var removed = false;
+        if (layer.Strokes.Count > 0 && ReferenceEquals(layer.Strokes[^1], entry.Stroke))
+        {
+            layer.Strokes.RemoveAt(layer.Strokes.Count - 1);
+            removed = true;
+        }
+        else
+        {
+            removed = layer.Strokes.Remove(entry.Stroke);
+        }
+
+        if (!removed)
+            return;
+
+        _redoStack.Push(entry);
+        InvalidateSurface();
+        StrokeCommitted?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Redo()
+    {
+        if (_redoStack.Count == 0)
+            return;
+
+        var entry = _redoStack.Pop();
+        if (entry.LayerIndex < 0 || entry.LayerIndex >= Layers.Count)
+            return;
+
+        Layers[entry.LayerIndex].Strokes.Add(entry.Stroke);
+        _undoStack.Push(entry);
+        InvalidateSurface();
+        StrokeCommitted?.Invoke(this, EventArgs.Empty);
+    }
+
+    public DrawingDocumentState ExportState()
+    {
+        var state = new DrawingDocumentState
+        {
+            CurrentLayerIndex = Math.Clamp(CurrentLayerIndex, 0, Math.Max(0, Layers.Count - 1)),
+            Layers = new List<DrawingLayerState>(Layers.Count)
+        };
+
+        foreach (var layer in Layers)
+        {
+            var layerState = new DrawingLayerState
+            {
+                Name = layer.Name,
+                IsVisible = layer.IsVisible,
+                IsLocked = layer.IsLocked,
+                Opacity = layer.Opacity,
+                BackgroundColor = ToArgb(layer.BackgroundColor)
+            };
+
+            foreach (var stroke in layer.Strokes)
+            {
+                var strokeState = new DrawingStrokeState
+                {
+                    Color = ToArgb(stroke.Color),
+                    StrokeWidth = stroke.StrokeWidth,
+                    Opacity = stroke.Opacity,
+                    IsEraser = stroke.IsEraser,
+                    BrushType = stroke.BrushType,
+                    PressureEnabled = stroke.Options.PressureEnabled,
+                    SmoothingEnabled = stroke.Options.SmoothingEnabled,
+                    SmoothingFactor = stroke.Options.SmoothingFactor,
+                    MinPressure = stroke.Options.MinPressure,
+                    MaxPressure = stroke.Options.MaxPressure,
+                    TaperStart = stroke.Options.TaperStart,
+                    TaperEnd = stroke.Options.TaperEnd,
+                    Streamline = stroke.Options.Streamline,
+                    Points = stroke.Points
+                        .Select(p => new DrawingPoint(p.X, p.Y, p.Pressure, p.Timestamp))
+                        .ToList()
+                };
+                layerState.Strokes.Add(strokeState);
+            }
+
+            state.Layers.Add(layerState);
+        }
+
+        return state;
+    }
+
+    public void ImportState(DrawingDocumentState? state)
+    {
+        if (state == null || state.Layers.Count == 0)
+        {
+            Layers = new ObservableCollection<DrawingLayer>
+            {
+                new() { Name = "Layer 1" }
+            };
+            CurrentLayerIndex = 0;
+            ResetHistory();
+            InvalidateSurface();
+            return;
+        }
+
+        var loadedLayers = new ObservableCollection<DrawingLayer>();
+        foreach (var layerState in state.Layers)
+        {
+            var layer = new DrawingLayer
+            {
+                Name = string.IsNullOrWhiteSpace(layerState.Name) ? "Layer" : layerState.Name,
+                IsVisible = layerState.IsVisible,
+                IsLocked = layerState.IsLocked,
+                Opacity = layerState.Opacity,
+                BackgroundColor = FromArgb(layerState.BackgroundColor)
+            };
+
+            foreach (var strokeState in layerState.Strokes)
+            {
+                var stroke = new DrawingStroke
+                {
+                    Color = FromArgb(strokeState.Color),
+                    StrokeWidth = strokeState.StrokeWidth,
+                    Opacity = strokeState.Opacity,
+                    IsEraser = strokeState.IsEraser,
+                    BrushType = strokeState.BrushType,
+                    Options = new StrokeOptions
+                    {
+                        PressureEnabled = strokeState.PressureEnabled,
+                        SmoothingEnabled = strokeState.SmoothingEnabled,
+                        SmoothingFactor = strokeState.SmoothingFactor,
+                        MinPressure = strokeState.MinPressure,
+                        MaxPressure = strokeState.MaxPressure,
+                        TaperStart = strokeState.TaperStart,
+                        TaperEnd = strokeState.TaperEnd,
+                        Streamline = strokeState.Streamline
+                    }
+                };
+
+                foreach (var point in strokeState.Points)
+                {
+                    stroke.AddPoint(new DrawingPoint(point.X, point.Y, point.Pressure, point.Timestamp));
+                }
+
+                layer.Strokes.Add(stroke);
+            }
+
+            loadedLayers.Add(layer);
+        }
+
+        Layers = loadedLayers;
+        CurrentLayerIndex = Math.Clamp(state.CurrentLayerIndex, 0, Layers.Count - 1);
+        ResetHistory();
+        InvalidateSurface();
+    }
+
+    protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
+    {
+        base.OnPaintSurface(e);
+
+        var canvas = e.Surface.Canvas;
+        canvas.Clear(SKColors.Transparent);
+
+        var zoom = Math.Max(0.1f, ViewportZoom);
+        canvas.SetMatrix(SKMatrix.CreateScaleTranslation(
+            zoom,
+            zoom,
+            -(float)ScrollX,
+            -(float)ScrollY));
+
+        if (Layers.Count == 0)
+            return;
+
+        using var layerPaint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            IsAntialias = true,
+            StrokeCap = SKStrokeCap.Round,
+            StrokeJoin = SKStrokeJoin.Round
+        };
+
+        for (var i = 0; i < Layers.Count; i++)
+        {
+            var layer = Layers[i];
+            if (!layer.IsVisible)
+                continue;
+
+            foreach (var stroke in layer.Strokes)
+            {
+                if (stroke.Points.Count < 2)
+                    continue;
+
+                layerPaint.Color = stroke.Color.WithAlpha((byte)(stroke.Color.Alpha * layer.Opacity * stroke.Opacity));
+                layerPaint.StrokeWidth = stroke.StrokeWidth;
+                layerPaint.BlendMode = GetBlendMode(stroke);
+
+                var path = stroke.CreatePath();
+                canvas.DrawPath(path, layerPaint);
+            }
+
+            if (i == CurrentLayerIndex && _currentStroke != null && _currentStroke.Points.Count >= 2)
+            {
+                layerPaint.Color = _currentStroke.Color;
+                layerPaint.StrokeWidth = _currentStroke.StrokeWidth;
+                layerPaint.BlendMode = GetBlendMode(_currentStroke);
+
+                var path = _currentStroke.CreatePath();
+                canvas.DrawPath(path, layerPaint);
+            }
+        }
     }
 
     private static void OnLayersChanged(BindableObject bindable, object oldValue, object newValue)
@@ -178,15 +456,14 @@ public class DrawingCanvas : SKCanvasView
             return;
         }
 
-        _isStylus = e.DeviceType == SKTouchDeviceType.Pen;
-
-        if (IsPenMode && !_isStylus)
+        var isStylus = e.DeviceType == SKTouchDeviceType.Pen;
+        if (IsPenMode && !isStylus)
         {
             e.Handled = false;
             return;
         }
 
-        if (Layers == null || Layers.Count == 0 || CurrentLayerIndex < 0 || CurrentLayerIndex >= Layers.Count)
+        if (Layers.Count == 0 || CurrentLayerIndex < 0 || CurrentLayerIndex >= Layers.Count)
         {
             e.Handled = false;
             return;
@@ -199,10 +476,11 @@ public class DrawingCanvas : SKCanvasView
             return;
         }
 
+        var zoom = Math.Max(0.1f, ViewportZoom);
         var location = new DrawingPoint(
-            e.Location.X + (float)ScrollX,
-            e.Location.Y + (float)ScrollY,
-            e.Pressure, 0);
+            (e.Location.X + (float)ScrollX) / zoom,
+            (e.Location.Y + (float)ScrollY) / zoom,
+            e.Pressure <= 0 ? 1f : e.Pressure);
 
         switch (e.ActionType)
         {
@@ -225,32 +503,29 @@ public class DrawingCanvas : SKCanvasView
     private void StartDrawing(DrawingPoint point)
     {
         _isDrawing = true;
-        
-        SKColor strokeColor;
-        float strokeOpacity;
-        
-        if (IsHighlighter)
-        {
-            strokeColor = StrokeColor;
-            strokeOpacity = 0.4f;
-        }
-        else if (IsErasing)
-        {
-            strokeColor = SKColors.White;
-            strokeOpacity = 1.0f;
-        }
-        else
-        {
-            strokeColor = StrokeColor;
-            strokeOpacity = 1.0f;
-        }
-        
+
+        var brushType = IsErasing
+            ? BrushType.Eraser
+            : IsHighlighter
+                ? BrushType.Highlighter
+                : BrushType.Pen;
+
         _currentStroke = new DrawingStroke
         {
-            Color = strokeColor,
-            StrokeWidth = IsHighlighter ? StrokeWidth * 3 : StrokeWidth,
+            Color = IsErasing ? SKColors.Transparent : StrokeColor,
+            StrokeWidth = IsHighlighter ? StrokeWidth * 2.4f : StrokeWidth,
             IsEraser = IsErasing,
-            Opacity = strokeOpacity
+            Opacity = IsHighlighter ? 0.28f : 1f,
+            BrushType = brushType,
+            Options = new StrokeOptions
+            {
+                PressureEnabled = !IsErasing && !IsHighlighter,
+                SmoothingEnabled = true,
+                SmoothingFactor = IsHighlighter ? 0.25f : 0.45f,
+                MinPressure = 0.1f,
+                MaxPressure = 1f,
+                Streamline = IsHighlighter ? 0.15f : 0.35f
+            }
         };
         _currentStroke.AddPoint(point);
     }
@@ -268,160 +543,48 @@ public class DrawingCanvas : SKCanvasView
         if (!_isDrawing || _currentStroke == null)
             return;
 
-        if (Layers != null && CurrentLayerIndex >= 0 && CurrentLayerIndex < Layers.Count)
+        if (CurrentLayerIndex >= 0 && CurrentLayerIndex < Layers.Count && _currentStroke.Points.Count > 0)
         {
-            var currentLayer = Layers[CurrentLayerIndex];
-            if (!currentLayer.IsLocked)
-            {
-                currentLayer.AddStroke(_currentStroke);
-            }
+            var committedStroke = _currentStroke;
+            Layers[CurrentLayerIndex].AddStroke(committedStroke);
+            _undoStack.Push(new StrokeHistoryEntry(CurrentLayerIndex, committedStroke));
+            _redoStack.Clear();
+            StrokeCommitted?.Invoke(this, EventArgs.Empty);
         }
 
         _isDrawing = false;
         _currentStroke = null;
     }
 
-    protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
+    private static SKBlendMode GetBlendMode(DrawingStroke stroke)
     {
-        base.OnPaintSurface(e);
-        var canvas = e.Surface.Canvas;
-        canvas.Clear(SKColors.Transparent);
-
-        canvas.Translate(-(float)ScrollX, -(float)ScrollY);
-
-        if (Layers == null || Layers.Count == 0)
-            return;
-
-        using var layerPaint = new SKPaint
-        {
-            Style = SKPaintStyle.Stroke,
-            IsAntialias = true,
-            StrokeCap = SKStrokeCap.Round,
-            StrokeJoin = SKStrokeJoin.Round
-        };
-
-        for (int i = 0; i < Layers.Count; i++)
-        {
-            var layer = Layers[i];
-            if (!layer.IsVisible)
-                continue;
-
-            if (layer.BackgroundColor != SKColors.Transparent)
-            {
-                canvas.Clear(layer.BackgroundColor);
-            }
-
-            foreach (var stroke in layer.Strokes)
-            {
-                if (stroke.Points.Count < 2)
-                    continue;
-
-                layerPaint.Color = stroke.Color.WithAlpha((byte)(stroke.Color.Alpha * layer.Opacity * stroke.Opacity));
-                layerPaint.StrokeWidth = stroke.StrokeWidth;
-
-                if (stroke.IsEraser)
-                {
-                    layerPaint.BlendMode = SKBlendMode.Clear;
-                }
-                else
-                {
-                    layerPaint.BlendMode = SKBlendMode.SrcOver;
-                }
-
-                var path = stroke.CreatePath();
-                canvas.DrawPath(path, layerPaint);
-            }
-
-            if (i == CurrentLayerIndex && _currentStroke != null && _currentStroke.Points.Count >= 2)
-            {
-                layerPaint.Color = _currentStroke.Color;
-                layerPaint.StrokeWidth = _currentStroke.StrokeWidth;
-                layerPaint.BlendMode = SKBlendMode.SrcOver;
-
-                var path = _currentStroke.CreatePath();
-                canvas.DrawPath(path, layerPaint);
-            }
-        }
+        if (stroke.IsEraser)
+            return SKBlendMode.Clear;
+        if (stroke.BrushType == BrushType.Highlighter)
+            return SKBlendMode.Multiply;
+        return SKBlendMode.SrcOver;
     }
 
-    public void AddLayer(string name = "Layer")
+    private void ResetHistory()
     {
-        var newLayer = new DrawingLayer
-        {
-            Name = $"{name} {Layers.Count + 1}"
-        };
-        Layers.Add(newLayer);
-        CurrentLayerIndex = Layers.Count - 1;
+        _undoStack.Clear();
+        _redoStack.Clear();
     }
 
-    public void RemoveLayer(int index)
+    private static uint ToArgb(SKColor color)
     {
-        if (index < 0 || index >= Layers.Count)
-            return;
-
-        if (Layers.Count <= 1)
-            return;
-
-        Layers.RemoveAt(index);
-        if (CurrentLayerIndex >= Layers.Count)
-        {
-            CurrentLayerIndex = Layers.Count - 1;
-        }
+        return ((uint)color.Alpha << 24)
+               | ((uint)color.Red << 16)
+               | ((uint)color.Green << 8)
+               | color.Blue;
     }
 
-    public void ClearCurrentLayer()
+    private static SKColor FromArgb(uint value)
     {
-        if (Layers == null || CurrentLayerIndex < 0 || CurrentLayerIndex >= Layers.Count)
-            return;
-
-        Layers[CurrentLayerIndex].Clear();
-        InvalidateSurface();
+        return new SKColor(
+            (byte)((value >> 16) & 0xFF),
+            (byte)((value >> 8) & 0xFF),
+            (byte)(value & 0xFF),
+            (byte)((value >> 24) & 0xFF));
     }
-
-    public void ClearAllLayers()
-    {
-        if (Layers == null)
-            return;
-
-        foreach (var layer in Layers)
-        {
-            layer.Clear();
-        }
-        InvalidateSurface();
-    }
-
-    private readonly Stack<DrawingStroke> _undoStack = new();
-    private readonly Stack<DrawingStroke> _redoStack = new();
-
-    public void Undo()
-    {
-        if (Layers == null || CurrentLayerIndex < 0 || CurrentLayerIndex >= Layers.Count)
-            return;
-
-        var currentLayer = Layers[CurrentLayerIndex];
-        if (currentLayer.Strokes.Count > 0)
-        {
-            var stroke = currentLayer.Strokes[^1];
-            currentLayer.Strokes.RemoveAt(currentLayer.Strokes.Count - 1);
-            _undoStack.Push(stroke);
-            _redoStack.Clear();
-            InvalidateSurface();
-        }
-    }
-
-    public void Redo()
-    {
-        if (Layers == null || CurrentLayerIndex < 0 || CurrentLayerIndex >= Layers.Count)
-            return;
-
-        if (_redoStack.Count > 0)
-        {
-            var stroke = _redoStack.Pop();
-            Layers[CurrentLayerIndex].Strokes.Add(stroke);
-            InvalidateSurface();
-        }
-    }
-
-    public bool CanUndo => _undoStack.Count > 0;
-    public bool CanRedo => _redoStack.Count > 0;
 }

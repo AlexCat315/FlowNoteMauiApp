@@ -39,6 +39,8 @@ public static class MauiProgram
 				
 		builder.Services.AddSingleton<IDocumentService, DocumentService>();
 		builder.Services.AddSingleton<ISyncService, SyncService>();
+		builder.Services.AddSingleton<IWorkspaceService, WorkspaceService>();
+		builder.Services.AddSingleton<IDrawingPersistenceService, DrawingPersistenceService>();
 
 #if DEBUG
 		builder.Logging.AddDebug();
