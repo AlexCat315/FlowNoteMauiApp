@@ -501,7 +501,7 @@ public partial class MainPage : ContentPage
 	{
 		if (_totalPageCount <= 0)
 		{
-			PageInfoLabel.Text = AppResources.PageInfoFormat.Replace("{1}", "0").Replace("{2}", "0");
+			PageInfoLabel.Text = AppResources.PageInfoFormat.Replace("{0}", "0").Replace("{1}", "0");
 			PrevPageButton.IsEnabled = false;
 			NextPageButton.IsEnabled = false;
 			return;

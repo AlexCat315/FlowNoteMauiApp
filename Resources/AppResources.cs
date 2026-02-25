@@ -87,7 +87,7 @@ public static class AppResources
     public static string Searching => ResourceManager.GetString("Searching", Culture) ?? "Searching";
     public static string SelectPdfFileOnly => ResourceManager.GetString("SelectPdfFileOnly", Culture) ?? "Please select .pdf file only";
     public static string SearchResultsFoundFormat => ResourceManager.GetString("SearchResultsFoundFormat", Culture) ?? "Search: {0} results, {1}/{2}";
-    public static string PageInfoFormat => ResourceManager.GetString("PageInfoFormat", Culture) ?? "Page: {1}/{2}";
+    public static string PageInfoFormat => ResourceManager.GetString("PageInfoFormat", Culture) ?? "Page: {0}/{1}";
     public static string StatusMessage => ResourceManager.GetString("StatusMessage", Culture) ?? "Status: {0}";
     public static string EnableZoomFormat => ResourceManager.GetString("EnableZoomFormat", Culture) ?? "Zoom: {0}";
     public static string EnableSwipeFormat => ResourceManager.GetString("EnableSwipeFormat", Culture) ?? "Swipe: {0}";
