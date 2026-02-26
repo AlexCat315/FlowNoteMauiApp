@@ -32,7 +32,12 @@ public partial class MainPage
     private BoxView FilterNoteIndicator => FindInHome<BoxView>(nameof(FilterNoteIndicator));
     private Button FilterFolderButton => FindInHome<Button>(nameof(FilterFolderButton));
     private BoxView FilterFolderIndicator => FindInHome<BoxView>(nameof(FilterFolderIndicator));
-    private Button HomeSortButton => FindInHome<Button>(nameof(HomeSortButton));
+    private ImageButton HomeSortMenuButton => FindInHome<ImageButton>(nameof(HomeSortMenuButton));
+    private Border HomeSortPanel => FindInHome<Border>(nameof(HomeSortPanel));
+    private Button HomeSortTimeAscButton => FindInHome<Button>(nameof(HomeSortTimeAscButton));
+    private Button HomeSortTimeDescButton => FindInHome<Button>(nameof(HomeSortTimeDescButton));
+    private Button HomeSortNameAscButton => FindInHome<Button>(nameof(HomeSortNameAscButton));
+    private Button HomeSortNameDescButton => FindInHome<Button>(nameof(HomeSortNameDescButton));
     private FlexLayout HomeNotesList => FindInHome<FlexLayout>(nameof(HomeNotesList));
     private ImageButton QuickPenButton => FindInHome<ImageButton>(nameof(QuickPenButton));
     private Entry HomeSearchEntry => FindInHome<Entry>(nameof(HomeSearchEntry));

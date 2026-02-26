@@ -22,7 +22,10 @@ public partial class MainPage
         FilterPdfButton.Text = T("HomeFilterPdf", "PDF");
         FilterNoteButton.Text = T("HomeFilterNote", "Notes");
         FilterFolderButton.Text = T("HomeFilterFolder", "Folders");
-        HomeSortButton.Text = T("HomeSort", "Sort");
+        HomeSortTimeAscButton.Text = T("HomeSortTimeAsc", "Time Asc");
+        HomeSortTimeDescButton.Text = T("HomeSortTimeDesc", "Time Desc");
+        HomeSortNameAscButton.Text = T("HomeSortNameAsc", "Name Asc");
+        HomeSortNameDescButton.Text = T("HomeSortNameDesc", "Name Desc");
     }
 
     private void ApplyLocalizedUiText()
@@ -52,10 +55,14 @@ public partial class MainPage
         FindInEditor<Button>("InputModeFingerButton").Text = T("InputModeFinger", "Finger/Capacitive (2-finger move)");
         FindInEditor<Button>("InputModeReadButton").Text = T("InputModeRead", "Read Mode");
         FindInEditor<Label>("DrawingPenWidthLabel").Text = T("DrawingPenWidth", "Stroke");
+        FindInEditor<Button>("PixelEraserModeButton").Text = T("EraserModePixel", "Pixel");
+        FindInEditor<Button>("StrokeEraserModeButton").Text = T("EraserModeStroke", "Stroke");
+        FindInEditor<Button>("LassoEraserModeButton").Text = T("EraserModeLasso", "Lasso");
         FindInEditor<Label>("ToolColorTitleLabel").Text = T("Color", "Color");
         FindInEditor<Label>("ThumbnailTitleLabel").Text = T("Thumbnail", "Thumbnails");
         FindInEditor<Label>("ThumbnailHintLabel").Text = T("ThumbnailHint", "Tap an item to jump to page");
         FindInEditor<Label>("LayerTitleLabel").Text = T("LayerTitle", "Layers");
+        FindInEditor<Label>("ToolSettingsTitleLabel").Text = T("InkToolGeneric", "Tool");
 
         SettingsHomeHintLabel.Text = T("SettingsHomeHint", "Page, display and language settings");
         FindInSettings<Label>("SettingsPageTitleLabel").Text = T("SettingsPageTitle", "Page");
@@ -102,5 +109,10 @@ public partial class MainPage
         FindInSettings<Label>("DebugLinkLabel").Text = T("Link", "Link");
         FindInSettings<Label>("DebugFingerDrawLabel").Text = T("FingerDraw", "Finger Draw");
         EventInfoLabel.Text = T("UiReady", "Ready");
+
+        if (IsEditorInitialized)
+        {
+            UpdateToolSettingsPanelState();
+        }
     }
 }

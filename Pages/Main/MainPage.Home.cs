@@ -15,20 +15,25 @@ public partial class MainPage
 
     private enum HomeSortType
     {
-        Recent,
-        Name,
-        Created
+        TimeAscending,
+        TimeDescending,
+        NameAscending,
+        NameDescending
     }
 
     private HomeFilterType _homeFilter = HomeFilterType.All;
-    private HomeSortType _homeSort = HomeSortType.Recent;
-    private bool _isHomeSortDescending = true;
+    private HomeSortType _homeSort = HomeSortType.TimeDescending;
     private string _homeSearchKeyword = string.Empty;
     private IReadOnlyList<WorkspaceNote> _cachedHomeNotes = Array.Empty<WorkspaceNote>();
     private IReadOnlyList<string> _cachedHomeFolders = Array.Empty<string>();
 
     private void SetDrawerVisible(bool visible)
     {
+        if (visible)
+        {
+            SetHomeSortPanelVisible(false);
+        }
+
         if (visible)
         {
             EnsureUiBootstrapped();
@@ -44,6 +49,11 @@ public partial class MainPage
 
     private void SetSettingsVisible(bool visible)
     {
+        if (visible)
+        {
+            SetHomeSortPanelVisible(false);
+        }
+
         if (visible)
         {
             EnsureUiBootstrapped();
@@ -78,9 +88,13 @@ public partial class MainPage
                     f.Contains(_homeSearchKeyword, StringComparison.OrdinalIgnoreCase));
             }
 
-            folderQuery = _isHomeSortDescending
-                ? folderQuery.OrderByDescending(f => f, StringComparer.OrdinalIgnoreCase)
-                : folderQuery.OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
+            folderQuery = _homeSort switch
+            {
+                HomeSortType.NameDescending => folderQuery.OrderByDescending(f => f, StringComparer.OrdinalIgnoreCase),
+                HomeSortType.NameAscending => folderQuery.OrderBy(f => f, StringComparer.OrdinalIgnoreCase),
+                HomeSortType.TimeAscending => folderQuery.OrderBy(f => f, StringComparer.OrdinalIgnoreCase),
+                _ => folderQuery.OrderByDescending(f => f, StringComparer.OrdinalIgnoreCase)
+            };
 
             var folders = folderQuery.ToList();
             if (folders.Count == 0 && (_cachedHomeFolders.Count > 0 || !string.IsNullOrWhiteSpace(_homeSearchKeyword)))
@@ -111,14 +125,12 @@ public partial class MainPage
                 || note.FolderPath.Contains(_homeSearchKeyword, StringComparison.OrdinalIgnoreCase));
         }
 
-        query = (_homeSort, _isHomeSortDescending) switch
+        query = _homeSort switch
         {
-            (HomeSortType.Name, true) => query.OrderByDescending(n => n.Name, StringComparer.OrdinalIgnoreCase),
-            (HomeSortType.Name, false) => query.OrderBy(n => n.Name, StringComparer.OrdinalIgnoreCase),
-            (HomeSortType.Created, true) => query.OrderByDescending(n => n.CreatedAtUtc),
-            (HomeSortType.Created, false) => query.OrderBy(n => n.CreatedAtUtc),
-            (HomeSortType.Recent, true) => query.OrderByDescending(n => n.LastOpenedAtUtc).ThenByDescending(n => n.ModifiedAtUtc),
-            _ => query.OrderBy(n => n.LastOpenedAtUtc).ThenBy(n => n.ModifiedAtUtc)
+            HomeSortType.TimeAscending => query.OrderBy(n => n.ModifiedAtUtc).ThenBy(n => n.Name, StringComparer.OrdinalIgnoreCase),
+            HomeSortType.NameAscending => query.OrderBy(n => n.Name, StringComparer.OrdinalIgnoreCase),
+            HomeSortType.NameDescending => query.OrderByDescending(n => n.Name, StringComparer.OrdinalIgnoreCase),
+            _ => query.OrderByDescending(n => n.ModifiedAtUtc).ThenByDescending(n => n.Name, StringComparer.OrdinalIgnoreCase)
         };
 
         var notes = query.ToList();
@@ -165,24 +177,60 @@ public partial class MainPage
             return;
 
         _homeFilter = filter;
+        SetHomeSortPanelVisible(false);
         RefreshHomeFeed();
     }
 
     private string GetHomeSortDescription()
     {
-        var modeText = _homeSort switch
+        return _homeSort switch
         {
-            HomeSortType.Name => T("SortByName", "Name"),
-            HomeSortType.Created => T("SortByCreated", "Created"),
-            _ => T("SortByRecent", "Recent")
+            HomeSortType.TimeAscending => T("HomeSortTimeAsc", "Time Asc"),
+            HomeSortType.TimeDescending => T("HomeSortTimeDesc", "Time Desc"),
+            HomeSortType.NameAscending => T("HomeSortNameAsc", "Name Asc"),
+            _ => T("HomeSortNameDesc", "Name Desc")
         };
-
-        return $"{modeText} {(_isHomeSortDescending ? T("SortDescending", "Descending") : T("SortAscending", "Ascending"))}";
     }
 
     private void UpdateHomeSortLabel()
     {
-        HomeSortButton.Text = T("HomeSort", "Sort");
+    }
+
+    private void SetHomeSort(HomeSortType sortType)
+    {
+        _homeSort = sortType;
+        RefreshHomeFeed();
+        SetHomeSortPanelVisible(false);
+        ShowStatus(TF("CurrentSortFormat", "Current sort: {0}", GetHomeSortDescription()));
+    }
+
+    private void SetHomeSortPanelVisible(bool visible)
+    {
+        if (!visible)
+        {
+            AnimatePopupOut(HomeSortPanel, () => HomeSortPanel.IsVisible = false);
+            return;
+        }
+
+        HomeSortPanel.IsVisible = true;
+        PositionHomeSortPanelUnderSortButton();
+        AnimatePopupIn(HomeSortPanel);
+    }
+
+    private void PositionHomeSortPanelUnderSortButton()
+    {
+        var panelWidth = HomeSortPanel.Width > 1
+            ? HomeSortPanel.Width
+            : (HomeSortPanel.WidthRequest > 1 ? HomeSortPanel.WidthRequest : 176d);
+        var anchorX = GetVisualOffsetX(HomeSortMenuButton, HomePanelView);
+        var anchorY = GetVisualOffsetY(HomeSortMenuButton, HomePanelView);
+        var anchorWidth = HomeSortMenuButton.Width > 1 ? HomeSortMenuButton.Width : HomeSortMenuButton.WidthRequest;
+        var anchorHeight = HomeSortMenuButton.Height > 1 ? HomeSortMenuButton.Height : HomeSortMenuButton.HeightRequest;
+
+        var targetX = anchorX + anchorWidth - panelWidth;
+        targetX = Math.Clamp(targetX, 10d, Math.Max(10d, HomePanelView.Width - panelWidth - 10d));
+        var targetY = anchorY + anchorHeight + 6d;
+        HomeSortPanel.Margin = new Thickness(targetX, targetY, 0, 0);
     }
 
     private void OnHomeFilterAllClicked(object? sender, EventArgs e) => SetHomeFilter(HomeFilterType.All);
@@ -192,28 +240,39 @@ public partial class MainPage
 
     private void OnHomeSortClicked(object? sender, EventArgs e)
     {
-        _homeSort = _homeSort switch
-        {
-            HomeSortType.Recent => HomeSortType.Name,
-            HomeSortType.Name => HomeSortType.Created,
-            _ => HomeSortType.Recent
-        };
+        SetHomeSortPanelVisible(!HomeSortPanel.IsVisible);
+    }
 
-        if (_homeSort == HomeSortType.Recent)
-            _isHomeSortDescending = !_isHomeSortDescending;
+    private void OnHomeSortTimeAscClicked(object? sender, EventArgs e)
+    {
+        SetHomeSort(HomeSortType.TimeAscending);
+    }
 
-        RefreshHomeFeed();
-        ShowStatus(TF("CurrentSortFormat", "Current sort: {0}", GetHomeSortDescription()));
+    private void OnHomeSortTimeDescClicked(object? sender, EventArgs e)
+    {
+        SetHomeSort(HomeSortType.TimeDescending);
+    }
+
+    private void OnHomeSortNameAscClicked(object? sender, EventArgs e)
+    {
+        SetHomeSort(HomeSortType.NameAscending);
+    }
+
+    private void OnHomeSortNameDescClicked(object? sender, EventArgs e)
+    {
+        SetHomeSort(HomeSortType.NameDescending);
     }
 
     private void OnHomeSearchTextChanged(object? sender, TextChangedEventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         _homeSearchKeyword = e.NewTextValue?.Trim() ?? string.Empty;
         RefreshHomeFeed();
     }
 
     private async void OnHomeQuickPenClicked(object? sender, EventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         var target = _cachedHomeNotes.FirstOrDefault(n => n.Id == _currentNoteId)
             ?? _cachedHomeNotes.FirstOrDefault();
 
@@ -241,6 +300,7 @@ public partial class MainPage
     private void OnOpenSettingsClicked(object? sender, EventArgs e)
     {
         EnsureUiBootstrapped();
+        SetHomeSortPanelVisible(false);
         SetDrawerVisible(false);
         SetInputModePanelVisible(false);
         DrawingToolbarPanel.IsVisible = false;
@@ -252,18 +312,21 @@ public partial class MainPage
 
     private void OnSettingsOverlayTapped(object? sender, TappedEventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         SetInputModePanelVisible(false);
         SetSettingsVisible(false);
     }
 
     private void OnDrawerBackdropTapped(object? sender, TappedEventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         SetInputModePanelVisible(false);
         SetDrawerVisible(false);
     }
 
     private void OnDrawerAllDocsClicked(object? sender, EventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         _homeFilter = HomeFilterType.All;
         RefreshHomeFeed();
         SetDrawerVisible(false);
@@ -271,49 +334,56 @@ public partial class MainPage
 
     private void OnDrawerRecentClicked(object? sender, EventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         _homeFilter = HomeFilterType.All;
-        _homeSort = HomeSortType.Recent;
-        _isHomeSortDescending = true;
+        _homeSort = HomeSortType.TimeDescending;
         RefreshHomeFeed();
         SetDrawerVisible(false);
     }
 
     private void OnDrawerFavoriteClicked(object? sender, EventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         ShowStatus(T("FeatureFavoritesPending", "Favorites is under development."));
         SetDrawerVisible(false);
     }
 
     private void OnDrawerTrashClicked(object? sender, EventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         ShowStatus(T("FeatureTrashPending", "Trash is under development."));
         SetDrawerVisible(false);
     }
 
     private void OnDrawerEditTagsClicked(object? sender, EventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         ShowStatus(T("FeatureEditTagsPending", "Tag editing is coming soon."));
     }
 
     private void OnDrawerCreateTagClicked(object? sender, EventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         ShowStatus(T("FeatureCreateTagPending", "Tag creation is coming soon."));
     }
 
     private void OnDrawerHelpClicked(object? sender, EventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         ShowStatus(T("FeatureHelpPending", "Help center is coming soon."));
         SetDrawerVisible(false);
     }
 
     private void OnDrawerAboutClicked(object? sender, EventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         ShowStatus("FlowNote MAUI Demo v1.0");
         SetDrawerVisible(false);
     }
 
     private void OnDrawerDiscountClicked(object? sender, EventArgs e)
     {
+        SetHomeSortPanelVisible(false);
         ShowStatus(T("FeatureDiscountPending", "Discount activity is coming soon."));
         SetDrawerVisible(false);
     }
@@ -369,8 +439,7 @@ public partial class MainPage
         StrokeWidthSlider.Value = 3;
 
         _homeFilter = HomeFilterType.All;
-        _homeSort = HomeSortType.Recent;
-        _isHomeSortDescending = true;
+        _homeSort = HomeSortType.TimeDescending;
         _homeSearchKeyword = string.Empty;
         HomeSearchEntry.Text = string.Empty;
 

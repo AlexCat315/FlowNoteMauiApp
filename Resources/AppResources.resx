@@ -278,6 +278,18 @@
   <data name="HomeSort" xml:space="preserve">
     <value>Sort</value>
   </data>
+  <data name="HomeSortTimeAsc" xml:space="preserve">
+    <value>Time Asc</value>
+  </data>
+  <data name="HomeSortTimeDesc" xml:space="preserve">
+    <value>Time Desc</value>
+  </data>
+  <data name="HomeSortNameAsc" xml:space="preserve">
+    <value>Name Asc</value>
+  </data>
+  <data name="HomeSortNameDesc" xml:space="preserve">
+    <value>Name Desc</value>
+  </data>
   <data name="DrawerAuth" xml:space="preserve">
     <value>Sign in / Register</value>
   </data>
@@ -498,6 +510,15 @@ Unlock full note workflow</value>
   <data name="CurrentSortFormat" xml:space="preserve">
     <value>Current sort: {0}</value>
   </data>
+  <data name="ThumbnailPageFormat" xml:space="preserve">
+    <value>Page {0}</value>
+  </data>
+  <data name="ThumbnailPageHeadFormat" xml:space="preserve">
+    <value>Page {0} ...</value>
+  </data>
+  <data name="ThumbnailPageTailFormat" xml:space="preserve">
+    <value>... Page {0}</value>
+  </data>
   <data name="ImportPdfFirst" xml:space="preserve">
     <value>Please import a PDF first.</value>
   </data>
@@ -646,5 +667,50 @@ Unlock full note workflow</value>
   </data>
   <data name="PageNumberLeftBottom" xml:space="preserve">
     <value>Left / Bottom</value>
+  </data>
+  <data name="InkToolBallpoint" xml:space="preserve">
+    <value>Ballpoint Pen</value>
+  </data>
+  <data name="InkToolFountain" xml:space="preserve">
+    <value>Fountain Pen</value>
+  </data>
+  <data name="InkToolPencil" xml:space="preserve">
+    <value>Pencil</value>
+  </data>
+  <data name="InkToolMarker" xml:space="preserve">
+    <value>Marker</value>
+  </data>
+  <data name="InkToolEraser" xml:space="preserve">
+    <value>Eraser</value>
+  </data>
+  <data name="InkToolGeneric" xml:space="preserve">
+    <value>Tool</value>
+  </data>
+  <data name="StatusBallpointSelected" xml:space="preserve">
+    <value>Ballpoint pen selected.</value>
+  </data>
+  <data name="StatusFountainSelected" xml:space="preserve">
+    <value>Fountain pen selected.</value>
+  </data>
+  <data name="StatusPencilSelected" xml:space="preserve">
+    <value>Pencil selected.</value>
+  </data>
+  <data name="StatusMarkerSelected" xml:space="preserve">
+    <value>Marker selected.</value>
+  </data>
+  <data name="StatusEraserSelected" xml:space="preserve">
+    <value>Eraser selected.</value>
+  </data>
+  <data name="DrawingEraserSize" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="EraserModePixel" xml:space="preserve">
+    <value>Pixel</value>
+  </data>
+  <data name="EraserModeStroke" xml:space="preserve">
+    <value>Stroke</value>
+  </data>
+  <data name="EraserModeLasso" xml:space="preserve">
+    <value>Lasso</value>
   </data>
 </root>

@@ -77,7 +77,7 @@ public partial class MainPage
     // Drawing related methods
     private void OnDrawingToolbarCloseClicked(object? sender, EventArgs e)
     {
-        DrawingToolbarPanel.IsVisible = false;
+        AnimatePopupOut(DrawingToolbarPanel, () => DrawingToolbarPanel.IsVisible = false);
     }
 
     private void OnPenModeClicked(object? sender, EventArgs e)
@@ -87,11 +87,16 @@ public partial class MainPage
 
     private void SetInputModePanelVisible(bool visible)
     {
-        InputModePanel.IsVisible = visible;
-        if (visible)
+        if (!visible)
         {
-            PositionInputModePanelUnderTopModeButton();
+            AnimatePopupOut(InputModePanel, () => InputModePanel.IsVisible = false);
+            UpdateModeButtonVisual();
+            return;
         }
+
+        InputModePanel.IsVisible = true;
+        PositionInputModePanelUnderTopModeButton();
+        AnimatePopupIn(InputModePanel);
 
         UpdateModeButtonVisual();
     }
@@ -199,16 +204,29 @@ public partial class MainPage
         return state;
     }
 
-    private static string GetInkToolTitle(InkToolKind tool)
+    private string GetInkToolTitle(InkToolKind tool)
     {
         return tool switch
         {
-            InkToolKind.Ballpoint => "圆珠笔",
-            InkToolKind.Fountain => "钢笔",
-            InkToolKind.Pencil => "铅笔",
-            InkToolKind.Marker => "马克笔",
-            InkToolKind.Eraser => "橡皮擦",
-            _ => "工具"
+            InkToolKind.Ballpoint => T("InkToolBallpoint", "Ballpoint Pen"),
+            InkToolKind.Fountain => T("InkToolFountain", "Fountain Pen"),
+            InkToolKind.Pencil => T("InkToolPencil", "Pencil"),
+            InkToolKind.Marker => T("InkToolMarker", "Marker"),
+            InkToolKind.Eraser => T("InkToolEraser", "Eraser"),
+            _ => T("InkToolGeneric", "Tool")
+        };
+    }
+
+    private string GetInkToolSelectedStatus(InkToolKind tool)
+    {
+        return tool switch
+        {
+            InkToolKind.Ballpoint => T("StatusBallpointSelected", "Ballpoint pen selected."),
+            InkToolKind.Fountain => T("StatusFountainSelected", "Fountain pen selected."),
+            InkToolKind.Pencil => T("StatusPencilSelected", "Pencil selected."),
+            InkToolKind.Marker => T("StatusMarkerSelected", "Marker selected."),
+            InkToolKind.Eraser => T("StatusEraserSelected", "Eraser selected."),
+            _ => T("StatusPenArmed", "Pen selected.")
         };
     }
 
@@ -271,23 +289,21 @@ public partial class MainPage
         {
             DrawingCanvas.EnableDrawing = true;
         }
-        DrawingToolbarPanel.IsVisible = showToolbar && _drawingInputMode != DrawingInputMode.TapRead;
-        if (DrawingToolbarPanel.IsVisible)
+        var shouldShowToolbar = showToolbar && _drawingInputMode != DrawingInputMode.TapRead;
+        if (shouldShowToolbar)
         {
+            DrawingToolbarPanel.IsVisible = true;
             PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+            AnimatePopupIn(DrawingToolbarPanel);
+        }
+        else if (DrawingToolbarPanel.IsVisible)
+        {
+            AnimatePopupOut(DrawingToolbarPanel, () => DrawingToolbarPanel.IsVisible = false);
         }
 
         if (showStatus)
         {
-            ShowStatus(_activeInkTool switch
-            {
-                InkToolKind.Ballpoint => "圆珠笔已选中",
-                InkToolKind.Fountain => "钢笔已选中",
-                InkToolKind.Pencil => "铅笔已选中",
-                InkToolKind.Marker => "马克笔已选中",
-                InkToolKind.Eraser => "橡皮擦已选中",
-                _ => T("StatusPenArmed", "Pen selected.")
-            });
+            ShowStatus(GetInkToolSelectedStatus(_activeInkTool));
         }
     }
 
@@ -307,10 +323,16 @@ public partial class MainPage
         if (_drawingInputMode == DrawingInputMode.TapRead)
             return;
 
-        DrawingToolbarPanel.IsVisible = !DrawingToolbarPanel.IsVisible;
-        if (DrawingToolbarPanel.IsVisible)
+        var shouldShow = !DrawingToolbarPanel.IsVisible;
+        if (shouldShow)
         {
+            DrawingToolbarPanel.IsVisible = true;
             PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+            AnimatePopupIn(DrawingToolbarPanel);
+        }
+        else
+        {
+            AnimatePopupOut(DrawingToolbarPanel, () => DrawingToolbarPanel.IsVisible = false);
         }
     }
 
@@ -618,8 +640,19 @@ public partial class MainPage
     private void OnLayerToggleClicked(object? sender, EventArgs e)
     {
         SetInputModePanelVisible(false);
-        ThumbnailPanel.IsVisible = false;
-        LayerPanel.IsVisible = !LayerPanel.IsVisible;
+        if (ThumbnailPanel.IsVisible)
+        {
+            AnimatePopupOut(ThumbnailPanel, () => ThumbnailPanel.IsVisible = false);
+        }
+
+        if (LayerPanel.IsVisible)
+        {
+            AnimatePopupOut(LayerPanel, () => LayerPanel.IsVisible = false);
+            return;
+        }
+
+        LayerPanel.IsVisible = true;
+        AnimatePopupIn(LayerPanel);
     }
 
     private void OnThumbnailToggleClicked(object? sender, EventArgs e)
@@ -628,12 +661,20 @@ public partial class MainPage
             return;
 
         SetInputModePanelVisible(false);
-        LayerPanel.IsVisible = false;
-        ThumbnailPanel.IsVisible = !ThumbnailPanel.IsVisible;
+        if (LayerPanel.IsVisible)
+        {
+            AnimatePopupOut(LayerPanel, () => LayerPanel.IsVisible = false);
+        }
+
         if (ThumbnailPanel.IsVisible)
         {
-            RefreshThumbnailList();
+            AnimatePopupOut(ThumbnailPanel, () => ThumbnailPanel.IsVisible = false);
+            return;
         }
+
+        ThumbnailPanel.IsVisible = true;
+        AnimatePopupIn(ThumbnailPanel);
+        RefreshThumbnailList();
     }
 
     private void OnHighlighterClicked(object? sender, EventArgs e)
@@ -795,7 +836,7 @@ public partial class MainPage
         try
         {
             var penSource = await CreateTintedToolIconSourceAsync("toolicons/icon_ballpoint_pen.png", EnsureInkState(InkToolKind.Ballpoint).Color, token);
-            var highlighterSource = await CreateTintedToolIconSourceAsync("toolicons/icon_pen.png", EnsureInkState(InkToolKind.Fountain).Color, token);
+            var highlighterSource = await CreateTintedToolIconSourceAsync("toolicons/icon_gelpen.png", EnsureInkState(InkToolKind.Fountain).Color, token);
             var pencilSource = await CreateTintedToolIconSourceAsync("toolicons/icon_pencil.png", EnsureInkState(InkToolKind.Pencil).Color, token);
             var markerSource = await CreateTintedToolIconSourceAsync("toolicons/icon_markpen.png", EnsureInkState(InkToolKind.Marker).Color, token);
             if (token.IsCancellationRequested)
@@ -923,7 +964,9 @@ public partial class MainPage
         }
 
         ToolSettingsTitleLabel.Text = GetInkToolTitle(_activeInkTool);
-        DrawingPenWidthLabel.Text = _activeInkTool == InkToolKind.Eraser ? "大小" : "粗细";
+        DrawingPenWidthLabel.Text = _activeInkTool == InkToolKind.Eraser
+            ? T("DrawingEraserSize", "Size")
+            : T("DrawingPenWidth", "Stroke");
         StrokeWidthLabel.Text = $"{state.Width:0.00}mm";
         EraserModePanel.IsVisible = _activeInkTool == InkToolKind.Eraser;
         ToolColorPanel.IsVisible = _activeInkTool != InkToolKind.Eraser;
@@ -1013,7 +1056,11 @@ public partial class MainPage
 
         if (startIndex > 0)
         {
-            ThumbnailList.Children.Add(CreateThumbnailListItem(0, false, token, "Page 1 ···"));
+            ThumbnailList.Children.Add(CreateThumbnailListItem(
+                0,
+                false,
+                token,
+                TF("ThumbnailPageHeadFormat", "Page {0} ...", 1)));
         }
 
         for (int i = startIndex; i <= endIndex; i++)
@@ -1023,7 +1070,11 @@ public partial class MainPage
 
         if (endIndex < _totalPageCount - 1)
         {
-            ThumbnailList.Children.Add(CreateThumbnailListItem(_totalPageCount - 1, false, token, $"··· Page {_totalPageCount}"));
+            ThumbnailList.Children.Add(CreateThumbnailListItem(
+                _totalPageCount - 1,
+                false,
+                token,
+                TF("ThumbnailPageTailFormat", "... Page {0}", _totalPageCount)));
         }
     }
 
@@ -1077,7 +1128,7 @@ public partial class MainPage
                     },
                     new Label
                     {
-                        Text = titleOverride ?? $"Page {pageIndex + 1}",
+                        Text = titleOverride ?? TF("ThumbnailPageFormat", "Page {0}", pageIndex + 1),
                         FontSize = 12,
                         HorizontalTextAlignment = TextAlignment.Center,
                         TextColor = ThemePrimaryText
@@ -1107,12 +1158,12 @@ public partial class MainPage
         if (!IsEditorInitialized || token.IsCancellationRequested)
             return;
 
-        if (PdfViewer is not IPdfViewThumbnails thumbnailProvider)
+        if (PdfViewer is not PdfView pdfView)
             return;
 
         try
         {
-            var thumbnailStream = await thumbnailProvider.GetThumbnailAsync(pageIndex, ThumbnailRequestWidth, ThumbnailRequestHeight);
+            var thumbnailStream = await pdfView.GetThumbnailAsync(pageIndex, ThumbnailRequestWidth, ThumbnailRequestHeight);
             if (thumbnailStream is null || token.IsCancellationRequested)
                 return;
 

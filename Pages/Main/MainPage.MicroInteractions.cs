@@ -24,13 +24,15 @@ public partial class MainPage
         RegisterMicroInteraction(FindInHome<ImageButton>("HomeDrawerFavoriteButton"));
         RegisterMicroInteraction(FindInHome<ImageButton>("HomeRefreshButton"));
         RegisterMicroInteraction(FindInHome<ImageButton>("HomeOpenSettingsButton"));
+        RegisterMicroInteraction(HomeSortMenuButton);
         RegisterMicroInteraction(FilterAllButton);
         RegisterMicroInteraction(FilterPdfButton);
         RegisterMicroInteraction(FilterNoteButton);
         RegisterMicroInteraction(FilterFolderButton);
-        RegisterMicroInteraction(FindInHome<ImageButton>("HomeSortReorderButton"));
-        RegisterMicroInteraction(FindInHome<ImageButton>("HomeSortIconButton"));
-        RegisterMicroInteraction(HomeSortButton);
+        RegisterMicroInteraction(HomeSortTimeAscButton);
+        RegisterMicroInteraction(HomeSortTimeDescButton);
+        RegisterMicroInteraction(HomeSortNameAscButton);
+        RegisterMicroInteraction(HomeSortNameDescButton);
         RegisterMicroInteraction(QuickPenButton);
         RegisterMicroInteraction(FindInHome<ImageButton>("HomeImportButton"));
 

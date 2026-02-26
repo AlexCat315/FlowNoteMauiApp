@@ -278,6 +278,18 @@
   <data name="HomeSort" xml:space="preserve">
     <value>排序</value>
   </data>
+  <data name="HomeSortTimeAsc" xml:space="preserve">
+    <value>按时间升序</value>
+  </data>
+  <data name="HomeSortTimeDesc" xml:space="preserve">
+    <value>按时间降序</value>
+  </data>
+  <data name="HomeSortNameAsc" xml:space="preserve">
+    <value>按名称升序</value>
+  </data>
+  <data name="HomeSortNameDesc" xml:space="preserve">
+    <value>按名称降序</value>
+  </data>
   <data name="DrawerAuth" xml:space="preserve">
     <value>登录/注册</value>
   </data>
@@ -496,6 +508,15 @@
   <data name="CurrentSortFormat" xml:space="preserve">
     <value>当前排序: {0}</value>
   </data>
+  <data name="ThumbnailPageFormat" xml:space="preserve">
+    <value>第 {0} 页</value>
+  </data>
+  <data name="ThumbnailPageHeadFormat" xml:space="preserve">
+    <value>第 {0} 页 ...</value>
+  </data>
+  <data name="ThumbnailPageTailFormat" xml:space="preserve">
+    <value>... 第 {0} 页</value>
+  </data>
   <data name="ImportPdfFirst" xml:space="preserve">
     <value>请先导入 PDF 文档</value>
   </data>
@@ -642,5 +663,50 @@
   </data>
   <data name="PageNumberLeftBottom" xml:space="preserve">
     <value>左侧/底部</value>
+  </data>
+  <data name="InkToolBallpoint" xml:space="preserve">
+    <value>圆珠笔</value>
+  </data>
+  <data name="InkToolFountain" xml:space="preserve">
+    <value>钢笔</value>
+  </data>
+  <data name="InkToolPencil" xml:space="preserve">
+    <value>铅笔</value>
+  </data>
+  <data name="InkToolMarker" xml:space="preserve">
+    <value>马克笔</value>
+  </data>
+  <data name="InkToolEraser" xml:space="preserve">
+    <value>橡皮擦</value>
+  </data>
+  <data name="InkToolGeneric" xml:space="preserve">
+    <value>工具</value>
+  </data>
+  <data name="StatusBallpointSelected" xml:space="preserve">
+    <value>圆珠笔已选中</value>
+  </data>
+  <data name="StatusFountainSelected" xml:space="preserve">
+    <value>钢笔已选中</value>
+  </data>
+  <data name="StatusPencilSelected" xml:space="preserve">
+    <value>铅笔已选中</value>
+  </data>
+  <data name="StatusMarkerSelected" xml:space="preserve">
+    <value>马克笔已选中</value>
+  </data>
+  <data name="StatusEraserSelected" xml:space="preserve">
+    <value>橡皮擦已选中</value>
+  </data>
+  <data name="DrawingEraserSize" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="EraserModePixel" xml:space="preserve">
+    <value>像素擦除</value>
+  </data>
+  <data name="EraserModeStroke" xml:space="preserve">
+    <value>整笔擦除</value>
+  </data>
+  <data name="EraserModeLasso" xml:space="preserve">
+    <value>圈选擦除</value>
   </data>
 </root>

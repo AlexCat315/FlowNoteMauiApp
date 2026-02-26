@@ -53,6 +53,8 @@ public partial class MainPage
     private void RefreshEditorTabsVisual()
     {
         EditorTabsHost.Children.Clear();
+        _editorTabDropIndicators.Clear();
+        _tabDropTargetNoteId = null;
         if (_editorTabs.Count == 0)
         {
             return;
@@ -132,10 +134,22 @@ public partial class MainPage
             tabGrid.Children.Add(closeButton);
             Grid.SetColumn(closeButton, 2);
 
+            var dropIndicator = new BoxView
+            {
+                WidthRequest = 2,
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Fill,
+                Color = palette.ModeButtonExpandedBorder,
+                IsVisible = false
+            };
+            tabGrid.Children.Add(dropIndicator);
+            Grid.SetColumnSpan(dropIndicator, 3);
+
             tabBorder.Content = tabGrid;
             var openTab = new TapGestureRecognizer();
             openTab.Tapped += async (_, _) => await ActivateEditorTabAsync(tab.NoteId);
             tabBorder.GestureRecognizers.Add(openTab);
+            _editorTabDropIndicators[tab.NoteId] = dropIndicator;
             AttachEditorTabDragReorder(tabBorder, tab.NoteId);
 
             EditorTabsHost.Children.Add(tabBorder);
@@ -269,6 +283,7 @@ public partial class MainPage
     {
         HomePanelView.IsVisible = true;
         HomePanelView.InputTransparent = false;
+        AnimateScreenEntry(HomePanelView);
         EditorChromeView.IsVisible = false;
         EditorChromeView.InputTransparent = true;
 
@@ -313,6 +328,7 @@ public partial class MainPage
         HomePanelView.InputTransparent = true;
         EditorChromeView.IsVisible = true;
         EditorChromeView.InputTransparent = false;
+        AnimateScreenEntry(EditorChromeView);
 
         HomePanel.IsVisible = false;
         TopBarPanel.IsVisible = true;

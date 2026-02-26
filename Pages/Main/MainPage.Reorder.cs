@@ -7,6 +7,9 @@ public partial class MainPage
     private bool _inkToolReorderWired;
     private ImageButton? _draggingInkToolButton;
     private string? _draggingEditorTabNoteId;
+    private readonly Dictionary<string, BoxView> _editorTabDropIndicators = new(StringComparer.Ordinal);
+    private string? _tabDropTargetNoteId;
+    private bool _tabDropInsertAfter;
 
     private void WireInkToolReorderGestures()
     {
@@ -40,10 +43,28 @@ public partial class MainPage
 
         var dropGesture = new DropGestureRecognizer();
         dropGesture.AllowDrop = true;
+        var baseBorderColor = toolButton.BorderColor;
+        var baseBorderWidth = toolButton.BorderWidth;
+        void RestoreToolDropVisual()
+        {
+            toolButton.BorderColor = baseBorderColor;
+            toolButton.BorderWidth = baseBorderWidth;
+        }
+
+        dropGesture.DragOver += (_, _) =>
+        {
+            if (_draggingInkToolButton is null || ReferenceEquals(_draggingInkToolButton, toolButton))
+                return;
+
+            toolButton.BorderColor = Palette.ModeButtonExpandedBorder;
+            toolButton.BorderWidth = 2;
+        };
+        dropGesture.DragLeave += (_, _) => RestoreToolDropVisual();
         dropGesture.Drop += (_, _) =>
         {
             var source = _draggingInkToolButton;
             _draggingInkToolButton = null;
+            RestoreToolDropVisual();
             if (source is null)
                 return;
 
@@ -76,13 +97,7 @@ public partial class MainPage
         if (sourceIndex < 0 || targetIndex < 0 || sourceIndex == targetIndex)
             return false;
 
-        children.RemoveAt(sourceIndex);
-        if (sourceIndex < targetIndex)
-        {
-            targetIndex--;
-        }
-
-        children.Insert(targetIndex, sourceButton);
+        (children[sourceIndex], children[targetIndex]) = (children[targetIndex], children[sourceIndex]);
         if (DrawingToolbarPanel.IsVisible)
         {
             PositionDrawingToolbarPanelUnderTool(_activeInkTool);
@@ -102,11 +117,7 @@ public partial class MainPage
         if (targetIndex == sourceIndex)
             return false;
 
-        children.RemoveAt(sourceIndex);
-        if (targetIndex > sourceIndex)
-            targetIndex--;
-
-        children.Insert(targetIndex, sourceButton);
+        (children[sourceIndex], children[targetIndex]) = (children[targetIndex], children[sourceIndex]);
         if (DrawingToolbarPanel.IsVisible)
         {
             PositionDrawingToolbarPanelUnderTool(_activeInkTool);
@@ -119,20 +130,60 @@ public partial class MainPage
     {
         var dragGesture = new DragGestureRecognizer();
         dragGesture.CanDrag = true;
-        dragGesture.DragStarting += (_, _) => _draggingEditorTabNoteId = noteId;
-        dragGesture.DropCompleted += (_, _) => _draggingEditorTabNoteId = null;
+        dragGesture.DragStarting += (_, _) =>
+        {
+            _draggingEditorTabNoteId = noteId;
+            ClearEditorTabDropIndicators();
+        };
+        dragGesture.DropCompleted += (_, _) =>
+        {
+            _draggingEditorTabNoteId = null;
+            ClearEditorTabDropIndicators();
+        };
         tabBorder.GestureRecognizers.Add(dragGesture);
 
         var dropGesture = new DropGestureRecognizer();
         dropGesture.AllowDrop = true;
-        dropGesture.Drop += (_, _) =>
+        var baseStroke = tabBorder.Stroke;
+        var baseThickness = tabBorder.StrokeThickness;
+        void RestoreTabDropVisual()
+        {
+            tabBorder.Stroke = baseStroke;
+            tabBorder.StrokeThickness = baseThickness;
+        }
+
+        dropGesture.DragOver += (_, e) =>
+        {
+            if (string.IsNullOrWhiteSpace(_draggingEditorTabNoteId)
+                || string.Equals(_draggingEditorTabNoteId, noteId, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _tabDropTargetNoteId = noteId;
+            _tabDropInsertAfter = ResolveInsertAfter(e, tabBorder);
+            ShowEditorTabDropIndicator(noteId, _tabDropInsertAfter);
+            tabBorder.Stroke = Palette.ModeButtonExpandedBorder;
+            tabBorder.StrokeThickness = 2;
+        };
+        dropGesture.DragLeave += (_, _) =>
+        {
+            RestoreTabDropVisual();
+            ClearEditorTabDropIndicators();
+        };
+        dropGesture.Drop += (_, e) =>
         {
             var sourceNoteId = _draggingEditorTabNoteId;
             _draggingEditorTabNoteId = null;
+            RestoreTabDropVisual();
             if (string.IsNullOrWhiteSpace(sourceNoteId))
                 return;
 
-            TryReorderEditorTabs(sourceNoteId, noteId);
+            var insertAfter = string.Equals(_tabDropTargetNoteId, noteId, StringComparison.Ordinal)
+                ? _tabDropInsertAfter
+                : ResolveInsertAfter(e, tabBorder);
+            TryReorderEditorTabs(sourceNoteId, noteId, insertAfter);
+            ClearEditorTabDropIndicators();
         };
         tabBorder.GestureRecognizers.Add(dropGesture);
 
@@ -150,7 +201,55 @@ public partial class MainPage
         tabBorder.GestureRecognizers.Add(panGesture);
     }
 
-    private bool TryReorderEditorTabs(string sourceNoteId, string targetNoteId)
+    private static bool ResolveInsertAfter(DragEventArgs args, Border tabBorder)
+    {
+        return ResolveInsertAfter(args.GetPosition(tabBorder), tabBorder);
+    }
+
+    private static bool ResolveInsertAfter(DropEventArgs args, Border tabBorder)
+    {
+        return ResolveInsertAfter(args.GetPosition(tabBorder), tabBorder);
+    }
+
+    private static bool ResolveInsertAfter(Point? point, Border tabBorder)
+    {
+        if (point is null)
+            return false;
+
+        var width = tabBorder.Width > 1 ? tabBorder.Width : tabBorder.WidthRequest;
+        if (width <= 0)
+            return false;
+
+        return point.Value.X > (width / 2d);
+    }
+
+    private void ShowEditorTabDropIndicator(string noteId, bool insertAfter)
+    {
+        foreach (var (id, indicator) in _editorTabDropIndicators)
+        {
+            if (!string.Equals(id, noteId, StringComparison.Ordinal))
+            {
+                indicator.IsVisible = false;
+                continue;
+            }
+
+            indicator.HorizontalOptions = insertAfter ? LayoutOptions.End : LayoutOptions.Start;
+            indicator.IsVisible = true;
+        }
+    }
+
+    private void ClearEditorTabDropIndicators()
+    {
+        foreach (var indicator in _editorTabDropIndicators.Values)
+        {
+            indicator.IsVisible = false;
+        }
+
+        _tabDropTargetNoteId = null;
+        _tabDropInsertAfter = false;
+    }
+
+    private bool TryReorderEditorTabs(string sourceNoteId, string targetNoteId, bool insertAfter)
     {
         if (string.IsNullOrWhiteSpace(sourceNoteId)
             || string.IsNullOrWhiteSpace(targetNoteId)
@@ -164,14 +263,17 @@ public partial class MainPage
         if (sourceIndex < 0 || targetIndex < 0 || sourceIndex == targetIndex)
             return false;
 
-        var sourceTab = _editorTabs[sourceIndex];
+        var movingTab = _editorTabs[sourceIndex];
         _editorTabs.RemoveAt(sourceIndex);
+
         if (sourceIndex < targetIndex)
         {
             targetIndex--;
         }
 
-        _editorTabs.Insert(targetIndex, sourceTab);
+        var insertIndex = insertAfter ? targetIndex + 1 : targetIndex;
+        insertIndex = Math.Clamp(insertIndex, 0, _editorTabs.Count);
+        _editorTabs.Insert(insertIndex, movingTab);
         RefreshEditorTabsVisual();
         return true;
     }
@@ -189,12 +291,7 @@ public partial class MainPage
         if (targetIndex == sourceIndex)
             return false;
 
-        var sourceTab = _editorTabs[sourceIndex];
-        _editorTabs.RemoveAt(sourceIndex);
-        if (targetIndex > sourceIndex)
-            targetIndex--;
-
-        _editorTabs.Insert(targetIndex, sourceTab);
+        (_editorTabs[sourceIndex], _editorTabs[targetIndex]) = (_editorTabs[targetIndex], _editorTabs[sourceIndex]);
         RefreshEditorTabsVisual();
         return true;
     }
