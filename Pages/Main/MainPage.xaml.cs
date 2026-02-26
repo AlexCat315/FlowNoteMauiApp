@@ -144,14 +144,20 @@ public partial class MainPage : ContentPage
         var minZoom = Math.Max(EditorMinZoom, (float)ZoomSlider.Minimum);
         var maxZoom = Math.Max(minZoom, (float)ZoomSlider.Maximum);
         var zoom = Math.Clamp((float)ZoomSlider.Value, minZoom, maxZoom);
+        var forceNativeGestures = RequiresNativePdfGesturesOnPlatform();
+        var enableZoom = forceNativeGestures || EnableZoomSwitch.IsToggled;
+        var enableSwipe = forceNativeGestures || EnableSwipeSwitch.IsToggled;
 
-        PdfViewer.EnableZoom = EnableZoomSwitch.IsToggled;
-        PdfViewer.EnableSwipe = EnableSwipeSwitch.IsToggled;
+        PdfViewer.EnableZoom = enableZoom;
+        PdfViewer.EnableSwipe = enableSwipe;
         PdfViewer.EnableLinkNavigation = EnableLinkSwitch.IsToggled;
         PdfViewer.MinZoom = minZoom;
         PdfViewer.MaxZoom = maxZoom;
         PdfViewer.Zoom = zoom;
         DrawingCanvas.ViewportZoom = zoom;
+        LogInputGesture(
+            $"viewer-settings platform={DeviceInfo.Platform} force-native={forceNativeGestures} " +
+            $"swipe={PdfViewer.EnableSwipe} zoom={PdfViewer.EnableZoom} link={PdfViewer.EnableLinkNavigation}");
     }
 
     private bool EnsurePdfLoaded(bool showHint = false)
@@ -179,6 +185,12 @@ public partial class MainPage : ContentPage
             return true;
 
         return DeviceInfo.Platform == DevicePlatform.iOS;
+    }
+
+    private static bool RequiresNativePdfGesturesOnPlatform()
+    {
+        return DeviceInfo.Platform == DevicePlatform.MacCatalyst
+            || DeviceInfo.Platform == DevicePlatform.iOS;
     }
 
     private Color ThemeSelectedBackground => IsDarkTheme
@@ -231,6 +243,11 @@ public partial class MainPage : ContentPage
         EnableZoomSwitch.IsToggled = _savedEnableZoom;
         EnableSwipeSwitch.IsToggled = _savedEnableSwipe;
         EnableLinkSwitch.IsToggled = _savedEnableLink;
+        if (RequiresNativePdfGesturesOnPlatform())
+        {
+            EnableZoomSwitch.IsToggled = true;
+            EnableSwipeSwitch.IsToggled = true;
+        }
         ApplyViewerSettingsFromUi();
 
         UpdatePageIndicators();

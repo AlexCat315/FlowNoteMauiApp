@@ -190,6 +190,9 @@ public partial class MainPage
 
     private void OnEnableZoomToggled(object? sender, ToggledEventArgs e)
     {
+        if (_isUpdatingSettingsControls)
+            return;
+
         ApplyViewerSettingsFromUi();
         SavePersistedAppSettings();
         RefreshSettingsUiState();
@@ -197,6 +200,9 @@ public partial class MainPage
 
     private void OnEnableSwipeToggled(object? sender, ToggledEventArgs e)
     {
+        if (_isUpdatingSettingsControls)
+            return;
+
         ApplyViewerSettingsFromUi();
         SavePersistedAppSettings();
         RefreshSettingsUiState();
@@ -204,6 +210,9 @@ public partial class MainPage
 
     private void OnEnableLinkToggled(object? sender, ToggledEventArgs e)
     {
+        if (_isUpdatingSettingsControls)
+            return;
+
         ApplyViewerSettingsFromUi();
         SavePersistedAppSettings();
         RefreshSettingsUiState();

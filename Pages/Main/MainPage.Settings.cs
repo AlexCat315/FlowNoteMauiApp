@@ -1,5 +1,6 @@
 using System.Globalization;
 using Flow.PDFView.Abstractions;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
 
 namespace FlowNoteMauiApp;
@@ -143,8 +144,16 @@ public partial class MainPage
             _savedFitPolicy = (FitPolicy)FitPolicyPicker.SelectedIndex;
 
         _savedZoom = (float)Math.Clamp(ZoomSlider.Value, EditorMinZoom, EditorMaxZoom);
-        _savedEnableZoom = EnableZoomSwitch.IsToggled;
-        _savedEnableSwipe = EnableSwipeSwitch.IsToggled;
+        if (RequiresNativePdfGesturesOnPlatform())
+        {
+            _savedEnableZoom = true;
+            _savedEnableSwipe = true;
+        }
+        else
+        {
+            _savedEnableZoom = EnableZoomSwitch.IsToggled;
+            _savedEnableSwipe = EnableSwipeSwitch.IsToggled;
+        }
         _savedEnableLink = EnableLinkSwitch.IsToggled;
     }
 
@@ -171,6 +180,12 @@ public partial class MainPage
             PageMoveResistanceSlider.Value = _pageMoveResistancePercent;
             PageMoveResistanceSlider.IsEnabled = _pageFreeMoveEnabled;
             ZoomFollowSwitch.IsToggled = _zoomFollowEnabled;
+            var forceNativeGestures = RequiresNativePdfGesturesOnPlatform();
+            EnableZoomSwitch.IsToggled = forceNativeGestures ? true : _savedEnableZoom;
+            EnableSwipeSwitch.IsToggled = forceNativeGestures ? true : _savedEnableSwipe;
+            EnableZoomSwitch.IsEnabled = !forceNativeGestures;
+            EnableSwipeSwitch.IsEnabled = !forceNativeGestures;
+            EnableLinkSwitch.IsToggled = _savedEnableLink;
 
             KeepScreenOnSwitch.IsToggled = _keepScreenOnEnabled;
             DarkModeInvertSwitch.IsToggled = _darkModeInvertEnabled;

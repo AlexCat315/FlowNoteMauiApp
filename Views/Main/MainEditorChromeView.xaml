@@ -17,6 +17,7 @@
         <Border
             x:Name="TopBarPanel"
             IsVisible="False"
+            InputTransparent="False"
             HorizontalOptions="Fill"
             VerticalOptions="Start"
             Margin="0"
@@ -355,6 +356,7 @@
 <Border
             x:Name="InputModePanel"
             IsVisible="False"
+            InputTransparent="False"
             VerticalOptions="Start"
             HorizontalOptions="Start"
             Margin="18,94,0,0"
@@ -438,6 +440,7 @@
 <Border
             x:Name="LayerPanel"
             IsVisible="False"
+            InputTransparent="False"
             VerticalOptions="Fill"
             HorizontalOptions="End"
             WidthRequest="252"

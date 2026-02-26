@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:views="clr-namespace:FlowNoteMauiApp.Views.Main"
-             x:Class="FlowNoteMauiApp.MainPage"
-             BackgroundColor="{AppThemeBinding Light=#F8F8FA, Dark=#182434}">
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:FlowNoteMauiApp.Views.Main"
+    x:Class="FlowNoteMauiApp.MainPage"
+    BackgroundColor="{AppThemeBinding Light=#F8F8FA, Dark=#182434}"
+>
     <ContentPage.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Resources/Styles/MainPageStyles.xaml" />
+                <ResourceDictionary
+                    Source="/Resources/Styles/MainPageStyles.xaml"
+                />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -16,15 +20,26 @@
         <Grid x:Name="EditorHost" />
 
         <views:MainHomePanelView x:Name="HomePanelView" />
-        <views:MainEditorChromeView x:Name="EditorChromeView"
-                                    InputTransparent="True" />
-        <views:MainDrawerOverlayView x:Name="DrawerOverlayView"
-                                     IsVisible="False"
-                                     InputTransparent="True" />
-        <views:MainSettingsOverlayView x:Name="SettingsOverlayView"
-                                       IsVisible="False"
-                                       InputTransparent="True" />
-        <views:MainStatusToastView x:Name="StatusToastView"
-                                   InputTransparent="True" />
+        <views:MainEditorChromeView
+            x:Name="EditorChromeView"
+            InputTransparent="True"
+            CascadeInputTransparent="False"
+            VerticalOptions="Start"
+            HorizontalOptions="Fill"
+        />
+        <views:MainDrawerOverlayView
+            x:Name="DrawerOverlayView"
+            IsVisible="False"
+            InputTransparent="True"
+        />
+        <views:MainSettingsOverlayView
+            x:Name="SettingsOverlayView"
+            IsVisible="False"
+            InputTransparent="True"
+        />
+        <views:MainStatusToastView
+            x:Name="StatusToastView"
+            InputTransparent="True"
+        />
     </Grid>
 </ContentPage>
