@@ -14,16 +14,28 @@ public partial class MainPage
         TapRead
     }
 
-    private const double PanInertiaFrameIntervalMs = 16d;
+    private enum InkToolKind
+    {
+        None,
+        Pen,
+        Highlighter,
+        Eraser
+    }
+
+    private const double PanInertiaFrameIntervalMs = 20d;
     private const double PanInertiaVelocityStopThreshold = 8d;
     private const double PanInertiaStartSpeedThreshold = 34d;
+    private const double PanInertiaMaxStartSpeed = 6200d;
     private const string PenInputModeIcon = "icon_pencil.png";
     private const string FingerInputModeIcon = "icon_hand.png";
     private const string ReadInputModeIcon = "icon_read_mode.png";
     private CancellationTokenSource? _panInertiaCts;
     private DateTime _lastPanSampleUtc = DateTime.UtcNow;
+    private DateTime _lastPanUpdateLogUtc = DateTime.MinValue;
     private double _panVelocityX;
     private double _panVelocityY;
+    private bool _panInertiaFrameQueued;
+    private InkToolKind _activeInkTool = InkToolKind.None;
 
     private bool EnsureDrawingReady(bool showHint = false)
     {
@@ -62,13 +74,14 @@ public partial class MainPage
 
     private void UpdateModeButtonVisual()
     {
+        var palette = Palette;
         var isExpanded = InputModePanel.IsVisible;
         PenModeButton.BackgroundColor = isExpanded
-            ? (IsDarkTheme ? Color.FromArgb("#33527A") : Color.FromArgb("#E8F4FD"))
-            : (IsDarkTheme ? Color.FromArgb("#2B3D57") : Color.FromArgb("#FFFFFF"));
+            ? palette.ModeButtonExpandedBackground
+            : palette.ModeButtonCollapsedBackground;
         PenModeButton.BorderColor = isExpanded
-            ? Color.FromArgb("#4A90E2")
-            : (IsDarkTheme ? Color.FromArgb("#4A607C") : Color.FromArgb("#D1D1D6"));
+            ? palette.ModeButtonExpandedBorder
+            : palette.ModeButtonCollapsedBorder;
         PenModeButton.BorderWidth = 1;
     }
 
@@ -107,12 +120,71 @@ public partial class MainPage
 
     private void UpdateInputModeButtonVisual(Button button, bool isSelected)
     {
+        var palette = Palette;
         button.BackgroundColor = isSelected
-            ? (IsDarkTheme ? Color.FromArgb("#33527A") : Color.FromArgb("#E8F4FD"))
+            ? palette.ModeSelectionBackground
             : Colors.Transparent;
         button.TextColor = isSelected
-            ? (IsDarkTheme ? Color.FromArgb("#F2F2F7") : Color.FromArgb("#1C1C1E"))
+            ? palette.ModeSelectionText
             : ThemePrimaryText;
+    }
+
+    private static bool IsNativeGesturePassthroughPlatform()
+    {
+        return DeviceInfo.Platform == DevicePlatform.MacCatalyst
+            || DeviceInfo.Platform == DevicePlatform.iOS;
+    }
+
+    private void ApplyActiveInkToolVisual()
+    {
+        switch (_activeInkTool)
+        {
+            case InkToolKind.Highlighter:
+                DrawingCanvas.IsErasing = false;
+                DrawingCanvas.IsHighlighter = true;
+                UpdateToolSelection("Highlighter");
+                break;
+            case InkToolKind.Eraser:
+                DrawingCanvas.IsErasing = true;
+                DrawingCanvas.IsHighlighter = false;
+                UpdateToolSelection("Eraser");
+                break;
+            case InkToolKind.Pen:
+                DrawingCanvas.IsErasing = false;
+                DrawingCanvas.IsHighlighter = false;
+                UpdateToolSelection("Pen");
+                break;
+            default:
+                DrawingCanvas.IsErasing = false;
+                DrawingCanvas.IsHighlighter = false;
+                UpdateToolSelection("None");
+                break;
+        }
+    }
+
+    private void ArmInkTool(InkToolKind tool, bool showStatus = false)
+    {
+        _activeInkTool = tool;
+        if (!IsEditorInitialized)
+            return;
+
+        ApplyActiveInkToolVisual();
+        var forceNativeInputPassthrough = IsNativeGesturePassthroughPlatform();
+        if (!forceNativeInputPassthrough && _drawingInputMode != DrawingInputMode.TapRead)
+        {
+            DrawingCanvas.EnableDrawing = true;
+            DrawingToolbarPanel.IsVisible = true;
+        }
+
+        if (showStatus)
+        {
+            ShowStatus(tool switch
+            {
+                InkToolKind.Highlighter => T("StatusHighlighterArmed", "Highlighter selected."),
+                InkToolKind.Eraser => T("StatusEraserArmed", "Eraser selected."),
+                _ => T("StatusPenArmed", "Pen selected.")
+            });
+        }
     }
 
     private void ApplyInputMode(DrawingInputMode mode, bool showStatus = false, bool activateDrawing = true)
@@ -126,20 +198,22 @@ public partial class MainPage
             return;
 
         var wasDrawingEnabled = DrawingCanvas.EnableDrawing;
-        var forceNativeInputPassthrough =
-            DeviceInfo.Platform == DevicePlatform.MacCatalyst
-            || DeviceInfo.Platform == DevicePlatform.iOS;
-        var targetDrawingEnabled = mode != DrawingInputMode.TapRead && (activateDrawing || DrawingCanvas.EnableDrawing);
+        var forceNativeInputPassthrough = IsNativeGesturePassthroughPlatform();
+        var hasInkTool = _activeInkTool != InkToolKind.None;
+        var targetDrawingEnabled = mode != DrawingInputMode.TapRead
+            && hasInkTool
+            && (activateDrawing || DrawingCanvas.EnableDrawing);
         if (forceNativeInputPassthrough)
         {
             targetDrawingEnabled = false;
         }
 
-        DrawingCanvas.IsErasing = false;
-        DrawingCanvas.IsHighlighter = false;
+        ApplyActiveInkToolVisual();
         DrawingCanvas.ForceInputTransparent = forceNativeInputPassthrough || mode == DrawingInputMode.TapRead;
         DrawingCanvas.IsEnabled = !DrawingCanvas.ForceInputTransparent;
-        LogInputGesture($"mode-switch={mode} platform={DeviceInfo.Platform} activate={activateDrawing} drawing={targetDrawingEnabled} native-pass-through={forceNativeInputPassthrough}");
+        LogInputGesture(
+            $"mode-switch={mode} platform={DeviceInfo.Platform} activate={activateDrawing} drawing={targetDrawingEnabled} " +
+            $"tool={_activeInkTool} native-pass-through={forceNativeInputPassthrough}");
 
         switch (mode)
         {
@@ -148,11 +222,12 @@ public partial class MainPage
                 DrawingCanvas.EnableDrawing = targetDrawingEnabled;
                 DrawingCanvas.IsVisible = true;
                 DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
-                UpdateToolSelection("Pen");
                 if (showStatus)
                 {
                     ShowStatus(forceNativeInputPassthrough
                         ? T("StatusNativePdfInput", "Native PDF gestures are enabled on this platform. Handwriting capture is currently limited.")
+                        : !hasInkTool
+                            ? T("StatusSelectBrushFirst", "Please select a pen/highlighter/eraser before writing.")
                         : T("StatusPenMode", "Handwriting mode: stylus writes, finger/mouse pans and zooms."));
                 }
                 break;
@@ -161,11 +236,12 @@ public partial class MainPage
                 DrawingCanvas.EnableDrawing = targetDrawingEnabled;
                 DrawingCanvas.IsVisible = true;
                 DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
-                UpdateToolSelection("Finger");
                 if (showStatus)
                 {
                     ShowStatus(forceNativeInputPassthrough
                         ? T("StatusNativePdfInput", "Native PDF gestures are enabled on this platform. Handwriting capture is currently limited.")
+                        : !hasInkTool
+                            ? T("StatusSelectBrushFirst", "Please select a pen/highlighter/eraser before writing.")
                         : T("StatusFingerMode", "Touch mode: one finger writes, two fingers pan/zoom; in single-page mode two-finger swipe flips page."));
                 }
                 break;
@@ -216,9 +292,10 @@ public partial class MainPage
             return;
 
         SetInputModePanelVisible(false);
-        DrawingCanvas.IsErasing = false;
-        DrawingCanvas.IsHighlighter = !DrawingCanvas.IsHighlighter;
-        UpdateToolSelection(DrawingCanvas.IsHighlighter ? "Highlighter" : "Pen");
+        var nextTool = _activeInkTool == InkToolKind.Highlighter
+            ? InkToolKind.Pen
+            : InkToolKind.Highlighter;
+        ArmInkTool(nextTool);
     }
 
     private void OnEraserClicked(object? sender, EventArgs e)
@@ -227,17 +304,19 @@ public partial class MainPage
             return;
 
         SetInputModePanelVisible(false);
-        DrawingCanvas.IsErasing = !DrawingCanvas.IsErasing;
-        DrawingCanvas.IsHighlighter = false;
-        UpdateToolSelection(DrawingCanvas.IsErasing ? "Eraser" : "Pen");
+        var nextTool = _activeInkTool == InkToolKind.Eraser
+            ? InkToolKind.Pen
+            : InkToolKind.Eraser;
+        ArmInkTool(nextTool);
     }
 
     private void UpdateToolSelection(string selectedTool)
     {
-        var selectedColor = IsDarkTheme ? Color.FromArgb("#33527A") : Color.FromArgb("#E8F4FD");
-        var normalColor = IsDarkTheme ? Color.FromArgb("#2B3D57") : Color.FromArgb("#FFFFFF");
-        var selectedBorder = Color.FromArgb("#4A90E2");
-        var normalBorder = IsDarkTheme ? Color.FromArgb("#4A607C") : Color.FromArgb("#D1D1D6");
+        var palette = Palette;
+        var selectedColor = palette.ToolSelectedBackground;
+        var normalColor = palette.ToolNormalBackground;
+        var selectedBorder = palette.ToolSelectedBorder;
+        var normalBorder = palette.ToolNormalBorder;
 
         HighlighterButton.BackgroundColor = selectedTool == "Highlighter" ? selectedColor : normalColor;
         EraserButton.BackgroundColor = selectedTool == "Eraser" ? selectedColor : normalColor;
@@ -291,6 +370,7 @@ public partial class MainPage
 
         DrawingCanvas.StrokeColor = SKColors.Black;
         UpdateColorSelection("Black");
+        ArmInkTool(InkToolKind.Pen);
     }
 
     private void OnColorRedClicked(object? sender, EventArgs e)
@@ -300,6 +380,7 @@ public partial class MainPage
 
         DrawingCanvas.StrokeColor = SKColors.Red;
         UpdateColorSelection("Red");
+        ArmInkTool(InkToolKind.Pen);
     }
 
     private void OnColorBlueClicked(object? sender, EventArgs e)
@@ -309,6 +390,7 @@ public partial class MainPage
 
         DrawingCanvas.StrokeColor = SKColors.Blue;
         UpdateColorSelection("Blue");
+        ArmInkTool(InkToolKind.Pen);
     }
 
     private void OnColorGreenClicked(object? sender, EventArgs e)
@@ -318,6 +400,7 @@ public partial class MainPage
 
         DrawingCanvas.StrokeColor = SKColors.Green;
         UpdateColorSelection("Green");
+        ArmInkTool(InkToolKind.Pen);
     }
 
     private void OnColorOrangeClicked(object? sender, EventArgs e)
@@ -327,6 +410,7 @@ public partial class MainPage
 
         DrawingCanvas.StrokeColor = SKColors.Orange;
         UpdateColorSelection("Orange");
+        ArmInkTool(InkToolKind.Pen);
     }
 
     private void OnColorWhiteClicked(object? sender, EventArgs e)
@@ -336,19 +420,21 @@ public partial class MainPage
 
         DrawingCanvas.StrokeColor = SKColors.White;
         UpdateColorSelection("White");
+        ArmInkTool(InkToolKind.Pen);
     }
 
     private void UpdateColorSelection(string selectedColor)
     {
-        var selectedBorderColor = Color.FromArgb("#4A90E2");
-        var normalBorderColor = IsDarkTheme ? Color.FromArgb("#526883") : Colors.Transparent;
+        var palette = Palette;
+        var selectedBorderColor = palette.ModeButtonExpandedBorder;
+        var normalBorderColor = palette.ColorSwatchNormalBorder;
 
         ColorBlack.BorderColor = selectedColor == "Black" ? selectedBorderColor : normalBorderColor;
         ColorRed.BorderColor = selectedColor == "Red" ? selectedBorderColor : normalBorderColor;
         ColorBlue.BorderColor = selectedColor == "Blue" ? selectedBorderColor : normalBorderColor;
         ColorGreen.BorderColor = selectedColor == "Green" ? selectedBorderColor : normalBorderColor;
         ColorOrange.BorderColor = selectedColor == "Orange" ? selectedBorderColor : normalBorderColor;
-        ColorWhite.BorderColor = selectedColor == "White" ? selectedBorderColor : Color.FromArgb("#CBD5E1");
+        ColorWhite.BorderColor = selectedColor == "White" ? selectedBorderColor : palette.ColorSwatchWhiteBorder;
     }
 
     private void OnAddLayerClicked(object? sender, EventArgs e)
@@ -385,9 +471,10 @@ public partial class MainPage
             var layer = DrawingCanvas.Layers[i];
             var isSelected = i == DrawingCanvas.CurrentLayerIndex;
             var layerIndex = i;
+            var palette = Palette;
 
             var bgColor = isSelected
-                ? (IsDarkTheme ? Color.FromArgb("#33527A") : Color.FromArgb("#E8F4FD"))
+                ? palette.LayerSelectedBackground
                 : Colors.Transparent;
 
             var layerItem = new Border
@@ -395,8 +482,8 @@ public partial class MainPage
                 BackgroundColor = bgColor,
                 Padding = new Thickness(10, 8),
                 Stroke = isSelected
-                    ? Color.FromArgb("#4A90E2")
-                    : (IsDarkTheme ? Color.FromArgb("#415B79") : Color.FromArgb("#D8E4F5")),
+                    ? palette.LayerSelectedBorder
+                    : palette.LayerNormalBorder,
                 StrokeThickness = 1,
                 StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 }
             };
@@ -549,8 +636,14 @@ public partial class MainPage
             UpdatePanVelocity(adjustedX, adjustedY);
         }
 
-        if (Math.Abs(adjustedX) > 0.1 || Math.Abs(adjustedY) > 0.1 || e.HasZoom)
+        var now = DateTime.UtcNow;
+        var shouldLogPanUpdate = (now - _lastPanUpdateLogUtc).TotalMilliseconds >= 90
+            || Math.Abs(adjustedX) >= 90
+            || Math.Abs(adjustedY) >= 90
+            || e.HasZoom;
+        if (shouldLogPanUpdate && (Math.Abs(adjustedX) > 0.1 || Math.Abs(adjustedY) > 0.1 || e.HasZoom))
         {
+            _lastPanUpdateLogUtc = now;
             LogInputGesture($"pan-update wheel={e.IsWheelInput} dx={adjustedX:0.0} dy={adjustedY:0.0} zoom={e.ScaleFactor:0.000}");
         }
     }
@@ -597,11 +690,19 @@ public partial class MainPage
             return;
         }
 
+        if (speed > PanInertiaMaxStartSpeed)
+        {
+            var normalize = PanInertiaMaxStartSpeed / speed;
+            initialVelocityX *= normalize;
+            initialVelocityY *= normalize;
+            speed = PanInertiaMaxStartSpeed;
+        }
+
         StopTwoFingerInertia(resetVelocity: false);
         _panInertiaCts = new CancellationTokenSource();
         var token = _panInertiaCts.Token;
         var resistance = Math.Clamp(_pageMoveResistancePercent / 100d, 0d, 1d);
-        var damping = Math.Clamp(0.93d - (resistance * 0.2d), 0.68d, 0.93d);
+        var damping = Math.Clamp(0.90d - (resistance * 0.16d) - Math.Min(0.04d, speed / 24000d), 0.72d, 0.90d);
         var velocityX = initialVelocityX;
         var velocityY = initialVelocityY;
 
@@ -627,13 +728,29 @@ public partial class MainPage
                     var deltaX = velocityX * deltaSeconds;
                     var deltaY = velocityY * deltaSeconds;
 
-                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    if (_panInertiaFrameQueued)
                     {
-                        _panVelocityX = velocityX;
-                        _panVelocityY = velocityY;
-                        if (HasLoadedDocument)
+                        continue;
+                    }
+
+                    _panInertiaFrameQueued = true;
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        try
                         {
-                            PdfViewer.PanBy(deltaX, deltaY);
+                            if (token.IsCancellationRequested)
+                                return;
+
+                            _panVelocityX = velocityX;
+                            _panVelocityY = velocityY;
+                            if (HasLoadedDocument)
+                            {
+                                PdfViewer.PanBy(deltaX, deltaY);
+                            }
+                        }
+                        finally
+                        {
+                            _panInertiaFrameQueued = false;
                         }
                     });
                 }
@@ -643,8 +760,9 @@ public partial class MainPage
             }
             finally
             {
-                await MainThread.InvokeOnMainThreadAsync(() =>
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
+                    _panInertiaFrameQueued = false;
                     _panVelocityX = 0d;
                     _panVelocityY = 0d;
                 });
@@ -659,6 +777,7 @@ public partial class MainPage
         _panInertiaCts?.Cancel();
         _panInertiaCts?.Dispose();
         _panInertiaCts = null;
+        _panInertiaFrameQueued = false;
         if (resetVelocity)
         {
             _panVelocityX = 0d;

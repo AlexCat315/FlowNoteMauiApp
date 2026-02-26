@@ -215,16 +215,17 @@ public partial class MainPage
 
     private void ApplySegmentButtonStyle(Button button, bool isSelected)
     {
+        var palette = Palette;
         button.BackgroundColor = isSelected
             ? Color.FromArgb("#1F86E9")
-            : (IsDarkTheme ? Color.FromArgb("#2B3D57") : Colors.White);
+            : palette.SegmentInactiveBackground;
         button.BorderColor = isSelected
             ? Color.FromArgb("#1F86E9")
-            : (IsDarkTheme ? Color.FromArgb("#617A9C") : Color.FromArgb("#CDD7E6"));
+            : palette.SegmentInactiveBorder;
         button.BorderWidth = 1;
         button.TextColor = isSelected
             ? Colors.White
-            : (IsDarkTheme ? Color.FromArgb("#DDE7F7") : Color.FromArgb("#4B5566"));
+            : palette.SegmentInactiveText;
     }
 
     private void SetSettingsSection(SettingsSection section)

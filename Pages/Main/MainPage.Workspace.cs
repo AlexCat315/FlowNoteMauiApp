@@ -59,17 +59,18 @@ public partial class MainPage
         foreach (var tab in _editorTabs)
         {
             var isActive = string.Equals(tab.NoteId, _currentNoteId, StringComparison.Ordinal);
+            var palette = Palette;
 
             var tabBorder = new Border
             {
                 Padding = new Thickness(9, 3),
                 Margin = new Thickness(0, 2, 2, 0),
                 BackgroundColor = isActive
-                    ? Color.FromArgb("#4A90E2")
-                    : Color.FromArgb("#FFFFFF"),
+                    ? palette.TabActiveBackground
+                    : palette.TabInactiveBackground,
                 Stroke = isActive
-                    ? Color.FromArgb("#2F74D0")
-                    : Color.FromArgb("#CBD5E4"),
+                    ? palette.TabActiveBorder
+                    : palette.TabInactiveBorder,
                 StrokeThickness = 1,
                 StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(10, 10, 4, 4) },
                 MinimumWidthRequest = 108,
@@ -104,7 +105,7 @@ public partial class MainPage
                 FontSize = 11.5,
                 MaxLines = 1,
                 LineBreakMode = LineBreakMode.TailTruncation,
-                TextColor = isActive ? Colors.White : ThemePrimaryText
+                TextColor = isActive ? palette.TabActiveText : palette.TabInactiveText
             };
             tabGrid.Children.Add(titleLabel);
             Grid.SetColumn(titleLabel, 1);
@@ -230,6 +231,7 @@ public partial class MainPage
         await _workspaceService.MarkOpenedAsync(note.Id);
 
         EnsureEditorInitialized();
+        _activeInkTool = InkToolKind.None;
         PdfViewer.Source = new BytesPdfSource(bytes);
         ShowEditorScreen();
         RefreshEditorTabsVisual();
