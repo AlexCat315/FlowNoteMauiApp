@@ -114,9 +114,9 @@ public partial class MainPage
         TopModePenButton.BorderWidth = InputModePanel.IsVisible ? 1 : 0;
         TopModePenButton.Source = _drawingInputMode switch
         {
-            DrawingInputMode.FingerCapacitive => "icon_hand.png",
+            DrawingInputMode.FingerCapacitive => "icon_hand_mode.png",
             DrawingInputMode.TapRead => "icon_read_mode.png",
-            _ => "icon_pencil.png"
+            _ => "icon_stylus_mode.png"
         };
     }
 
@@ -472,11 +472,11 @@ public partial class MainPage
                 var maxX = Math.Max(8d, EditorChromeView.Width - panelWidth - 8d);
                 targetX = Math.Clamp(targetX, 8d, maxX);
 
-                var targetY = anchorY + anchorHeight + 8d;
-                var minY = Math.Max(TopBarPanel.Height + 4d, 8d);
+                var targetY = anchorY + anchorHeight + 4d;
+                var minY = Math.Max(TopBarPanel.Height + 2d, 6d);
                 if (panelHeight > 1 && EditorChromeView.Height > 1)
                 {
-                    var maxY = Math.Max(minY, EditorChromeView.Height - panelHeight - 8d);
+                    var maxY = Math.Max(minY, EditorChromeView.Height - panelHeight - 6d);
                     targetY = Math.Clamp(targetY, minY, maxY);
                 }
                 else
@@ -484,8 +484,9 @@ public partial class MainPage
                     targetY = Math.Max(targetY, minY);
                 }
 
-                InputModePanel.TranslationX = targetX;
-                InputModePanel.TranslationY = targetY;
+                InputModePanel.TranslationX = 0;
+                InputModePanel.TranslationY = 0;
+                InputModePanel.Margin = new Thickness(targetX, targetY, 0, 0);
             }
 
             ApplyPosition(0);
@@ -571,8 +572,9 @@ public partial class MainPage
                     targetY = Math.Max(targetY, minY);
                 }
 
-                DrawingToolbarPanel.TranslationX = targetX;
-                DrawingToolbarPanel.TranslationY = targetY;
+                DrawingToolbarPanel.TranslationX = 0;
+                DrawingToolbarPanel.TranslationY = 0;
+                DrawingToolbarPanel.Margin = new Thickness(targetX, targetY, 0, 0);
             }
 
             ApplyPosition(0);
@@ -792,10 +794,10 @@ public partial class MainPage
     {
         try
         {
-            var penSource = await CreateTintedToolIconSourceAsync("toolicons/icon_pen.png", EnsureInkState(InkToolKind.Ballpoint).Color, token);
-            var highlighterSource = await CreateTintedToolIconSourceAsync("toolicons/icon_gelpen.png", EnsureInkState(InkToolKind.Fountain).Color, token);
+            var penSource = await CreateTintedToolIconSourceAsync("toolicons/icon_ballpoint_pen.png", EnsureInkState(InkToolKind.Ballpoint).Color, token);
+            var highlighterSource = await CreateTintedToolIconSourceAsync("toolicons/icon_pen.png", EnsureInkState(InkToolKind.Fountain).Color, token);
             var pencilSource = await CreateTintedToolIconSourceAsync("toolicons/icon_pencil.png", EnsureInkState(InkToolKind.Pencil).Color, token);
-            var markerSource = await CreateTintedToolIconSourceAsync("toolicons/icon_brush.png", EnsureInkState(InkToolKind.Marker).Color, token);
+            var markerSource = await CreateTintedToolIconSourceAsync("toolicons/icon_markpen.png", EnsureInkState(InkToolKind.Marker).Color, token);
             if (token.IsCancellationRequested)
                 return;
 
@@ -825,7 +827,10 @@ public partial class MainPage
         var fallbackFile = Path.GetFileName(iconFile);
         try
         {
-            await using var rawStream = await FileSystem.OpenAppPackageFileAsync(iconFile);
+            await using var rawStream = await OpenToolIconTemplateStreamAsync(iconFile);
+            if (rawStream is null)
+                return ImageSource.FromFile(fallbackFile);
+
             using var baseBitmap = SKBitmap.Decode(rawStream);
             if (baseBitmap is null)
                 return ImageSource.FromFile(fallbackFile);
@@ -851,10 +856,48 @@ public partial class MainPage
             _toolIconSourceCache[cacheKey] = source;
             return source;
         }
-        catch
+        catch (OperationCanceledException)
         {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ToolTint] Failed to tint '{iconFile}': {ex.Message}");
             return ImageSource.FromFile(fallbackFile);
         }
+    }
+
+    private static IEnumerable<string> BuildToolIconPathCandidates(string iconFile)
+    {
+        var normalized = iconFile.Replace('\\', '/');
+        var fileName = Path.GetFileName(normalized);
+        yield return normalized;
+
+        var windowsNormalized = normalized.Replace('/', '\\');
+        if (!string.Equals(windowsNormalized, normalized, StringComparison.Ordinal))
+            yield return windowsNormalized;
+
+        if (!string.IsNullOrWhiteSpace(fileName))
+            yield return fileName;
+    }
+
+    private static async Task<Stream?> OpenToolIconTemplateStreamAsync(string iconFile)
+    {
+        foreach (var candidate in BuildToolIconPathCandidates(iconFile).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            try
+            {
+                return await FileSystem.OpenAppPackageFileAsync(candidate);
+            }
+            catch (FileNotFoundException)
+            {
+            }
+            catch (DirectoryNotFoundException)
+            {
+            }
+        }
+
+        return null;
     }
 
     private void UpdateToolSettingsPanelState()
