@@ -482,47 +482,40 @@ public partial class MainPage
         if (!EnsurePdfLoaded())
             return;
 
-        if (PdfViewer.DisplayMode == Flow.PDFView.Abstractions.PdfDisplayMode.SinglePage)
+        if (_drawingInputMode == DrawingInputMode.TapRead)
             return;
 
-        if (_drawingInputMode != DrawingInputMode.FingerCapacitive && !e.IsWheelInput)
-            return;
+        var allowInertia = _drawingInputMode == DrawingInputMode.FingerCapacitive && !e.IsWheelInput;
 
-        if (e.IsWheelInput)
+        if (e.Phase == DrawingCanvas.TwoFingerPanPhase.Begin)
         {
-            if (e.HasPan)
-            {
-                var adjustedX = ApplyPanResistance(e.DeltaX);
-                var adjustedY = ApplyPanResistance(e.DeltaY);
-                PdfViewer.PanBy(adjustedX, adjustedY);
-            }
-
-            return;
+            StopTwoFingerInertia();
+            _panVelocityX = 0d;
+            _panVelocityY = 0d;
+            _lastPanSampleUtc = DateTime.UtcNow;
         }
 
-        switch (e.Phase)
+        if (e.Phase == DrawingCanvas.TwoFingerPanPhase.End)
         {
-            case DrawingCanvas.TwoFingerPanPhase.Begin:
-                StopTwoFingerInertia();
-                _panVelocityX = 0d;
-                _panVelocityY = 0d;
-                _lastPanSampleUtc = DateTime.UtcNow;
-                break;
-            case DrawingCanvas.TwoFingerPanPhase.End:
+            if (allowInertia)
                 StartTwoFingerInertiaIfNeeded();
-                return;
+            return;
         }
 
-        if (e.HasZoom)
+        if (e.HasZoom && !e.IsWheelInput)
         {
             PdfViewer.ZoomBy(e.ScaleFactor, e.CenterX, e.CenterY);
         }
 
-        if (e.HasPan)
+        if (!e.HasPan)
+            return;
+
+        var adjustedX = ApplyPanResistance(e.DeltaX);
+        var adjustedY = ApplyPanResistance(e.DeltaY);
+        PdfViewer.PanBy(adjustedX, adjustedY);
+
+        if (allowInertia)
         {
-            var adjustedX = ApplyPanResistance(e.DeltaX);
-            var adjustedY = ApplyPanResistance(e.DeltaY);
-            PdfViewer.PanBy(adjustedX, adjustedY);
             UpdatePanVelocity(adjustedX, adjustedY);
         }
     }

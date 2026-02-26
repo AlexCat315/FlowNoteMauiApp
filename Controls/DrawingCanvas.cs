@@ -145,6 +145,8 @@ public class DrawingCanvas : SKCanvasView
     private const float TwoFingerZoomDominanceRatio = 1.25f;
     private const float MouseWheelPanStep = 16f;
     private TwoFingerGestureIntent _twoFingerGestureIntent = TwoFingerGestureIntent.None;
+    private long? _penTouchPanId;
+    private SKPoint _penTouchPanAnchor;
 
     public event EventHandler? StrokeCommitted;
     public event EventHandler<TwoFingerSwipeEventArgs>? TwoFingerSwipe;
@@ -568,6 +570,8 @@ public class DrawingCanvas : SKCanvasView
             return;
         }
 
+        var isStylus = e.DeviceType == SKTouchDeviceType.Pen;
+
         if (e.ActionType == SKTouchAction.WheelChanged)
         {
             var panDeltaY = -e.WheelDelta * MouseWheelPanStep;
@@ -584,6 +588,13 @@ public class DrawingCanvas : SKCanvasView
             }
 
             e.Handled = true;
+            return;
+        }
+
+        // Stylus mode on iOS/iPad: finger drag pans the PDF while stylus writes.
+        if (IsPenMode && !isStylus && e.DeviceType == SKTouchDeviceType.Touch)
+        {
+            HandlePenModeTouchPan(e);
             return;
         }
 
@@ -610,10 +621,9 @@ public class DrawingCanvas : SKCanvasView
             return;
         }
 
-        var isStylus = e.DeviceType == SKTouchDeviceType.Pen;
         if (IsPenMode && !isStylus && !SupportsNonStylusPenFallback())
         {
-            e.Handled = false;
+            e.Handled = true;
             return;
         }
 
@@ -656,10 +666,7 @@ public class DrawingCanvas : SKCanvasView
 
     private static bool SupportsNonStylusPenFallback()
     {
-        if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
-            return true;
-
-        return DeviceInfo.Platform == DevicePlatform.iOS;
+        return DeviceInfo.Platform == DevicePlatform.MacCatalyst;
     }
 
     private void TrackTouch(SKTouchEventArgs e)
@@ -728,7 +735,63 @@ public class DrawingCanvas : SKCanvasView
         _isTwoFingerGestureActive = false;
         _twoFingerDistance = 0f;
         _twoFingerGestureIntent = TwoFingerGestureIntent.None;
+        _penTouchPanId = null;
+        _penTouchPanAnchor = SKPoint.Empty;
         CancelCurrentStroke();
+    }
+
+    private void HandlePenModeTouchPan(SKTouchEventArgs e)
+    {
+        switch (e.ActionType)
+        {
+            case SKTouchAction.Pressed:
+                _penTouchPanId = e.Id;
+                _penTouchPanAnchor = e.Location;
+                TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
+                    0f,
+                    0f,
+                    1f,
+                    e.Location.X,
+                    e.Location.Y,
+                    TwoFingerPanPhase.Begin));
+                break;
+            case SKTouchAction.Moved:
+                if (_penTouchPanId != e.Id)
+                    break;
+
+                var deltaX = e.Location.X - _penTouchPanAnchor.X;
+                var deltaY = e.Location.Y - _penTouchPanAnchor.Y;
+                _penTouchPanAnchor = e.Location;
+
+                if (Math.Abs(deltaX) > float.Epsilon || Math.Abs(deltaY) > float.Epsilon)
+                {
+                    TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
+                        deltaX,
+                        deltaY,
+                        1f,
+                        e.Location.X,
+                        e.Location.Y,
+                        TwoFingerPanPhase.Update));
+                }
+                break;
+            case SKTouchAction.Released:
+            case SKTouchAction.Cancelled:
+                if (_penTouchPanId == e.Id)
+                {
+                    TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
+                        0f,
+                        0f,
+                        1f,
+                        e.Location.X,
+                        e.Location.Y,
+                        TwoFingerPanPhase.End));
+                    _penTouchPanId = null;
+                    _penTouchPanAnchor = SKPoint.Empty;
+                }
+                break;
+        }
+
+        e.Handled = true;
     }
 
     private SKPoint GetTouchCenter()

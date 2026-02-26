@@ -1,9 +1,18 @@
 using FlowNoteMauiApp.Resources;
+using Microsoft.Maui.Devices;
 
 namespace FlowNoteMauiApp;
 
 public partial class MainPage
 {
+    private static readonly FilePickerFileType PdfPickerFileType = new(new Dictionary<DevicePlatform, IEnumerable<string>>
+    {
+        { DevicePlatform.iOS, new[] { "com.adobe.pdf", "public.pdf" } },
+        { DevicePlatform.MacCatalyst, new[] { "com.adobe.pdf", "public.pdf" } },
+        { DevicePlatform.Android, new[] { "application/pdf" } },
+        { DevicePlatform.WinUI, new[] { ".pdf" } }
+    });
+
     private async void OnLoadUrlClicked(object? sender, EventArgs e)
     {
         await LoadFromUrlAsync(UrlEntry.Text, showAlertOnError: true, openAfterImport: true);
@@ -72,10 +81,29 @@ public partial class MainPage
     {
         try
         {
-            var result = await FilePicker.Default.PickAsync(new PickOptions
+            var options = new PickOptions
             {
-                PickerTitle = AppResources.SelectPdfFile
-            });
+                PickerTitle = AppResources.SelectPdfFile,
+                FileTypes = PdfPickerFileType
+            };
+
+            // Some iOS/MacCatalyst environments return null from PickAsync; retry with PickMultipleAsync.
+            var result = await MainThread.InvokeOnMainThreadAsync(() => FilePicker.Default.PickAsync(options));
+            var isApplePlatform = DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst;
+            if (result is null && isApplePlatform)
+            {
+                var fallback = await MainThread.InvokeOnMainThreadAsync(() => FilePicker.Default.PickMultipleAsync(options));
+                result = fallback?.FirstOrDefault();
+            }
+
+            if (result is null && isApplePlatform)
+            {
+                var anyTypeOptions = new PickOptions
+                {
+                    PickerTitle = AppResources.SelectPdfFile
+                };
+                result = await MainThread.InvokeOnMainThreadAsync(() => FilePicker.Default.PickAsync(anyTypeOptions));
+            }
 
             if (result is null)
             {
@@ -147,6 +175,8 @@ public partial class MainPage
 
     private async void OnHomeImportLocalClicked(object? sender, EventArgs e)
     {
+        SetSettingsVisible(false);
+        SetDrawerVisible(false);
         var openAfterImport = TopBarPanel.IsVisible;
         await PickAndImportPdfAsync(openAfterImport);
     }
