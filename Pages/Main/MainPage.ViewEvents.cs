@@ -84,6 +84,7 @@ public partial class MainPage
         InputModeReadButton.Clicked += OnInputModeReadClicked;
 
         StrokeWidthSlider.ValueChanged += OnStrokeWidthChanged;
+        PressureSensitivitySlider.ValueChanged += OnPressureSensitivityChanged;
         FindInEditor<ImageButton>("DrawingToolbarCloseButton").Clicked += OnDrawingToolbarCloseClicked;
         PixelEraserModeButton.Clicked += OnPixelEraserModeClicked;
         StrokeEraserModeButton.Clicked += OnStrokeEraserModeClicked;

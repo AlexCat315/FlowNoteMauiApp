@@ -111,7 +111,9 @@ public partial class MainPage : ContentPage
             InputTransparent = false,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            ZoomAffectsStrokeWidth = _zoomFollowEnabled
+            ZoomAffectsStrokeWidth = _zoomFollowEnabled,
+            PressureSensitivity = _pressureSensitivity,
+            UsePressureSensitivity = true
         };
         _drawingCanvas.CanDrawAtViewPoint = (x, y) => PdfViewer.IsPointOnDocument(x, y);
 

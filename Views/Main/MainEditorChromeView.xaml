@@ -390,6 +390,45 @@
                         />
                     </Border>
 
+                    <VerticalStackLayout x:Name="PressurePanel" Spacing="8">
+                        <Grid
+                            ColumnDefinitions="Auto,*,Auto"
+                            ColumnSpacing="10"
+                        >
+                            <Label
+                                x:Name="PressureSensitivityTitleLabel"
+                                Text="压感"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="13"
+                                VerticalOptions="Center"
+                            />
+                            <Label
+                                x:Name="PressureValueLabel"
+                                Grid.Column="2"
+                                Text="100%"
+                                FontSize="12"
+                                VerticalOptions="Center"
+                                HorizontalTextAlignment="End"
+                                TextColor="{AppThemeBinding Light=#8A8F99, Dark=#A8B3C4}"
+                            />
+                        </Grid>
+                        <Border
+                            Padding="8"
+                            BackgroundColor="{AppThemeBinding Light=#FAFBFD, Dark=#27384F}"
+                            Stroke="{AppThemeBinding Light=#ECEEF3, Dark=#36465E}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 12"
+                        >
+                            <Slider
+                                x:Name="PressureSensitivitySlider"
+                                Minimum="0.4"
+                                Maximum="2.0"
+                                Value="1.0"
+                                VerticalOptions="Center"
+                            />
+                        </Border>
+                    </VerticalStackLayout>
+
                     <VerticalStackLayout x:Name="ToolColorPanel" Spacing="10">
                         <Label
                             x:Name="ToolColorTitleLabel"
@@ -455,8 +494,8 @@
             InputTransparent="False"
             VerticalOptions="Start"
             HorizontalOptions="Start"
-            WidthRequest="252"
-            MaximumWidthRequest="268"
+            WidthRequest="268"
+            MaximumWidthRequest="286"
             Margin="0"
             Padding="10"
             Style="{StaticResource PanelCard}"

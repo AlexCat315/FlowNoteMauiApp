@@ -147,6 +147,14 @@ public class DrawingCanvas : SKCanvasView
         BindableProperty.Create(nameof(ActiveBrushType), typeof(BrushType), typeof(DrawingCanvas),
             defaultValue: BrushType.Pen, propertyChanged: OnDrawingPropertyChanged);
 
+    public static readonly BindableProperty UsePressureSensitivityProperty =
+        BindableProperty.Create(nameof(UsePressureSensitivity), typeof(bool), typeof(DrawingCanvas),
+            defaultValue: true, propertyChanged: OnDrawingPropertyChanged);
+
+    public static readonly BindableProperty PressureSensitivityProperty =
+        BindableProperty.Create(nameof(PressureSensitivity), typeof(float), typeof(DrawingCanvas),
+            defaultValue: 1f, propertyChanged: OnDrawingPropertyChanged);
+
     private readonly Stack<StrokeHistoryEntry> _undoStack = new();
     private readonly Stack<StrokeHistoryEntry> _redoStack = new();
     private readonly HashSet<long> _activeTouchIds = new();
@@ -306,6 +314,18 @@ public class DrawingCanvas : SKCanvasView
     {
         get => (BrushType)GetValue(ActiveBrushTypeProperty);
         set => SetValue(ActiveBrushTypeProperty, value);
+    }
+
+    public bool UsePressureSensitivity
+    {
+        get => (bool)GetValue(UsePressureSensitivityProperty);
+        set => SetValue(UsePressureSensitivityProperty, value);
+    }
+
+    public float PressureSensitivity
+    {
+        get => (float)GetValue(PressureSensitivityProperty);
+        set => SetValue(PressureSensitivityProperty, value);
     }
 
     public bool CanUndo => _undoStack.Count > 0;
@@ -581,22 +601,36 @@ public class DrawingCanvas : SKCanvasView
                 if (stroke.Points.Count < 2)
                     continue;
 
-                layerPaint.Color = stroke.Color.WithAlpha((byte)(stroke.Color.Alpha * layer.Opacity * stroke.Opacity));
-                layerPaint.StrokeWidth = stroke.StrokeWidth * strokeWidthScale;
-                layerPaint.BlendMode = GetBlendMode(stroke);
+                if (ShouldDrawPressureStrokeSegments(stroke))
+                {
+                    DrawPressureStrokeSegments(canvas, stroke, layer.Opacity, strokeWidthScale);
+                }
+                else
+                {
+                    layerPaint.Color = stroke.Color.WithAlpha((byte)(stroke.Color.Alpha * layer.Opacity * stroke.Opacity));
+                    layerPaint.StrokeWidth = stroke.StrokeWidth * strokeWidthScale;
+                    layerPaint.BlendMode = GetBlendMode(stroke);
 
-                var path = stroke.CreatePath();
-                canvas.DrawPath(path, layerPaint);
+                    var path = stroke.CreatePath();
+                    canvas.DrawPath(path, layerPaint);
+                }
             }
 
             if (i == CurrentLayerIndex && _currentStroke != null && _currentStroke.Points.Count >= 2)
             {
-                layerPaint.Color = _currentStroke.Color;
-                layerPaint.StrokeWidth = _currentStroke.StrokeWidth * strokeWidthScale;
-                layerPaint.BlendMode = GetBlendMode(_currentStroke);
+                if (ShouldDrawPressureStrokeSegments(_currentStroke))
+                {
+                    DrawPressureStrokeSegments(canvas, _currentStroke, 1f, strokeWidthScale);
+                }
+                else
+                {
+                    layerPaint.Color = _currentStroke.Color;
+                    layerPaint.StrokeWidth = _currentStroke.StrokeWidth * strokeWidthScale;
+                    layerPaint.BlendMode = GetBlendMode(_currentStroke);
 
-                var path = _currentStroke.CreatePath();
-                canvas.DrawPath(path, layerPaint);
+                    var path = _currentStroke.CreatePath();
+                    canvas.DrawPath(path, layerPaint);
+                }
             }
         }
 
@@ -821,10 +855,23 @@ public class DrawingCanvas : SKCanvasView
         var effectiveScrollX = _isStrokeViewportLocked ? _strokeViewportScrollX : ScrollX;
         var effectiveScrollY = _isStrokeViewportLocked ? _strokeViewportScrollY : ScrollY;
         var zoom = _isStrokeViewportLocked ? _strokeViewportZoom : Math.Max(0.1f, ViewportZoom);
+        var normalizedPressure = e.Pressure <= 0 ? 1f : e.Pressure;
+        if (!UsePressureSensitivity || IsErasing)
+        {
+            normalizedPressure = 1f;
+        }
+        else
+        {
+            normalizedPressure = Math.Clamp(
+                normalizedPressure * Math.Clamp(PressureSensitivity, 0.2f, 2.2f),
+                0.05f,
+                2f);
+        }
+
         var location = new DrawingPoint(
             (e.Location.X + (float)effectiveScrollX) / zoom,
             (e.Location.Y + (float)effectiveScrollY) / zoom,
-            e.Pressure <= 0 ? 1f : e.Pressure);
+            normalizedPressure);
 
         if (usesAdvancedEraser)
         {
@@ -1120,32 +1167,48 @@ public class DrawingCanvas : SKCanvasView
         var brushType = IsErasing ? BrushType.Eraser : ActiveBrushType;
         var strokeWidth = StrokeWidth;
         var opacity = 1f;
-        var pressureEnabled = !IsErasing;
-        var smoothingFactor = 0.45f;
+        var pressureEnabled = !IsErasing && UsePressureSensitivity;
+        var smoothingFactor = 0.42f;
         var streamline = 0.35f;
+        var minPressure = 0.12f;
+        var maxPressure = 1.25f;
 
         if (!IsErasing)
         {
             switch (brushType)
             {
+                case BrushType.Pen:
+                    opacity = 0.95f;
+                    smoothingFactor = 0.42f;
+                    streamline = 0.35f;
+                    minPressure = 0.12f;
+                    maxPressure = 1.3f;
+                    break;
                 case BrushType.Pencil:
                     opacity = 0.72f;
-                    strokeWidth *= 0.85f;
-                    smoothingFactor = 0.36f;
-                    streamline = 0.22f;
+                    strokeWidth *= 0.82f;
+                    smoothingFactor = 0.3f;
+                    streamline = 0.25f;
+                    minPressure = 0.05f;
+                    maxPressure = 0.95f;
                     break;
                 case BrushType.Marker:
                 case BrushType.Highlighter:
-                    opacity = 0.28f;
-                    strokeWidth *= 2.2f;
+                    opacity = 0.23f;
+                    strokeWidth *= 2.35f;
                     pressureEnabled = false;
-                    smoothingFactor = 0.25f;
-                    streamline = 0.15f;
+                    smoothingFactor = 0.26f;
+                    streamline = 0.18f;
+                    minPressure = 1f;
+                    maxPressure = 1f;
                     break;
                 case BrushType.Watercolor:
-                    opacity = 0.9f;
+                    opacity = 0.88f;
+                    strokeWidth *= 1.12f;
                     smoothingFactor = 0.5f;
-                    streamline = 0.4f;
+                    streamline = 0.42f;
+                    minPressure = 0.1f;
+                    maxPressure = 1.2f;
                     break;
             }
         }
@@ -1162,8 +1225,8 @@ public class DrawingCanvas : SKCanvasView
                 PressureEnabled = pressureEnabled,
                 SmoothingEnabled = true,
                 SmoothingFactor = smoothingFactor,
-                MinPressure = 0.1f,
-                MaxPressure = 1f,
+                MinPressure = minPressure,
+                MaxPressure = maxPressure,
                 Streamline = streamline
             }
         };
@@ -1281,6 +1344,40 @@ public class DrawingCanvas : SKCanvasView
         _strokeViewportScrollX = 0d;
         _strokeViewportScrollY = 0d;
         _strokeViewportZoom = 1f;
+    }
+
+    private static bool ShouldDrawPressureStrokeSegments(DrawingStroke stroke)
+    {
+        if (stroke.IsEraser || !stroke.Options.PressureEnabled || stroke.Points.Count < 2)
+            return false;
+
+        return stroke.BrushType == BrushType.Pen
+            || stroke.BrushType == BrushType.Pencil
+            || stroke.BrushType == BrushType.Watercolor;
+    }
+
+    private static void DrawPressureStrokeSegments(SKCanvas canvas, DrawingStroke stroke, float layerOpacity, float strokeWidthScale)
+    {
+        using var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            IsAntialias = true,
+            StrokeCap = SKStrokeCap.Round,
+            StrokeJoin = SKStrokeJoin.Round,
+            BlendMode = GetBlendMode(stroke),
+            Color = stroke.Color.WithAlpha((byte)(stroke.Color.Alpha * layerOpacity * stroke.Opacity))
+        };
+
+        var minPressure = Math.Max(0.02f, stroke.Options.MinPressure);
+        var maxPressure = Math.Max(minPressure + 0.01f, stroke.Options.MaxPressure);
+        for (var i = 1; i < stroke.Points.Count; i++)
+        {
+            var prev = stroke.Points[i - 1];
+            var current = stroke.Points[i];
+            var pressure = Math.Clamp((prev.Pressure + current.Pressure) * 0.5f, minPressure, maxPressure);
+            paint.StrokeWidth = Math.Max(0.25f, stroke.StrokeWidth * strokeWidthScale * pressure);
+            canvas.DrawLine(prev.X, prev.Y, current.X, current.Y, paint);
+        }
     }
 
     private static SKBlendMode GetBlendMode(DrawingStroke stroke)

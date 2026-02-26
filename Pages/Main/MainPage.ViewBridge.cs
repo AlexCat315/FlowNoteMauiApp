@@ -83,6 +83,10 @@ public partial class MainPage
     private Button PixelEraserModeButton => FindInEditor<Button>(nameof(PixelEraserModeButton));
     private Button StrokeEraserModeButton => FindInEditor<Button>(nameof(StrokeEraserModeButton));
     private Button LassoEraserModeButton => FindInEditor<Button>(nameof(LassoEraserModeButton));
+    private VerticalStackLayout PressurePanel => FindInEditor<VerticalStackLayout>(nameof(PressurePanel));
+    private Label PressureSensitivityTitleLabel => FindInEditor<Label>(nameof(PressureSensitivityTitleLabel));
+    private Label PressureValueLabel => FindInEditor<Label>(nameof(PressureValueLabel));
+    private Slider PressureSensitivitySlider => FindInEditor<Slider>(nameof(PressureSensitivitySlider));
     private VerticalStackLayout ToolColorPanel => FindInEditor<VerticalStackLayout>(nameof(ToolColorPanel));
     private Slider StrokeWidthSlider => FindInEditor<Slider>(nameof(StrokeWidthSlider));
     private Label DrawingPenWidthLabel => FindInEditor<Label>(nameof(DrawingPenWidthLabel));

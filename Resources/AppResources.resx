@@ -707,6 +707,30 @@ Unlock full note workflow</value>
   <data name="DrawingEraserSize" xml:space="preserve">
     <value>Size</value>
   </data>
+  <data name="PressureSensitivity" xml:space="preserve">
+    <value>Pressure</value>
+  </data>
+  <data name="ClearCurrentPageTitle" xml:space="preserve">
+    <value>Clear Current Page</value>
+  </data>
+  <data name="ClearCurrentPageMessage" xml:space="preserve">
+    <value>Clear all handwriting on the current page?</value>
+  </data>
+  <data name="ClearCurrentPageConfirm" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="CancelAction" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ClearCurrentPageNone" xml:space="preserve">
+    <value>No handwriting found on the current page.</value>
+  </data>
+  <data name="ClearCurrentPageDoneFormat" xml:space="preserve">
+    <value>Cleared {0} strokes on current page.</value>
+  </data>
+  <data name="BackToHomeHint" xml:space="preserve">
+    <value>Press back again to return to Home.</value>
+  </data>
   <data name="EraserModePixel" xml:space="preserve">
     <value>Pixel</value>
   </data>

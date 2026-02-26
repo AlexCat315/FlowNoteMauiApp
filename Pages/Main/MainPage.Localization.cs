@@ -59,6 +59,7 @@ public partial class MainPage
         FindInEditor<Button>("StrokeEraserModeButton").Text = T("EraserModeStroke", "Stroke");
         FindInEditor<Button>("LassoEraserModeButton").Text = T("EraserModeLasso", "Lasso");
         FindInEditor<Label>("ToolColorTitleLabel").Text = T("Color", "Color");
+        FindInEditor<Label>("PressureSensitivityTitleLabel").Text = T("PressureSensitivity", "Pressure");
         FindInEditor<Label>("ThumbnailTitleLabel").Text = T("Thumbnail", "Thumbnails");
         FindInEditor<Label>("ThumbnailHintLabel").Text = T("ThumbnailHint", "Tap an item to jump to page");
         FindInEditor<Label>("ThumbnailOverlayLabel").Text = T("ThumbnailOverlay", "Show Notes Layer");

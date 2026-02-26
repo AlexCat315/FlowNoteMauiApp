@@ -56,7 +56,10 @@ public partial class MainPage
     private CancellationTokenSource? _thumbnailLoadCts;
     private const int ThumbnailRequestWidth = 220;
     private const int ThumbnailRequestHeight = 320;
+    private const float MinPressureSensitivity = 0.4f;
+    private const float MaxPressureSensitivity = 2.0f;
     private bool _thumbnailIncludeInkOverlay = true;
+    private float _pressureSensitivity = 1f;
 
     private sealed class ThumbnailStrokeSnapshot
     {
@@ -270,6 +273,8 @@ public partial class MainPage
             DrawingCanvas.IsHighlighter = _activeInkTool == InkToolKind.Marker;
             DrawingCanvas.ActiveBrushType = ToBrushType(_activeInkTool);
             DrawingCanvas.EraserBehavior = ToCanvasEraserMode(_eraserMode);
+            DrawingCanvas.UsePressureSensitivity = !isEraser;
+            DrawingCanvas.PressureSensitivity = _pressureSensitivity;
             DrawingCanvas.StrokeWidth = state.Width;
             if (!isEraser)
             {
@@ -560,7 +565,7 @@ public partial class MainPage
 
     private void PositionThumbnailPanelUnderTopButton()
     {
-        PositionFloatingPanelUnderTopButton(ThumbnailPanel, TopThumbnailButton, 252d);
+        PositionFloatingPanelUnderTopButton(ThumbnailPanel, TopThumbnailButton, 268d);
     }
 
     private void PositionLayerPanelUnderLayerButton()
@@ -861,12 +866,37 @@ public partial class MainPage
         QueueInkSave();
     }
 
-    private void OnClearClicked(object? sender, EventArgs e)
+    private async void OnClearClicked(object? sender, EventArgs e)
     {
         if (!EnsureDrawingReady())
             return;
 
-        DrawingCanvas.ClearCurrentLayer();
+        if (!EnsurePdfLoaded(showHint: true))
+            return;
+
+        var confirmed = await DisplayAlertAsync(
+            T("ClearCurrentPageTitle", "Clear Current Page"),
+            T("ClearCurrentPageMessage", "Clear all handwriting on the current page?"),
+            T("ClearCurrentPageConfirm", "Clear"),
+            T("CancelAction", "Cancel"));
+        if (!confirmed)
+            return;
+
+        var removedCount = await ClearCurrentPageInkAsync(_currentPageIndex);
+        if (removedCount <= 0)
+        {
+            ShowStatus(T("ClearCurrentPageNone", "No handwriting found on the current page."));
+            return;
+        }
+
+        DrawingCanvas.InvalidateSurface();
+        RefreshLayerList();
+        InvalidateThumbnailCache();
+        if (ThumbnailPanel.IsVisible)
+        {
+            RefreshThumbnailList();
+        }
+        ShowStatus(TF("ClearCurrentPageDoneFormat", "Cleared {0} strokes on current page.", removedCount));
         QueueInkSave();
     }
 
@@ -886,6 +916,20 @@ public partial class MainPage
         }
 
         StrokeWidthLabel.Text = $"{state.Width:0.00}mm";
+    }
+
+    private void OnPressureSensitivityChanged(object? sender, ValueChangedEventArgs e)
+    {
+        if (_isUpdatingToolUi)
+            return;
+
+        _pressureSensitivity = Math.Clamp((float)e.NewValue, MinPressureSensitivity, MaxPressureSensitivity);
+        if (IsEditorInitialized)
+        {
+            DrawingCanvas.PressureSensitivity = _pressureSensitivity;
+        }
+
+        PressureValueLabel.Text = $"{Math.Round(_pressureSensitivity * 100f):0}%";
     }
 
     private void OnColorBlackClicked(object? sender, EventArgs e)
@@ -1075,6 +1119,12 @@ public partial class MainPage
             {
                 StrokeWidthSlider.Value = clamped;
             }
+
+            var pressureClamped = Math.Clamp(_pressureSensitivity, MinPressureSensitivity, MaxPressureSensitivity);
+            if (Math.Abs(PressureSensitivitySlider.Value - pressureClamped) > 0.001f)
+            {
+                PressureSensitivitySlider.Value = pressureClamped;
+            }
         }
         finally
         {
@@ -1086,8 +1136,12 @@ public partial class MainPage
             ? T("DrawingEraserSize", "Size")
             : T("DrawingPenWidth", "Stroke");
         StrokeWidthLabel.Text = $"{state.Width:0.00}mm";
+        PressureSensitivityTitleLabel.Text = T("PressureSensitivity", "Pressure");
+        PressureValueLabel.Text = $"{Math.Round(_pressureSensitivity * 100f):0}%";
         EraserModePanel.IsVisible = _activeInkTool == InkToolKind.Eraser;
-        ToolColorPanel.IsVisible = _activeInkTool != InkToolKind.Eraser;
+        var supportsInkSettings = _activeInkTool != InkToolKind.Eraser && _activeInkTool != InkToolKind.None;
+        PressurePanel.IsVisible = supportsInkSettings;
+        ToolColorPanel.IsVisible = supportsInkSettings;
         UpdateEraserModeSelectionVisual();
         UpdateColorSelection(_activeInkTool == InkToolKind.Eraser ? null : GetColorKey(state.Color));
         if (DrawingToolbarPanel.IsVisible)
@@ -1248,8 +1302,8 @@ public partial class MainPage
                 {
                     new Border
                     {
-                        WidthRequest = 106,
-                        HeightRequest = 150,
+                        WidthRequest = 122,
+                        HeightRequest = 172,
                         HorizontalOptions = LayoutOptions.Center,
                         Stroke = isCurrent ? palette.ModeButtonExpandedBorder : palette.LayerNormalBorder,
                         StrokeThickness = 1,
@@ -1518,6 +1572,24 @@ public partial class MainPage
             && minY <= pageBottom;
     }
 
+    private async Task<int> ClearCurrentPageInkAsync(int pageIndex)
+    {
+        if (!IsEditorInitialized || pageIndex < 0)
+            return 0;
+
+        var pageBounds = await PdfViewer.GetPageBoundsAsync(pageIndex);
+        if (pageBounds is not PdfPageBounds bounds)
+            return 0;
+
+        var removedCount = 0;
+        foreach (var layer in DrawingCanvas.Layers)
+        {
+            removedCount += layer.Strokes.RemoveAll(stroke => DoesStrokeIntersectPage(stroke, bounds));
+        }
+
+        return removedCount;
+    }
+
     private void OnAddLayerClicked(object? sender, EventArgs e)
     {
         if (!EnsureDrawingReady())
@@ -1587,8 +1659,8 @@ public partial class MainPage
             var visibilityIcon = new ImageButton
             {
                 Source = layer.IsVisible ? "icon_eye.png" : "icon_eye_off.png",
-                WidthRequest = 18,
-                HeightRequest = 18,
+                WidthRequest = 14,
+                HeightRequest = 14,
                 Padding = 2,
                 CornerRadius = 9,
                 BackgroundColor = Colors.Transparent,

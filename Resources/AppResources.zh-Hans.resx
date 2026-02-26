@@ -703,6 +703,30 @@
   <data name="DrawingEraserSize" xml:space="preserve">
     <value>大小</value>
   </data>
+  <data name="PressureSensitivity" xml:space="preserve">
+    <value>压感</value>
+  </data>
+  <data name="ClearCurrentPageTitle" xml:space="preserve">
+    <value>清空当前页</value>
+  </data>
+  <data name="ClearCurrentPageMessage" xml:space="preserve">
+    <value>是否清空当前页的全部笔迹？</value>
+  </data>
+  <data name="ClearCurrentPageConfirm" xml:space="preserve">
+    <value>清空</value>
+  </data>
+  <data name="CancelAction" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="ClearCurrentPageNone" xml:space="preserve">
+    <value>当前页没有可清除的笔迹。</value>
+  </data>
+  <data name="ClearCurrentPageDoneFormat" xml:space="preserve">
+    <value>已清空当前页 {0} 条笔迹。</value>
+  </data>
+  <data name="BackToHomeHint" xml:space="preserve">
+    <value>再按一次返回主页</value>
+  </data>
   <data name="EraserModePixel" xml:space="preserve">
     <value>像素擦除</value>
   </data>
