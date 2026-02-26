@@ -93,6 +93,36 @@
                             Source="icon_search.png"
                         />
                         <ImageButton
+                            x:Name="TopModePenButton"
+                            Style="{StaticResource FlatTopIconButton}"
+                            WidthRequest="24"
+                            HeightRequest="24"
+                            MinimumWidthRequest="24"
+                            MinimumHeightRequest="24"
+                            Padding="3"
+                            Source="icon_pencil.png"
+                        />
+                        <ImageButton
+                            x:Name="TopModeFingerButton"
+                            Style="{StaticResource FlatTopIconButton}"
+                            WidthRequest="24"
+                            HeightRequest="24"
+                            MinimumWidthRequest="24"
+                            MinimumHeightRequest="24"
+                            Padding="3"
+                            Source="icon_hand.png"
+                        />
+                        <ImageButton
+                            x:Name="TopModeReadButton"
+                            Style="{StaticResource FlatTopIconButton}"
+                            WidthRequest="24"
+                            HeightRequest="24"
+                            MinimumWidthRequest="24"
+                            MinimumHeightRequest="24"
+                            Padding="3"
+                            Source="icon_read_mode.png"
+                        />
+                        <ImageButton
                             x:Name="TopSettingsButton"
                             Style="{StaticResource FlatTopIconButton}"
                             WidthRequest="24"
@@ -103,14 +133,14 @@
                             Source="icon_settings.png"
                         />
                         <ImageButton
-                            x:Name="TopLayerButton"
+                            x:Name="TopThumbnailButton"
                             Style="{StaticResource FlatTopIconButton}"
                             WidthRequest="24"
                             HeightRequest="24"
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="3"
-                            Source="icon_layers_selected.png"
+                            Source="icon_image.png"
                         />
                     </HorizontalStackLayout>
                 </Grid>
@@ -153,10 +183,20 @@
                                 <ImageButton
                                     x:Name="PenModeButton"
                                     Style="{StaticResource ToolbarToolIconButtonSelected}"
-                                    Source="icon_pencil.png"
+                                    Source="icon_pen.png"
                                 />
                                 <ImageButton
                                     x:Name="HighlighterButton"
+                                    Style="{StaticResource ToolbarToolIconButton}"
+                                    Source="icon_gelpen.png"
+                                />
+                                <ImageButton
+                                    x:Name="PencilButton"
+                                    Style="{StaticResource ToolbarToolIconButton}"
+                                    Source="icon_pencil.png"
+                                />
+                                <ImageButton
+                                    x:Name="MarkerButton"
                                     Style="{StaticResource ToolbarToolIconButton}"
                                     Source="icon_brush.png"
                                 />
@@ -174,57 +214,6 @@
                                     x:Name="TopInlineLayerButton"
                                     Style="{StaticResource ToolbarToolIconButton}"
                                     Source="icon_layers_selected.png"
-                                />
-                            </HorizontalStackLayout>
-                        </Border>
-
-                        <Border
-                            x:Name="DrawingToolbarPanel"
-                            IsVisible="False"
-                            Padding="6,1"
-                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="Transparent"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 8"
-                        >
-                            <HorizontalStackLayout
-                                Spacing="5"
-                                VerticalOptions="Center"
-                            >
-                                <Label
-                                    x:Name="DrawingPenWidthLabel"
-                                    Text="笔宽"
-                                    VerticalOptions="Center"
-                                    FontFamily="OpenSansSemibold"
-                                    FontSize="12"
-                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
-                                />
-                                <Slider
-                                    x:Name="StrokeWidthSlider"
-                                    WidthRequest="96"
-                                    Minimum="1"
-                                    Maximum="20"
-                                    Value="3"
-                                    VerticalOptions="Center"
-                                />
-                                <Label
-                                    x:Name="StrokeWidthLabel"
-                                    Text="3"
-                                    WidthRequest="24"
-                                    VerticalOptions="Center"
-                                    FontFamily="OpenSansSemibold"
-                                    FontSize="12"
-                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
-                                />
-                                <ImageButton
-                                    x:Name="DrawingToolbarLayerButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
-                                    Source="icon_layers_selected.png"
-                                />
-                                <ImageButton
-                                    x:Name="DrawingToolbarCloseButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
-                                    Source="icon_x.png"
                                 />
                             </HorizontalStackLayout>
                         </Border>
@@ -297,15 +286,130 @@
                             </HorizontalStackLayout>
                         </Border>
 
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <BoxView
+                    Grid.Row="2"
+                    HeightRequest="1"
+                    Color="{AppThemeBinding Light=#DCE2ED, Dark=#34475F}"
+                />
+            </Grid>
+        </Border>
+
+        <Border
+            x:Name="DrawingToolbarPanel"
+            IsVisible="False"
+            InputTransparent="False"
+            VerticalOptions="Start"
+            HorizontalOptions="Center"
+            Margin="0,88,0,0"
+            WidthRequest="420"
+            Padding="0"
+            Style="{StaticResource PanelCard}"
+        >
+            <VerticalStackLayout Spacing="0">
+                <Grid
+                    Padding="18,14"
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="10"
+                >
+                    <Label
+                        x:Name="ToolSettingsTitleLabel"
+                        Text="圆珠笔"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="28"
+                        HorizontalTextAlignment="Center"
+                        VerticalOptions="Center"
+                    />
+                    <ImageButton
+                        x:Name="DrawingToolbarCloseButton"
+                        Grid.Column="1"
+                        Style="{StaticResource ToolbarToolIconButton}"
+                        Source="icon_x.png"
+                    />
+                </Grid>
+
+                <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#ECEFF4, Dark=#36475F}" />
+
+                <VerticalStackLayout Padding="18,16" Spacing="14">
+                    <VerticalStackLayout x:Name="EraserModePanel" IsVisible="False" Spacing="10">
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                            <Button
+                                x:Name="PixelEraserModeButton"
+                                Text="像素擦除"
+                                Style="{StaticResource InputModeItemButton}"
+                                FontSize="14"
+                            />
+                            <Button
+                                x:Name="StrokeEraserModeButton"
+                                Grid.Column="1"
+                                Text="整笔擦除"
+                                Style="{StaticResource InputModeItemButton}"
+                                FontSize="14"
+                            />
+                            <Button
+                                x:Name="LassoEraserModeButton"
+                                Grid.Column="2"
+                                Text="圈选擦除"
+                                Style="{StaticResource InputModeItemButton}"
+                                FontSize="14"
+                            />
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Label
+                            x:Name="DrawingPenWidthLabel"
+                            Text="粗细"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="20"
+                            VerticalOptions="Center"
+                        />
+                        <Label
+                            x:Name="StrokeWidthLabel"
+                            Grid.Column="2"
+                            Text="3.0mm"
+                            FontSize="20"
+                            VerticalOptions="Center"
+                            HorizontalTextAlignment="End"
+                            TextColor="{AppThemeBinding Light=#8A8F99, Dark=#A8B3C4}"
+                        />
+                    </Grid>
+
+                    <Border
+                        Padding="12"
+                        BackgroundColor="{AppThemeBinding Light=#FAFBFD, Dark=#27384F}"
+                        Stroke="{AppThemeBinding Light=#ECEEF3, Dark=#36465E}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 18"
+                    >
+                        <Slider
+                            x:Name="StrokeWidthSlider"
+                            Minimum="1"
+                            Maximum="20"
+                            Value="3"
+                            VerticalOptions="Center"
+                        />
+                    </Border>
+
+                    <VerticalStackLayout x:Name="ToolColorPanel" Spacing="10">
+                        <Label
+                            x:Name="ToolColorTitleLabel"
+                            Text="颜色"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="20"
+                            VerticalOptions="Center"
+                        />
                         <Border
-                            Padding="4,1"
-                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="Transparent"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 8"
+                            Padding="10"
+                            BackgroundColor="{AppThemeBinding Light=#FAFBFD, Dark=#27384F}"
+                            Stroke="{AppThemeBinding Light=#ECEEF3, Dark=#36465E}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 18"
                         >
                             <HorizontalStackLayout
-                                Spacing="4"
+                                Spacing="8"
                                 VerticalOptions="Center"
                             >
                                 <Button
@@ -342,18 +446,45 @@
                                 />
                             </HorizontalStackLayout>
                         </Border>
-                    </HorizontalStackLayout>
-                </ScrollView>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
 
-                <BoxView
+        <Border
+            x:Name="ThumbnailPanel"
+            IsVisible="False"
+            InputTransparent="False"
+            VerticalOptions="Fill"
+            HorizontalOptions="End"
+            WidthRequest="220"
+            Margin="0,72,14,100"
+            Padding="12"
+            Style="{StaticResource PanelCard}"
+            BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}"
+        >
+            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
+                <Label
+                    x:Name="ThumbnailTitleLabel"
+                    Grid.Row="0"
+                    Text="缩略图"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="16"
+                />
+                <ScrollView Grid.Row="1">
+                    <VerticalStackLayout x:Name="ThumbnailList" Spacing="8" />
+                </ScrollView>
+                <Label
+                    x:Name="ThumbnailHintLabel"
                     Grid.Row="2"
-                    HeightRequest="1"
-                    Color="{AppThemeBinding Light=#DCE2ED, Dark=#34475F}"
+                    Text="点击缩略项快速跳页"
+                    FontSize="12"
+                    TextColor="{AppThemeBinding Light=#7C8492, Dark=#A2B2C8}"
                 />
             </Grid>
         </Border>
 
-<Border
+        <Border
             x:Name="InputModePanel"
             IsVisible="False"
             InputTransparent="False"

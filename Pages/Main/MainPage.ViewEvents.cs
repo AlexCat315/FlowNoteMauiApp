@@ -44,12 +44,17 @@ public partial class MainPage
         FindInEditor<ImageButton>("TopImportButton").Clicked += OnHomeImportLocalClicked;
         FindInEditor<ImageButton>("TopSettingsButton").Clicked += OnOpenSettingsClicked;
         FindInEditor<ImageButton>("TopSearchButton").Clicked += OnEditorSearchClicked;
-        FindInEditor<ImageButton>("TopLayerButton").Clicked += OnLayerToggleClicked;
+        FindInEditor<ImageButton>("TopModePenButton").Clicked += OnTopModePenClicked;
+        FindInEditor<ImageButton>("TopModeFingerButton").Clicked += OnTopModeFingerClicked;
+        FindInEditor<ImageButton>("TopModeReadButton").Clicked += OnTopModeReadClicked;
+        FindInEditor<ImageButton>("TopThumbnailButton").Clicked += OnThumbnailToggleClicked;
 
         UndoButton.Clicked += OnUndoClicked;
         RedoButton.Clicked += OnRedoClicked;
         PenModeButton.Clicked += OnPenModeClicked;
         HighlighterButton.Clicked += OnHighlighterClicked;
+        PencilButton.Clicked += OnPencilClicked;
+        MarkerButton.Clicked += OnMarkerClicked;
         EraserButton.Clicked += OnEraserClicked;
         ClearButton2.Clicked += OnClearClicked;
         FindInEditor<ImageButton>("TopInlineLayerButton").Clicked += OnLayerToggleClicked;
@@ -71,8 +76,10 @@ public partial class MainPage
         InputModeReadButton.Clicked += OnInputModeReadClicked;
 
         StrokeWidthSlider.ValueChanged += OnStrokeWidthChanged;
-        FindInEditor<ImageButton>("DrawingToolbarLayerButton").Clicked += OnLayerToggleClicked;
         FindInEditor<ImageButton>("DrawingToolbarCloseButton").Clicked += OnDrawingToolbarCloseClicked;
+        PixelEraserModeButton.Clicked += OnPixelEraserModeClicked;
+        StrokeEraserModeButton.Clicked += OnStrokeEraserModeClicked;
+        LassoEraserModeButton.Clicked += OnLassoEraserModeClicked;
         FindInEditor<ImageButton>("AddLayerButton").Clicked += OnAddLayerClicked;
         FindInEditor<ImageButton>("DeleteLayerButton").Clicked += OnDeleteLayerClicked;
     }

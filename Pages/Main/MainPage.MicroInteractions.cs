@@ -38,11 +38,16 @@ public partial class MainPage
         RegisterMicroInteraction(FindInEditor<ImageButton>("TopImportButton"));
         RegisterMicroInteraction(FindInEditor<ImageButton>("TopSettingsButton"));
         RegisterMicroInteraction(FindInEditor<ImageButton>("TopSearchButton"));
-        RegisterMicroInteraction(FindInEditor<ImageButton>("TopLayerButton"));
+        RegisterMicroInteraction(TopModePenButton);
+        RegisterMicroInteraction(TopModeFingerButton);
+        RegisterMicroInteraction(TopModeReadButton);
+        RegisterMicroInteraction(FindInEditor<ImageButton>("TopThumbnailButton"));
         RegisterMicroInteraction(UndoButton);
         RegisterMicroInteraction(RedoButton);
         RegisterMicroInteraction(PenModeButton);
         RegisterMicroInteraction(HighlighterButton);
+        RegisterMicroInteraction(PencilButton);
+        RegisterMicroInteraction(MarkerButton);
         RegisterMicroInteraction(EraserButton);
         RegisterMicroInteraction(ClearButton2);
         RegisterMicroInteraction(FindInEditor<ImageButton>("TopInlineLayerButton"));
@@ -60,8 +65,10 @@ public partial class MainPage
         RegisterMicroInteraction(InputModePenButton);
         RegisterMicroInteraction(InputModeFingerButton);
         RegisterMicroInteraction(InputModeReadButton);
-        RegisterMicroInteraction(FindInEditor<ImageButton>("DrawingToolbarLayerButton"));
         RegisterMicroInteraction(FindInEditor<ImageButton>("DrawingToolbarCloseButton"));
+        RegisterMicroInteraction(PixelEraserModeButton);
+        RegisterMicroInteraction(StrokeEraserModeButton);
+        RegisterMicroInteraction(LassoEraserModeButton);
         RegisterMicroInteraction(FindInEditor<ImageButton>("AddLayerButton"));
         RegisterMicroInteraction(FindInEditor<ImageButton>("DeleteLayerButton"));
 

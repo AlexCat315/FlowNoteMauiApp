@@ -132,7 +132,7 @@ public class DrawingStroke
 
         var smoothedPoints = GetSmoothedPoints();
 
-        if (BrushType == BrushType.Highlighter || BrushType == BrushType.Watercolor)
+        if (BrushType == BrushType.Highlighter || BrushType == BrushType.Watercolor || BrushType == BrushType.Marker)
         {
             return CreateVariableWidthPath(smoothedPoints);
         }

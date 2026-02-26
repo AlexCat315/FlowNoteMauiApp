@@ -48,6 +48,9 @@ public partial class MainPage
         FindInEditor<Button>("InputModeFingerButton").Text = T("InputModeFinger", "Finger/Capacitive (2-finger move)");
         FindInEditor<Button>("InputModeReadButton").Text = T("InputModeRead", "Read Mode");
         FindInEditor<Label>("DrawingPenWidthLabel").Text = T("DrawingPenWidth", "Stroke");
+        FindInEditor<Label>("ToolColorTitleLabel").Text = T("Color", "Color");
+        FindInEditor<Label>("ThumbnailTitleLabel").Text = T("Thumbnail", "Thumbnails");
+        FindInEditor<Label>("ThumbnailHintLabel").Text = T("ThumbnailHint", "Tap an item to jump to page");
         FindInEditor<Label>("LayerTitleLabel").Text = T("LayerTitle", "Layers");
 
         SettingsHomeHintLabel.Text = T("SettingsHomeHint", "Page, display and language settings");

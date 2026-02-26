@@ -32,6 +32,13 @@ public class DrawingCanvas : SKCanvasView
         NextPage
     }
 
+    public enum EraserMode
+    {
+        Pixel,
+        Stroke,
+        Lasso
+    }
+
     public sealed class TwoFingerSwipeEventArgs : EventArgs
     {
         public TwoFingerSwipeEventArgs(TwoFingerSwipeDirection direction)
@@ -100,6 +107,10 @@ public class DrawingCanvas : SKCanvasView
         BindableProperty.Create(nameof(IsHighlighter), typeof(bool), typeof(DrawingCanvas),
             defaultValue: false, propertyChanged: OnDrawingPropertyChanged);
 
+    public static readonly BindableProperty EraserBehaviorProperty =
+        BindableProperty.Create(nameof(EraserBehavior), typeof(EraserMode), typeof(DrawingCanvas),
+            defaultValue: EraserMode.Pixel, propertyChanged: OnDrawingPropertyChanged);
+
     public static readonly BindableProperty ScrollXProperty =
         BindableProperty.Create(nameof(ScrollX), typeof(double), typeof(DrawingCanvas),
             defaultValue: 0.0, propertyChanged: OnScrollChanged);
@@ -131,6 +142,10 @@ public class DrawingCanvas : SKCanvasView
     public static readonly BindableProperty ZoomAffectsStrokeWidthProperty =
         BindableProperty.Create(nameof(ZoomAffectsStrokeWidth), typeof(bool), typeof(DrawingCanvas),
             defaultValue: true, propertyChanged: OnDrawingPropertyChanged);
+
+    public static readonly BindableProperty ActiveBrushTypeProperty =
+        BindableProperty.Create(nameof(ActiveBrushType), typeof(BrushType), typeof(DrawingCanvas),
+            defaultValue: BrushType.Pen, propertyChanged: OnDrawingPropertyChanged);
 
     private readonly Stack<StrokeHistoryEntry> _undoStack = new();
     private readonly Stack<StrokeHistoryEntry> _redoStack = new();
@@ -166,6 +181,8 @@ public class DrawingCanvas : SKCanvasView
     private bool _hasStrokeSignificantMovement;
     private long _strokeStartTimestampMs;
     private DateTime _lastTouchMoveLogUtc = DateTime.MinValue;
+    private readonly List<SKPoint> _lassoPoints = new();
+    private bool _isLassoErasing;
 
     public Func<float, float, bool>? CanDrawAtViewPoint { get; set; }
 
@@ -231,6 +248,12 @@ public class DrawingCanvas : SKCanvasView
         set => SetValue(IsHighlighterProperty, value);
     }
 
+    public EraserMode EraserBehavior
+    {
+        get => (EraserMode)GetValue(EraserBehaviorProperty);
+        set => SetValue(EraserBehaviorProperty, value);
+    }
+
     public double ScrollX
     {
         get => (double)GetValue(ScrollXProperty);
@@ -277,6 +300,12 @@ public class DrawingCanvas : SKCanvasView
     {
         get => (bool)GetValue(ZoomAffectsStrokeWidthProperty);
         set => SetValue(ZoomAffectsStrokeWidthProperty, value);
+    }
+
+    public BrushType ActiveBrushType
+    {
+        get => (BrushType)GetValue(ActiveBrushTypeProperty);
+        set => SetValue(ActiveBrushTypeProperty, value);
     }
 
     public bool CanUndo => _undoStack.Count > 0;
@@ -570,6 +599,26 @@ public class DrawingCanvas : SKCanvasView
                 canvas.DrawPath(path, layerPaint);
             }
         }
+
+        if (_isLassoErasing && _lassoPoints.Count >= 2)
+        {
+            using var lassoPaint = new SKPaint
+            {
+                Color = new SKColor(90, 117, 255, 220),
+                Style = SKPaintStyle.Stroke,
+                StrokeWidth = 1.8f * strokeWidthScale,
+                IsAntialias = true,
+                PathEffect = SKPathEffect.CreateDash(new float[] { 8f * strokeWidthScale, 6f * strokeWidthScale }, 0)
+            };
+            using var lassoPath = new SKPath();
+            lassoPath.MoveTo(_lassoPoints[0]);
+            for (var i = 1; i < _lassoPoints.Count; i++)
+            {
+                lassoPath.LineTo(_lassoPoints[i]);
+            }
+
+            canvas.DrawPath(lassoPath, lassoPaint);
+        }
     }
 
     private static void OnLayersChanged(BindableObject bindable, object oldValue, object newValue)
@@ -763,7 +812,8 @@ public class DrawingCanvas : SKCanvasView
             return;
         }
 
-        if (e.ActionType == SKTouchAction.Pressed)
+        var usesAdvancedEraser = IsErasing && EraserBehavior != EraserMode.Pixel;
+        if (e.ActionType == SKTouchAction.Pressed && !usesAdvancedEraser)
         {
             BeginStrokeViewportLock();
         }
@@ -775,6 +825,15 @@ public class DrawingCanvas : SKCanvasView
             (e.Location.X + (float)effectiveScrollX) / zoom,
             (e.Location.Y + (float)effectiveScrollY) / zoom,
             e.Pressure <= 0 ? 1f : e.Pressure);
+
+        if (usesAdvancedEraser)
+        {
+            HandleAdvancedEraser(e, location);
+            InvalidateSurface();
+            e.Handled = true;
+            LogTouch("erase", e, $"mode={EraserBehavior}");
+            return;
+        }
 
         switch (e.ActionType)
         {
@@ -859,6 +918,8 @@ public class DrawingCanvas : SKCanvasView
         _isTwoFingerGestureActive = false;
         _twoFingerDistance = 0f;
         _twoFingerGestureIntent = TwoFingerGestureIntent.None;
+        _isLassoErasing = false;
+        _lassoPoints.Clear();
         CancelCurrentStroke();
     }
 
@@ -1056,27 +1117,54 @@ public class DrawingCanvas : SKCanvasView
         _hasStrokeSignificantMovement = false;
         _strokeStartTimestampMs = point.Timestamp;
 
-        var brushType = IsErasing
-            ? BrushType.Eraser
-            : IsHighlighter
-                ? BrushType.Highlighter
-                : BrushType.Pen;
+        var brushType = IsErasing ? BrushType.Eraser : ActiveBrushType;
+        var strokeWidth = StrokeWidth;
+        var opacity = 1f;
+        var pressureEnabled = !IsErasing;
+        var smoothingFactor = 0.45f;
+        var streamline = 0.35f;
+
+        if (!IsErasing)
+        {
+            switch (brushType)
+            {
+                case BrushType.Pencil:
+                    opacity = 0.72f;
+                    strokeWidth *= 0.85f;
+                    smoothingFactor = 0.36f;
+                    streamline = 0.22f;
+                    break;
+                case BrushType.Marker:
+                case BrushType.Highlighter:
+                    opacity = 0.28f;
+                    strokeWidth *= 2.2f;
+                    pressureEnabled = false;
+                    smoothingFactor = 0.25f;
+                    streamline = 0.15f;
+                    break;
+                case BrushType.Watercolor:
+                    opacity = 0.9f;
+                    smoothingFactor = 0.5f;
+                    streamline = 0.4f;
+                    break;
+            }
+        }
 
         _currentStroke = new DrawingStroke
         {
             Color = IsErasing ? SKColors.Transparent : StrokeColor,
-            StrokeWidth = IsHighlighter ? StrokeWidth * 2.4f : StrokeWidth,
+            StrokeWidth = strokeWidth,
             IsEraser = IsErasing,
-            Opacity = IsHighlighter ? 0.28f : 1f,
+            Opacity = opacity,
             BrushType = brushType,
             Options = new StrokeOptions
             {
-                PressureEnabled = !IsErasing && !IsHighlighter,
+                PressureEnabled = pressureEnabled,
                 SmoothingEnabled = true,
-                SmoothingFactor = IsHighlighter ? 0.25f : 0.45f,
+                SmoothingFactor = smoothingFactor,
                 MinPressure = 0.1f,
                 MaxPressure = 1f,
-                Streamline = IsHighlighter ? 0.15f : 0.35f
+                Streamline = streamline
             }
         };
         _currentStroke.AddPoint(point);
@@ -1199,9 +1287,219 @@ public class DrawingCanvas : SKCanvasView
     {
         if (stroke.IsEraser)
             return SKBlendMode.Clear;
-        if (stroke.BrushType == BrushType.Highlighter)
+        if (stroke.BrushType == BrushType.Highlighter || stroke.BrushType == BrushType.Marker)
             return SKBlendMode.Multiply;
         return SKBlendMode.SrcOver;
+    }
+
+    private void HandleAdvancedEraser(SKTouchEventArgs e, DrawingPoint point)
+    {
+        switch (EraserBehavior)
+        {
+            case EraserMode.Stroke:
+                if (e.ActionType == SKTouchAction.Pressed || e.ActionType == SKTouchAction.Moved)
+                {
+                    var radius = Math.Max(3f, StrokeWidth * 0.75f);
+                    if (EraseWholeStrokeAt(point.X, point.Y, radius))
+                    {
+                        StrokeCommitted?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+                break;
+            case EraserMode.Lasso:
+                HandleLassoEraser(e, point);
+                break;
+        }
+    }
+
+    private void HandleLassoEraser(SKTouchEventArgs e, DrawingPoint point)
+    {
+        var p = new SKPoint(point.X, point.Y);
+        switch (e.ActionType)
+        {
+            case SKTouchAction.Pressed:
+                _isLassoErasing = true;
+                _lassoPoints.Clear();
+                _lassoPoints.Add(p);
+                break;
+            case SKTouchAction.Moved:
+                if (!_isLassoErasing)
+                    return;
+
+                if (_lassoPoints.Count == 0)
+                {
+                    _lassoPoints.Add(p);
+                    return;
+                }
+
+                var last = _lassoPoints[^1];
+                var dx = p.X - last.X;
+                var dy = p.Y - last.Y;
+                if ((dx * dx) + (dy * dy) >= 1f)
+                {
+                    _lassoPoints.Add(p);
+                }
+                break;
+            case SKTouchAction.Released:
+            case SKTouchAction.Cancelled:
+                if (!_isLassoErasing)
+                    return;
+
+                if (_lassoPoints.Count >= 3)
+                {
+                    var first = _lassoPoints[0];
+                    var lastPoint = _lassoPoints[^1];
+                    var lx = first.X - lastPoint.X;
+                    var ly = first.Y - lastPoint.Y;
+                    if ((lx * lx) + (ly * ly) >= 1f)
+                    {
+                        _lassoPoints.Add(first);
+                    }
+
+                    if (EraseStrokesInsideLasso())
+                    {
+                        StrokeCommitted?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+
+                _isLassoErasing = false;
+                _lassoPoints.Clear();
+                break;
+        }
+    }
+
+    private bool EraseWholeStrokeAt(float x, float y, float radius)
+    {
+        if (Layers.Count == 0 || CurrentLayerIndex < 0 || CurrentLayerIndex >= Layers.Count)
+            return false;
+
+        var layer = Layers[CurrentLayerIndex];
+        if (layer.IsLocked || layer.Strokes.Count == 0)
+            return false;
+
+        var removed = false;
+        var threshold = Math.Max(2f, radius);
+        for (var i = layer.Strokes.Count - 1; i >= 0; i--)
+        {
+            var stroke = layer.Strokes[i];
+            if (stroke.IsEraser || stroke.Points.Count == 0)
+                continue;
+
+            var hitRadius = threshold + (stroke.StrokeWidth * 0.5f);
+            if (!IsPointNearStroke(x, y, stroke, hitRadius))
+                continue;
+
+            layer.Strokes.RemoveAt(i);
+            removed = true;
+        }
+
+        return removed;
+    }
+
+    private bool EraseStrokesInsideLasso()
+    {
+        if (Layers.Count == 0 || CurrentLayerIndex < 0 || CurrentLayerIndex >= Layers.Count || _lassoPoints.Count < 3)
+            return false;
+
+        var layer = Layers[CurrentLayerIndex];
+        if (layer.IsLocked || layer.Strokes.Count == 0)
+            return false;
+
+        var removed = false;
+        for (var i = layer.Strokes.Count - 1; i >= 0; i--)
+        {
+            var stroke = layer.Strokes[i];
+            if (stroke.IsEraser || stroke.Points.Count == 0)
+                continue;
+
+            var center = GetStrokeCenter(stroke);
+            if (!IsPointInsidePolygon(center, _lassoPoints))
+                continue;
+
+            layer.Strokes.RemoveAt(i);
+            removed = true;
+        }
+
+        return removed;
+    }
+
+    private static SKPoint GetStrokeCenter(DrawingStroke stroke)
+    {
+        if (stroke.Points.Count == 0)
+            return SKPoint.Empty;
+
+        float sumX = 0f;
+        float sumY = 0f;
+        foreach (var p in stroke.Points)
+        {
+            sumX += p.X;
+            sumY += p.Y;
+        }
+
+        var count = stroke.Points.Count;
+        return new SKPoint(sumX / count, sumY / count);
+    }
+
+    private static bool IsPointInsidePolygon(SKPoint point, IReadOnlyList<SKPoint> polygon)
+    {
+        var inside = false;
+        for (int i = 0, j = polygon.Count - 1; i < polygon.Count; j = i++)
+        {
+            var xi = polygon[i].X;
+            var yi = polygon[i].Y;
+            var xj = polygon[j].X;
+            var yj = polygon[j].Y;
+
+            var intersect = ((yi > point.Y) != (yj > point.Y))
+                && (point.X < ((xj - xi) * (point.Y - yi) / ((yj - yi) + float.Epsilon)) + xi);
+            if (intersect)
+                inside = !inside;
+        }
+
+        return inside;
+    }
+
+    private static bool IsPointNearStroke(float x, float y, DrawingStroke stroke, float radius)
+    {
+        var radiusSquared = radius * radius;
+        if (stroke.Points.Count == 1)
+        {
+            var p = stroke.Points[0];
+            var dx = p.X - x;
+            var dy = p.Y - y;
+            return (dx * dx) + (dy * dy) <= radiusSquared;
+        }
+
+        for (var i = 1; i < stroke.Points.Count; i++)
+        {
+            var a = stroke.Points[i - 1];
+            var b = stroke.Points[i];
+            var distanceSquared = DistanceSquaredToSegment(x, y, a.X, a.Y, b.X, b.Y);
+            if (distanceSquared <= radiusSquared)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static float DistanceSquaredToSegment(float px, float py, float ax, float ay, float bx, float by)
+    {
+        var dx = bx - ax;
+        var dy = by - ay;
+        if (Math.Abs(dx) < float.Epsilon && Math.Abs(dy) < float.Epsilon)
+        {
+            var ex = px - ax;
+            var ey = py - ay;
+            return (ex * ex) + (ey * ey);
+        }
+
+        var t = ((px - ax) * dx + (py - ay) * dy) / ((dx * dx) + (dy * dy));
+        t = Math.Clamp(t, 0f, 1f);
+        var cx = ax + (t * dx);
+        var cy = ay + (t * dy);
+        var mx = px - cx;
+        var my = py - cy;
+        return (mx * mx) + (my * my);
     }
 
     private void ResetHistory()

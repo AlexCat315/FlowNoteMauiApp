@@ -272,6 +272,7 @@ public partial class MainPage
         SetSettingsVisible(false);
         DrawingToolbarPanel.IsVisible = false;
         InputModePanel.IsVisible = false;
+        ThumbnailPanel.IsVisible = false;
         LayerPanel.IsVisible = false;
 
         if (IsEditorInitialized)

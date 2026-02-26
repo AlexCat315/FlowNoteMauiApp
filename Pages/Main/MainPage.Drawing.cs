@@ -1,5 +1,6 @@
 using SkiaSharp;
 using FlowNoteMauiApp.Controls;
+using FlowNoteMauiApp.Models;
 using System.Diagnostics;
 using Microsoft.Maui.Devices;
 
@@ -17,16 +18,45 @@ public partial class MainPage
     private enum InkToolKind
     {
         None,
-        Pen,
-        Highlighter,
+        Ballpoint,
+        Fountain,
+        Pencil,
+        Marker,
         Eraser
     }
 
-    private const string PenInputModeIcon = "icon_pencil.png";
-    private const string FingerInputModeIcon = "icon_hand.png";
-    private const string ReadInputModeIcon = "icon_read_mode.png";
+    private enum EraserToolMode
+    {
+        Pixel,
+        Stroke,
+        Lasso
+    }
+
+    private sealed class InkToolState
+    {
+        public InkToolState(SKColor color, float width)
+        {
+            Color = color;
+            Width = width;
+        }
+
+        public SKColor Color { get; set; }
+        public float Width { get; set; }
+    }
+
     private DateTime _lastPanUpdateLogUtc = DateTime.MinValue;
-    private InkToolKind _activeInkTool = InkToolKind.None;
+    private InkToolKind _activeInkTool = InkToolKind.Ballpoint;
+    private EraserToolMode _eraserMode = EraserToolMode.Pixel;
+    private bool _isUpdatingToolUi;
+    private readonly Dictionary<string, ImageSource> _toolIconSourceCache = new();
+    private readonly Dictionary<InkToolKind, InkToolState> _inkToolStates = new()
+    {
+        [InkToolKind.Ballpoint] = new InkToolState(SKColors.Black, 3f),
+        [InkToolKind.Fountain] = new InkToolState(SKColors.Blue, 3.5f),
+        [InkToolKind.Pencil] = new InkToolState(SKColors.Black, 2.2f),
+        [InkToolKind.Marker] = new InkToolState(SKColors.Green, 6f),
+        [InkToolKind.Eraser] = new InkToolState(SKColors.Transparent, 10f)
+    };
 
     private bool EnsureDrawingReady(bool showHint = false)
     {
@@ -41,13 +71,7 @@ public partial class MainPage
     // Drawing related methods
     private void OnDrawingToolbarCloseClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        StopTwoFingerInertia();
-        ClearArmedInkTool(hideDrawingToolbar: true);
-        SetInputModePanelVisible(false);
-        ApplyInputMode(DrawingInputMode.TapRead, showStatus: true, activateDrawing: false);
+        DrawingToolbarPanel.IsVisible = false;
     }
 
     private void OnPenModeClicked(object? sender, EventArgs e)
@@ -55,7 +79,13 @@ public partial class MainPage
         if (!EnsureDrawingReady())
             return;
 
-        SetInputModePanelVisible(!InputModePanel.IsVisible);
+        if (_activeInkTool == InkToolKind.Ballpoint && DrawingToolbarPanel.IsVisible)
+        {
+            DrawingToolbarPanel.IsVisible = false;
+            return;
+        }
+
+        ArmInkTool(InkToolKind.Ballpoint);
     }
 
     private void SetInputModePanelVisible(bool visible)
@@ -66,15 +96,26 @@ public partial class MainPage
 
     private void UpdateModeButtonVisual()
     {
+        ApplyTopModeButtonVisual();
+    }
+
+    private void ApplyTopModeButtonVisual()
+    {
+        ApplyTopModeButtonVisual(TopModePenButton, _drawingInputMode == DrawingInputMode.PenStylus);
+        ApplyTopModeButtonVisual(TopModeFingerButton, _drawingInputMode == DrawingInputMode.FingerCapacitive);
+        ApplyTopModeButtonVisual(TopModeReadButton, _drawingInputMode == DrawingInputMode.TapRead);
+    }
+
+    private void ApplyTopModeButtonVisual(ImageButton button, bool selected)
+    {
         var palette = Palette;
-        var isExpanded = InputModePanel.IsVisible;
-        PenModeButton.BackgroundColor = isExpanded
+        button.BackgroundColor = selected
             ? palette.ModeButtonExpandedBackground
             : palette.ModeButtonCollapsedBackground;
-        PenModeButton.BorderColor = isExpanded
+        button.BorderColor = selected
             ? palette.ModeButtonExpandedBorder
             : palette.ModeButtonCollapsedBorder;
-        PenModeButton.BorderWidth = 1;
+        button.BorderWidth = 1;
     }
 
     private void SetFingerDrawSwitchState(bool isFingerMode)
@@ -100,13 +141,6 @@ public partial class MainPage
         UpdateInputModeButtonVisual(InputModePenButton, isPen);
         UpdateInputModeButtonVisual(InputModeFingerButton, isFinger);
         UpdateInputModeButtonVisual(InputModeReadButton, isRead);
-
-        PenModeButton.Source = _drawingInputMode switch
-        {
-            DrawingInputMode.FingerCapacitive => FingerInputModeIcon,
-            DrawingInputMode.TapRead => ReadInputModeIcon,
-            _ => PenInputModeIcon
-        };
         UpdateModeButtonVisual();
     }
 
@@ -131,53 +165,123 @@ public partial class MainPage
             || DeviceInfo.Platform == DevicePlatform.iOS;
     }
 
+    private static BrushType ToBrushType(InkToolKind tool)
+    {
+        return tool switch
+        {
+            InkToolKind.Ballpoint => BrushType.Pen,
+            InkToolKind.Fountain => BrushType.Watercolor,
+            InkToolKind.Pencil => BrushType.Pencil,
+            InkToolKind.Marker => BrushType.Marker,
+            _ => BrushType.Eraser
+        };
+    }
+
+    private static DrawingCanvas.EraserMode ToCanvasEraserMode(EraserToolMode mode)
+    {
+        return mode switch
+        {
+            EraserToolMode.Stroke => DrawingCanvas.EraserMode.Stroke,
+            EraserToolMode.Lasso => DrawingCanvas.EraserMode.Lasso,
+            _ => DrawingCanvas.EraserMode.Pixel
+        };
+    }
+
+    private InkToolState EnsureInkState(InkToolKind tool)
+    {
+        if (_inkToolStates.TryGetValue(tool, out var state))
+            return state;
+
+        state = new InkToolState(SKColors.Black, 3f);
+        _inkToolStates[tool] = state;
+        return state;
+    }
+
+    private static string GetInkToolTitle(InkToolKind tool)
+    {
+        return tool switch
+        {
+            InkToolKind.Ballpoint => "圆珠笔",
+            InkToolKind.Fountain => "钢笔",
+            InkToolKind.Pencil => "铅笔",
+            InkToolKind.Marker => "马克笔",
+            InkToolKind.Eraser => "橡皮擦",
+            _ => "工具"
+        };
+    }
+
+    private static string? GetColorKey(SKColor color)
+    {
+        if (color == SKColors.Black)
+            return "Black";
+        if (color == SKColors.Blue)
+            return "Blue";
+        if (color == SKColors.Red)
+            return "Red";
+        if (color == SKColors.Green)
+            return "Green";
+        if (color == SKColors.Orange)
+            return "Orange";
+        if (color == SKColors.White)
+            return "White";
+        return null;
+    }
+
     private void ApplyActiveInkToolVisual()
     {
-        switch (_activeInkTool)
+        if (_activeInkTool == InkToolKind.None)
         {
-            case InkToolKind.Highlighter:
-                DrawingCanvas.IsErasing = false;
-                DrawingCanvas.IsHighlighter = true;
-                UpdateToolSelection("Highlighter");
-                break;
-            case InkToolKind.Eraser:
-                DrawingCanvas.IsErasing = true;
-                DrawingCanvas.IsHighlighter = false;
-                UpdateToolSelection("Eraser");
-                break;
-            case InkToolKind.Pen:
-                DrawingCanvas.IsErasing = false;
-                DrawingCanvas.IsHighlighter = false;
-                UpdateToolSelection("Pen");
-                break;
-            default:
-                DrawingCanvas.IsErasing = false;
-                DrawingCanvas.IsHighlighter = false;
-                UpdateToolSelection("None");
-                break;
+            UpdateToolSelection(_activeInkTool);
+            UpdateToolButtonTintColors();
+            UpdateToolSettingsPanelState();
+            return;
         }
+
+        var state = EnsureInkState(_activeInkTool);
+        if (IsEditorInitialized)
+        {
+            var isEraser = _activeInkTool == InkToolKind.Eraser;
+            DrawingCanvas.IsErasing = isEraser;
+            DrawingCanvas.IsHighlighter = _activeInkTool == InkToolKind.Marker;
+            DrawingCanvas.ActiveBrushType = ToBrushType(_activeInkTool);
+            DrawingCanvas.EraserBehavior = ToCanvasEraserMode(_eraserMode);
+            DrawingCanvas.StrokeWidth = state.Width;
+            if (!isEraser)
+            {
+                DrawingCanvas.StrokeColor = state.Color;
+            }
+        }
+
+        UpdateToolSelection(_activeInkTool);
+        UpdateToolButtonTintColors();
+        UpdateToolSettingsPanelState();
     }
 
     private void ArmInkTool(InkToolKind tool, bool showStatus = false)
     {
         _activeInkTool = tool;
+        SetInputModePanelVisible(false);
+        ApplyActiveInkToolVisual();
+
         if (!IsEditorInitialized)
             return;
 
-        ApplyActiveInkToolVisual();
         var forceNativeInputPassthrough = IsNativeGesturePassthroughPlatform();
         if (!forceNativeInputPassthrough && _drawingInputMode != DrawingInputMode.TapRead)
         {
             DrawingCanvas.EnableDrawing = true;
-            DrawingToolbarPanel.IsVisible = true;
         }
+        DrawingToolbarPanel.IsVisible = _drawingInputMode != DrawingInputMode.TapRead;
 
         if (showStatus)
         {
-            ShowStatus(tool switch
+            ShowStatus(_activeInkTool switch
             {
-                InkToolKind.Highlighter => T("StatusHighlighterArmed", "Highlighter selected."),
-                InkToolKind.Eraser => T("StatusEraserArmed", "Eraser selected."),
+                InkToolKind.Ballpoint => "圆珠笔已选中",
+                InkToolKind.Fountain => "钢笔已选中",
+                InkToolKind.Pencil => "铅笔已选中",
+                InkToolKind.Marker => "马克笔已选中",
+                InkToolKind.Eraser => "橡皮擦已选中",
                 _ => T("StatusPenArmed", "Pen selected.")
             });
         }
@@ -185,11 +289,9 @@ public partial class MainPage
 
     private void ClearArmedInkTool(bool hideDrawingToolbar)
     {
-        _activeInkTool = InkToolKind.None;
         if (!IsEditorInitialized)
             return;
 
-        ApplyActiveInkToolVisual();
         DrawingCanvas.EnableDrawing = false;
         if (hideDrawingToolbar)
         {
@@ -259,11 +361,11 @@ public partial class MainPage
                 DrawingCanvas.IsPenMode = false;
                 DrawingCanvas.EnableDrawing = false;
                 DrawingCanvas.IsVisible = true;
-                ClearArmedInkTool(hideDrawingToolbar: true);
+                DrawingToolbarPanel.IsVisible = false;
+                ThumbnailPanel.IsVisible = false;
                 LayerPanel.IsVisible = false;
                 if (wasDrawingEnabled)
                     QueueInkSave();
-                UpdateToolSelection("Read");
                 if (showStatus)
                     ShowStatus(T("StatusReadMode", "Read mode: PDF and notes visible, writing disabled."));
                 break;
@@ -290,10 +392,43 @@ public partial class MainPage
         SetInputModePanelVisible(false);
     }
 
+    private void OnTopModePenClicked(object? sender, EventArgs e)
+    {
+        ApplyInputMode(DrawingInputMode.PenStylus, showStatus: true);
+        SetInputModePanelVisible(false);
+    }
+
+    private void OnTopModeFingerClicked(object? sender, EventArgs e)
+    {
+        ApplyInputMode(DrawingInputMode.FingerCapacitive, showStatus: true);
+        SetInputModePanelVisible(false);
+    }
+
+    private void OnTopModeReadClicked(object? sender, EventArgs e)
+    {
+        ApplyInputMode(DrawingInputMode.TapRead, showStatus: true);
+        SetInputModePanelVisible(false);
+    }
+
     private void OnLayerToggleClicked(object? sender, EventArgs e)
     {
         SetInputModePanelVisible(false);
+        ThumbnailPanel.IsVisible = false;
         LayerPanel.IsVisible = !LayerPanel.IsVisible;
+    }
+
+    private void OnThumbnailToggleClicked(object? sender, EventArgs e)
+    {
+        if (!EnsurePdfLoaded(showHint: true))
+            return;
+
+        SetInputModePanelVisible(false);
+        LayerPanel.IsVisible = false;
+        ThumbnailPanel.IsVisible = !ThumbnailPanel.IsVisible;
+        if (ThumbnailPanel.IsVisible)
+        {
+            RefreshThumbnailList();
+        }
     }
 
     private void OnHighlighterClicked(object? sender, EventArgs e)
@@ -301,11 +436,23 @@ public partial class MainPage
         if (!EnsureDrawingReady())
             return;
 
-        SetInputModePanelVisible(false);
-        var nextTool = _activeInkTool == InkToolKind.Highlighter
-            ? InkToolKind.Pen
-            : InkToolKind.Highlighter;
-        ArmInkTool(nextTool);
+        ArmInkTool(InkToolKind.Fountain);
+    }
+
+    private void OnPencilClicked(object? sender, EventArgs e)
+    {
+        if (!EnsureDrawingReady())
+            return;
+
+        ArmInkTool(InkToolKind.Pencil);
+    }
+
+    private void OnMarkerClicked(object? sender, EventArgs e)
+    {
+        if (!EnsureDrawingReady())
+            return;
+
+        ArmInkTool(InkToolKind.Marker);
     }
 
     private void OnEraserClicked(object? sender, EventArgs e)
@@ -313,14 +460,10 @@ public partial class MainPage
         if (!EnsureDrawingReady())
             return;
 
-        SetInputModePanelVisible(false);
-        var nextTool = _activeInkTool == InkToolKind.Eraser
-            ? InkToolKind.Pen
-            : InkToolKind.Eraser;
-        ArmInkTool(nextTool);
+        ArmInkTool(InkToolKind.Eraser);
     }
 
-    private void UpdateToolSelection(string selectedTool)
+    private void UpdateToolSelection(InkToolKind selectedTool)
     {
         var palette = Palette;
         var selectedColor = palette.ToolSelectedBackground;
@@ -328,13 +471,24 @@ public partial class MainPage
         var selectedBorder = palette.ToolSelectedBorder;
         var normalBorder = palette.ToolNormalBorder;
 
-        HighlighterButton.BackgroundColor = selectedTool == "Highlighter" ? selectedColor : normalColor;
-        EraserButton.BackgroundColor = selectedTool == "Eraser" ? selectedColor : normalColor;
+        ApplyToolButtonSelection(PenModeButton, selectedTool == InkToolKind.Ballpoint, selectedColor, normalColor, selectedBorder, normalBorder);
+        ApplyToolButtonSelection(HighlighterButton, selectedTool == InkToolKind.Fountain, selectedColor, normalColor, selectedBorder, normalBorder);
+        ApplyToolButtonSelection(PencilButton, selectedTool == InkToolKind.Pencil, selectedColor, normalColor, selectedBorder, normalBorder);
+        ApplyToolButtonSelection(MarkerButton, selectedTool == InkToolKind.Marker, selectedColor, normalColor, selectedBorder, normalBorder);
+        ApplyToolButtonSelection(EraserButton, selectedTool == InkToolKind.Eraser, selectedColor, normalColor, selectedBorder, normalBorder);
+    }
 
-        HighlighterButton.BorderColor = selectedTool == "Highlighter" ? selectedBorder : normalBorder;
-        EraserButton.BorderColor = selectedTool == "Eraser" ? selectedBorder : normalBorder;
-        HighlighterButton.BorderWidth = 1;
-        EraserButton.BorderWidth = 1;
+    private static void ApplyToolButtonSelection(
+        ImageButton button,
+        bool selected,
+        Color selectedColor,
+        Color normalColor,
+        Color selectedBorder,
+        Color normalBorder)
+    {
+        button.BackgroundColor = selected ? selectedColor : normalColor;
+        button.BorderColor = selected ? selectedBorder : normalBorder;
+        button.BorderWidth = 1;
     }
 
     private void OnRedoClicked(object? sender, EventArgs e)
@@ -366,61 +520,45 @@ public partial class MainPage
 
     private void OnStrokeWidthChanged(object? sender, ValueChangedEventArgs e)
     {
+        if (_isUpdatingToolUi)
+            return;
+
         if (!EnsureDrawingReady())
             return;
 
-        DrawingCanvas.StrokeWidth = (float)e.NewValue;
-        StrokeWidthLabel.Text = $"{(int)e.NewValue}";
+        var state = EnsureInkState(_activeInkTool);
+        state.Width = (float)e.NewValue;
+        if (IsEditorInitialized)
+        {
+            DrawingCanvas.StrokeWidth = state.Width;
+        }
+
+        StrokeWidthLabel.Text = $"{state.Width:0.00}mm";
     }
 
     private void OnColorBlackClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        DrawingCanvas.StrokeColor = SKColors.Black;
-        UpdateColorSelection("Black");
-        ArmInkTool(InkToolKind.Pen);
+        SetActiveToolColor(SKColors.Black);
     }
 
     private void OnColorRedClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        DrawingCanvas.StrokeColor = SKColors.Red;
-        UpdateColorSelection("Red");
-        ArmInkTool(InkToolKind.Pen);
+        SetActiveToolColor(SKColors.Red);
     }
 
     private void OnColorBlueClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        DrawingCanvas.StrokeColor = SKColors.Blue;
-        UpdateColorSelection("Blue");
-        ArmInkTool(InkToolKind.Pen);
+        SetActiveToolColor(SKColors.Blue);
     }
 
     private void OnColorGreenClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        DrawingCanvas.StrokeColor = SKColors.Green;
-        UpdateColorSelection("Green");
-        ArmInkTool(InkToolKind.Pen);
+        SetActiveToolColor(SKColors.Green);
     }
 
     private void OnColorOrangeClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        DrawingCanvas.StrokeColor = SKColors.Orange;
-        UpdateColorSelection("Orange");
-        ArmInkTool(InkToolKind.Pen);
+        SetActiveToolColor(SKColors.Orange);
     }
 
     private void OnColorWhiteClicked(object? sender, EventArgs e)
@@ -428,12 +566,143 @@ public partial class MainPage
         if (!EnsureDrawingReady())
             return;
 
-        DrawingCanvas.StrokeColor = SKColors.White;
-        UpdateColorSelection("White");
-        ArmInkTool(InkToolKind.Pen);
+        SetActiveToolColor(SKColors.White);
     }
 
-    private void UpdateColorSelection(string selectedColor)
+    private void SetActiveToolColor(SKColor color)
+    {
+        if (!EnsureDrawingReady())
+            return;
+
+        if (_activeInkTool == InkToolKind.Eraser || _activeInkTool == InkToolKind.None)
+            return;
+
+        var state = EnsureInkState(_activeInkTool);
+        state.Color = color;
+        if (IsEditorInitialized)
+        {
+            DrawingCanvas.StrokeColor = color;
+        }
+
+        UpdateColorSelection(GetColorKey(color));
+        UpdateToolButtonTintColors();
+    }
+
+    private void UpdateToolButtonTintColors()
+    {
+        PenModeButton.Source = CreateTintedToolIconSource("icon_pen.png", EnsureInkState(InkToolKind.Ballpoint).Color);
+        HighlighterButton.Source = CreateTintedToolIconSource("icon_gelpen.png", EnsureInkState(InkToolKind.Fountain).Color);
+        PencilButton.Source = CreateTintedToolIconSource("icon_pencil.png", EnsureInkState(InkToolKind.Pencil).Color);
+        MarkerButton.Source = CreateTintedToolIconSource("icon_brush.png", EnsureInkState(InkToolKind.Marker).Color);
+        EraserButton.Source = ImageSource.FromFile("icon_eraser.png");
+    }
+
+    private ImageSource CreateTintedToolIconSource(string iconFile, SKColor tintColor)
+    {
+        var cacheKey = $"{iconFile}:{tintColor.Alpha:X2}{tintColor.Red:X2}{tintColor.Green:X2}{tintColor.Blue:X2}";
+        if (_toolIconSourceCache.TryGetValue(cacheKey, out var cachedSource))
+            return cachedSource;
+
+        try
+        {
+            using var rawStream = FileSystem.OpenAppPackageFileAsync(iconFile).GetAwaiter().GetResult();
+            using var skData = SKData.Create(rawStream);
+            using var baseBitmap = SKBitmap.Decode(skData);
+            if (baseBitmap is null)
+                return ImageSource.FromFile(iconFile);
+
+            using var tintedBitmap = new SKBitmap(baseBitmap.Width, baseBitmap.Height, baseBitmap.ColorType, baseBitmap.AlphaType);
+            using (var canvas = new SKCanvas(tintedBitmap))
+            using (var paint = new SKPaint
+            {
+                IsAntialias = true,
+                ColorFilter = SKColorFilter.CreateBlendMode(tintColor, SKBlendMode.SrcIn)
+            })
+            {
+                canvas.Clear(SKColors.Transparent);
+                canvas.DrawBitmap(baseBitmap, 0, 0, paint);
+                canvas.Flush();
+            }
+
+            using var outputImage = SKImage.FromBitmap(tintedBitmap);
+            using var outputData = outputImage.Encode(SKEncodedImageFormat.Png, 100);
+            var bytes = outputData.ToArray();
+            var source = ImageSource.FromStream(() => new MemoryStream(bytes));
+            _toolIconSourceCache[cacheKey] = source;
+            return source;
+        }
+        catch
+        {
+            return ImageSource.FromFile(iconFile);
+        }
+    }
+
+    private void UpdateToolSettingsPanelState()
+    {
+        if (!IsEditorInitialized)
+            return;
+
+        var state = EnsureInkState(_activeInkTool);
+        _isUpdatingToolUi = true;
+        try
+        {
+            var min = (float)StrokeWidthSlider.Minimum;
+            var max = (float)StrokeWidthSlider.Maximum;
+            var clamped = Math.Clamp(state.Width, min, max);
+            if (Math.Abs(StrokeWidthSlider.Value - clamped) > 0.001f)
+            {
+                StrokeWidthSlider.Value = clamped;
+            }
+        }
+        finally
+        {
+            _isUpdatingToolUi = false;
+        }
+
+        ToolSettingsTitleLabel.Text = GetInkToolTitle(_activeInkTool);
+        DrawingPenWidthLabel.Text = _activeInkTool == InkToolKind.Eraser ? "大小" : "粗细";
+        StrokeWidthLabel.Text = $"{state.Width:0.00}mm";
+        EraserModePanel.IsVisible = _activeInkTool == InkToolKind.Eraser;
+        ToolColorPanel.IsVisible = _activeInkTool != InkToolKind.Eraser;
+        UpdateEraserModeSelectionVisual();
+        UpdateColorSelection(_activeInkTool == InkToolKind.Eraser ? null : GetColorKey(state.Color));
+    }
+
+    private void OnPixelEraserModeClicked(object? sender, EventArgs e)
+    {
+        _eraserMode = EraserToolMode.Pixel;
+        ApplyActiveInkToolVisual();
+    }
+
+    private void OnStrokeEraserModeClicked(object? sender, EventArgs e)
+    {
+        _eraserMode = EraserToolMode.Stroke;
+        ApplyActiveInkToolVisual();
+    }
+
+    private void OnLassoEraserModeClicked(object? sender, EventArgs e)
+    {
+        _eraserMode = EraserToolMode.Lasso;
+        ApplyActiveInkToolVisual();
+    }
+
+    private void UpdateEraserModeSelectionVisual()
+    {
+        var palette = Palette;
+        ApplyEraserModeButtonVisual(PixelEraserModeButton, _eraserMode == EraserToolMode.Pixel, palette);
+        ApplyEraserModeButtonVisual(StrokeEraserModeButton, _eraserMode == EraserToolMode.Stroke, palette);
+        ApplyEraserModeButtonVisual(LassoEraserModeButton, _eraserMode == EraserToolMode.Lasso, palette);
+    }
+
+    private static void ApplyEraserModeButtonVisual(Button button, bool selected, ThemePalette palette)
+    {
+        button.BackgroundColor = selected ? palette.ModeSelectionBackground : palette.ModeButtonCollapsedBackground;
+        button.BorderColor = selected ? palette.ModeButtonExpandedBorder : palette.ModeButtonCollapsedBorder;
+        button.BorderWidth = 1;
+        button.TextColor = selected ? palette.ModeSelectionText : palette.TabInactiveText;
+    }
+
+    private void UpdateColorSelection(string? selectedColor)
     {
         var palette = Palette;
         var selectedBorderColor = palette.ModeButtonExpandedBorder;
@@ -445,6 +714,65 @@ public partial class MainPage
         ColorGreen.BorderColor = selectedColor == "Green" ? selectedBorderColor : normalBorderColor;
         ColorOrange.BorderColor = selectedColor == "Orange" ? selectedBorderColor : normalBorderColor;
         ColorWhite.BorderColor = selectedColor == "White" ? selectedBorderColor : palette.ColorSwatchWhiteBorder;
+    }
+
+    private void RefreshThumbnailList()
+    {
+        ThumbnailList.Children.Clear();
+        if (!IsEditorInitialized || _totalPageCount <= 0)
+            return;
+
+        for (int i = 0; i < _totalPageCount; i++)
+        {
+            var pageIndex = i;
+            var isCurrent = pageIndex == _currentPageIndex;
+            var palette = Palette;
+
+            var item = new Border
+            {
+                BackgroundColor = isCurrent ? palette.LayerSelectedBackground : Colors.Transparent,
+                Stroke = isCurrent ? palette.LayerSelectedBorder : palette.LayerNormalBorder,
+                StrokeThickness = 1,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+                Padding = new Thickness(8),
+                Content = new VerticalStackLayout
+                {
+                    Spacing = 6,
+                    Children =
+                    {
+                        new Border
+                        {
+                            HeightRequest = 72,
+                            Stroke = isCurrent ? palette.ModeButtonExpandedBorder : palette.LayerNormalBorder,
+                            StrokeThickness = 1,
+                            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+                            BackgroundColor = isCurrent ? palette.ModeButtonExpandedBackground : palette.ModeButtonCollapsedBackground
+                        },
+                        new Label
+                        {
+                            Text = $"Page {pageIndex + 1}",
+                            FontSize = 12,
+                            HorizontalTextAlignment = TextAlignment.Center,
+                            TextColor = ThemePrimaryText
+                        }
+                    }
+                }
+            };
+
+            item.GestureRecognizers.Add(new TapGestureRecognizer
+            {
+                Command = new Command(() =>
+                {
+                    if (!EnsurePdfLoaded())
+                        return;
+
+                    PdfViewer.GoToPage(pageIndex);
+                    _currentPageIndex = pageIndex;
+                    RefreshThumbnailList();
+                })
+            });
+            ThumbnailList.Children.Add(item);
+        }
     }
 
     private void OnAddLayerClicked(object? sender, EventArgs e)

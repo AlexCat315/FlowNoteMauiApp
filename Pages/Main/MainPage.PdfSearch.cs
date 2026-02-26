@@ -249,6 +249,7 @@ public partial class MainPage
         DrawingCanvas.SetViewport(DrawingCanvas.ScrollX, DrawingCanvas.ScrollY, zoom);
         SyncZoomUiFromViewer(zoom);
         UpdatePageIndicators();
+        RefreshThumbnailList();
         ShowStatus(AppResources.DocumentLoadedFormat.Replace("{0}", _totalPageCount.ToString()));
     }
 
@@ -257,6 +258,10 @@ public partial class MainPage
         _currentPageIndex = e.PageIndex;
         _totalPageCount = e.PageCount;
         UpdatePageIndicators();
+        if (ThumbnailPanel.IsVisible)
+        {
+            RefreshThumbnailList();
+        }
         LogPdfGesture($"page-changed page={_currentPageIndex + 1}/{Math.Max(1, _totalPageCount)}");
     }
 

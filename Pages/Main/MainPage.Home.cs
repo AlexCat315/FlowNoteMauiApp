@@ -226,6 +226,9 @@ public partial class MainPage
     {
         SetDrawerVisible(false);
         SetInputModePanelVisible(false);
+        DrawingToolbarPanel.IsVisible = false;
+        ThumbnailPanel.IsVisible = false;
+        LayerPanel.IsVisible = false;
         SetSettingsVisible(true);
         _ = RefreshWorkspaceViewsAsync();
     }

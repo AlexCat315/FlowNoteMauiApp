@@ -41,10 +41,15 @@ public partial class MainPage
 
     private Border TopBarPanel => FindInEditor<Border>(nameof(TopBarPanel));
     private HorizontalStackLayout EditorTabsHost => FindInEditor<HorizontalStackLayout>(nameof(EditorTabsHost));
+    private ImageButton TopModePenButton => FindInEditor<ImageButton>(nameof(TopModePenButton));
+    private ImageButton TopModeFingerButton => FindInEditor<ImageButton>(nameof(TopModeFingerButton));
+    private ImageButton TopModeReadButton => FindInEditor<ImageButton>(nameof(TopModeReadButton));
     private ImageButton UndoButton => FindInEditor<ImageButton>(nameof(UndoButton));
     private ImageButton RedoButton => FindInEditor<ImageButton>(nameof(RedoButton));
     private ImageButton PenModeButton => FindInEditor<ImageButton>(nameof(PenModeButton));
     private ImageButton HighlighterButton => FindInEditor<ImageButton>(nameof(HighlighterButton));
+    private ImageButton PencilButton => FindInEditor<ImageButton>(nameof(PencilButton));
+    private ImageButton MarkerButton => FindInEditor<ImageButton>(nameof(MarkerButton));
     private ImageButton EraserButton => FindInEditor<ImageButton>(nameof(EraserButton));
     private ImageButton ClearButton2 => FindInEditor<ImageButton>(nameof(ClearButton2));
     private ImageButton TextToolButton => FindInEditor<ImageButton>(nameof(TextToolButton));
@@ -67,8 +72,17 @@ public partial class MainPage
     private Button InputModeFingerButton => FindInEditor<Button>(nameof(InputModeFingerButton));
     private Button InputModeReadButton => FindInEditor<Button>(nameof(InputModeReadButton));
     private Border DrawingToolbarPanel => FindInEditor<Border>(nameof(DrawingToolbarPanel));
+    private Label ToolSettingsTitleLabel => FindInEditor<Label>(nameof(ToolSettingsTitleLabel));
+    private VerticalStackLayout EraserModePanel => FindInEditor<VerticalStackLayout>(nameof(EraserModePanel));
+    private Button PixelEraserModeButton => FindInEditor<Button>(nameof(PixelEraserModeButton));
+    private Button StrokeEraserModeButton => FindInEditor<Button>(nameof(StrokeEraserModeButton));
+    private Button LassoEraserModeButton => FindInEditor<Button>(nameof(LassoEraserModeButton));
+    private VerticalStackLayout ToolColorPanel => FindInEditor<VerticalStackLayout>(nameof(ToolColorPanel));
     private Slider StrokeWidthSlider => FindInEditor<Slider>(nameof(StrokeWidthSlider));
+    private Label DrawingPenWidthLabel => FindInEditor<Label>(nameof(DrawingPenWidthLabel));
     private Label StrokeWidthLabel => FindInEditor<Label>(nameof(StrokeWidthLabel));
+    private Border ThumbnailPanel => FindInEditor<Border>(nameof(ThumbnailPanel));
+    private VerticalStackLayout ThumbnailList => FindInEditor<VerticalStackLayout>(nameof(ThumbnailList));
     private Border LayerPanel => FindInEditor<Border>(nameof(LayerPanel));
     private VerticalStackLayout LayerList => FindInEditor<VerticalStackLayout>(nameof(LayerList));
 
