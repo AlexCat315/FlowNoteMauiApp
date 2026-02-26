@@ -192,7 +192,14 @@ public partial class MainPage
             return await FilePicker.Default.PickAsync(options);
         }
 
-        var results = (await FilePicker.Default.PickMultipleAsync(options)).ToList();
+        var picked = await FilePicker.Default.PickMultipleAsync(options);
+        if (picked is null)
+        {
+            LogPicker("pick-result-collection null on maccatalyst");
+            return null;
+        }
+
+        var results = picked.ToList();
         LogPicker($"pick-result-count={results.Count} on maccatalyst");
         return results.FirstOrDefault();
     }

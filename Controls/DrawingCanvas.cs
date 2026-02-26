@@ -148,7 +148,6 @@ public class DrawingCanvas : SKCanvasView
     private const float TwoFingerPanSwitchDelta = 10f;
     private const float TwoFingerZoomDominanceRatio = 1.25f;
     private const float MouseWheelPanStep = 16f;
-    private const int TouchMoveLogIntervalMs = 90;
     private TwoFingerGestureIntent _twoFingerGestureIntent = TwoFingerGestureIntent.None;
     private long? _penTouchPanId;
     private SKPoint _penTouchPanAnchor;
@@ -627,6 +626,7 @@ public class DrawingCanvas : SKCanvasView
         var shouldPassThrough = ForceInputTransparent || !EnableDrawing;
         InputTransparent = shouldPassThrough;
         EnableTouchEvents = !shouldPassThrough;
+        LogPointerState($"input-transparent={InputTransparent} touch-events={EnableTouchEvents} enable-drawing={EnableDrawing} force-pass-through={ForceInputTransparent}");
     }
 
     private void OnCanvasTouch(object? sender, SKTouchEventArgs e)
@@ -893,18 +893,27 @@ public class DrawingCanvas : SKCanvasView
     [Conditional("DEBUG")]
     private void LogTouch(string phase, SKTouchEventArgs e, string branch)
     {
+        if (e.DeviceType != SKTouchDeviceType.Mouse && e.DeviceType != SKTouchDeviceType.Pen)
+            return;
+
         if (e.ActionType == SKTouchAction.Moved)
         {
             var now = DateTime.UtcNow;
-            if ((now - _lastTouchMoveLogUtc).TotalMilliseconds < TouchMoveLogIntervalMs)
+            if ((now - _lastTouchMoveLogUtc).TotalMilliseconds < 160)
                 return;
             _lastTouchMoveLogUtc = now;
         }
 
         Debug.WriteLine(
-            $"[DrawingCanvas] phase={phase} action={e.ActionType} device={e.DeviceType} id={e.Id} " +
+            $"[FlowNote Pointer] phase={phase} action={e.ActionType} device={e.DeviceType} id={e.Id} " +
             $"x={e.Location.X:0.0} y={e.Location.Y:0.0} penMode={IsPenMode} enableDrawing={EnableDrawing} " +
             $"activeTouches={_activeTouchIds.Count} branch={branch}");
+    }
+
+    [Conditional("DEBUG")]
+    private static void LogPointerState(string message)
+    {
+        Debug.WriteLine($"[FlowNote Pointer] {message}");
     }
 
     private SKPoint GetTouchCenter()

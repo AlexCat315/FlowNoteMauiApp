@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Diagnostics;
 using Flow.PDFView.Abstractions;
 using FlowNoteMauiApp.Resources;
+using Microsoft.Maui.Devices;
 using PdfPageChangedEventArgs = Flow.PDFView.Abstractions.PageChangedEventArgs;
 using PdfViewportChangedEventArgs = Flow.PDFView.Abstractions.ViewportChangedEventArgs;
 
@@ -244,6 +245,7 @@ public partial class MainPage
         _currentPageIndex = e.PageIndex;
         _totalPageCount = e.PageCount;
         UpdatePageIndicators();
+        LogPdfGesture($"page-changed page={_currentPageIndex + 1}/{Math.Max(1, _totalPageCount)}");
     }
 
     private void OnPdfViewportChanged(object? sender, PdfViewportChangedEventArgs e)
@@ -254,7 +256,9 @@ public partial class MainPage
         var zoom = ClampEditorZoom(e.Zoom <= 0f ? 1f : e.Zoom);
         DrawingCanvas.SetViewport(e.OffsetX, e.OffsetY, zoom);
         SyncZoomUiFromViewer(zoom);
-        LogViewport(e.OffsetX, e.OffsetY, zoom, e.ViewportWidth, e.ViewportHeight);
+        LogPdfGesture(
+            $"viewport-changed platform={DeviceInfo.Platform} mode={_drawingInputMode} " +
+            $"x={e.OffsetX:0.0} y={e.OffsetY:0.0} zoom={zoom:0.00} size={e.ViewportWidth:0.0}x{e.ViewportHeight:0.0}");
     }
 
     private static float ClampEditorZoom(float zoom)
@@ -361,15 +365,14 @@ public partial class MainPage
     }
 
     [Conditional("DEBUG")]
-    private void LogViewport(double offsetX, double offsetY, float zoom, double viewportWidth, double viewportHeight)
+    private void LogPdfGesture(string message)
     {
         var now = DateTime.UtcNow;
-        if ((now - _lastViewportLogUtc).TotalMilliseconds < 120)
+        if ((now - _lastViewportLogUtc).TotalMilliseconds < 100)
             return;
 
         _lastViewportLogUtc = now;
-        Debug.WriteLine(
-            $"[FlowNote Viewport] x={offsetX:0.0} y={offsetY:0.0} zoom={zoom:0.00} size={viewportWidth:0.0}x{viewportHeight:0.0}");
+        Debug.WriteLine($"[FlowNote Gesture] {message}");
     }
 
     private void GoToSearchResultWithOffset(int offset)

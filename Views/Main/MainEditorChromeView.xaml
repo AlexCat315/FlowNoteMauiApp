@@ -423,7 +423,7 @@
                         x:Name="InputModeReadButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
-                        ImageSource="icon_eye.png"
+                        ImageSource="icon_read_mode.png"
                         ContentLayout="Left,8"
                         Text="阅读模式"
                     />

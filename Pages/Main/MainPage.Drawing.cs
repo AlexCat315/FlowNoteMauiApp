@@ -16,9 +16,10 @@ public partial class MainPage
 
     private const double PanInertiaFrameIntervalMs = 16d;
     private const double PanInertiaVelocityStopThreshold = 8d;
+    private const double PanInertiaStartSpeedThreshold = 55d;
     private const string PenInputModeIcon = "icon_pencil.png";
     private const string FingerInputModeIcon = "icon_hand.png";
-    private const string ReadInputModeIcon = "icon_eye.png";
+    private const string ReadInputModeIcon = "icon_read_mode.png";
     private CancellationTokenSource? _panInertiaCts;
     private DateTime _lastPanSampleUtc = DateTime.UtcNow;
     private double _panVelocityX;
@@ -128,12 +129,17 @@ public partial class MainPage
         var wasDrawingEnabled = DrawingCanvas.EnableDrawing;
         var forceNativeInputPassthrough =
             DeviceInfo.Platform == DevicePlatform.MacCatalyst
-            || (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.DeviceType == DeviceType.Virtual);
+            || DeviceInfo.Platform == DevicePlatform.iOS;
         var targetDrawingEnabled = mode != DrawingInputMode.TapRead && (activateDrawing || DrawingCanvas.EnableDrawing);
+        if (forceNativeInputPassthrough)
+        {
+            targetDrawingEnabled = false;
+        }
+
         DrawingCanvas.IsErasing = false;
         DrawingCanvas.IsHighlighter = false;
         DrawingCanvas.ForceInputTransparent = forceNativeInputPassthrough || mode == DrawingInputMode.TapRead;
-        Debug.WriteLine($"[FlowNote Mode] switch={mode} activateDrawing={activateDrawing} targetDrawingEnabled={targetDrawingEnabled}");
+        LogInputGesture($"mode-switch={mode} platform={DeviceInfo.Platform} activate={activateDrawing} drawing={targetDrawingEnabled} native-pass-through={forceNativeInputPassthrough}");
 
         switch (mode)
         {
@@ -146,7 +152,7 @@ public partial class MainPage
                 if (showStatus)
                 {
                     ShowStatus(forceNativeInputPassthrough
-                        ? T("StatusDesktopNativeInput", "Desktop/simulator uses native PDF gestures. Touch writing capture is limited in this environment.")
+                        ? T("StatusNativePdfInput", "Native PDF gestures are enabled on this platform. Handwriting capture is currently limited.")
                         : T("StatusPenMode", "Handwriting mode: stylus writes, finger/mouse pans and zooms."));
                 }
                 break;
@@ -159,7 +165,7 @@ public partial class MainPage
                 if (showStatus)
                 {
                     ShowStatus(forceNativeInputPassthrough
-                        ? T("StatusDesktopNativeInput", "Desktop/simulator uses native PDF gestures. Touch writing capture is limited in this environment.")
+                        ? T("StatusNativePdfInput", "Native PDF gestures are enabled on this platform. Handwriting capture is currently limited.")
                         : T("StatusFingerMode", "Touch mode: one finger writes, two fingers pan/zoom; in single-page mode two-finger swipe flips page."));
                 }
                 break;
@@ -481,6 +487,8 @@ public partial class MainPage
         if (PdfViewer.DisplayMode != Flow.PDFView.Abstractions.PdfDisplayMode.SinglePage)
             return;
 
+        LogInputGesture($"two-finger-swipe direction={e.Direction} page={_currentPageIndex + 1}/{Math.Max(1, _totalPageCount)}");
+
         if (e.Direction == DrawingCanvas.TwoFingerSwipeDirection.NextPage)
         {
             if (_currentPageIndex + 1 < _totalPageCount)
@@ -512,12 +520,17 @@ public partial class MainPage
             _panVelocityX = 0d;
             _panVelocityY = 0d;
             _lastPanSampleUtc = DateTime.UtcNow;
+            LogInputGesture($"pan-begin wheel={e.IsWheelInput} mode={_drawingInputMode}");
         }
 
         if (e.Phase == DrawingCanvas.TwoFingerPanPhase.End)
         {
             if (allowInertia)
+            {
                 StartTwoFingerInertiaIfNeeded();
+            }
+
+            LogInputGesture($"pan-end wheel={e.IsWheelInput} velocity=({_panVelocityX:0.0},{_panVelocityY:0.0})");
             return;
         }
 
@@ -536,6 +549,11 @@ public partial class MainPage
         if (allowInertia)
         {
             UpdatePanVelocity(adjustedX, adjustedY);
+        }
+
+        if (Math.Abs(adjustedX) > 0.1 || Math.Abs(adjustedY) > 0.1 || e.HasZoom)
+        {
+            LogInputGesture($"pan-update wheel={e.IsWheelInput} dx={adjustedX:0.0} dy={adjustedY:0.0} zoom={e.ScaleFactor:0.000}");
         }
     }
 
@@ -572,7 +590,7 @@ public partial class MainPage
         }
 
         var speed = Math.Sqrt((_panVelocityX * _panVelocityX) + (_panVelocityY * _panVelocityY));
-        if (speed < 150d)
+        if (speed < PanInertiaStartSpeedThreshold)
         {
             _panVelocityX = 0d;
             _panVelocityY = 0d;
@@ -630,6 +648,8 @@ public partial class MainPage
                 });
             }
         }, token);
+
+        LogInputGesture($"inertia-start speed={speed:0.0} resistance={resistance:0.00} damping={damping:0.00}");
     }
 
     private void StopTwoFingerInertia()
@@ -639,6 +659,12 @@ public partial class MainPage
         _panInertiaCts = null;
         _panVelocityX = 0d;
         _panVelocityY = 0d;
+    }
+
+    [Conditional("DEBUG")]
+    private static void LogInputGesture(string message)
+    {
+        Debug.WriteLine($"[FlowNote Gesture] {message}");
     }
 
     private void OnDrawingStrokeCommitted(object? sender, EventArgs e)

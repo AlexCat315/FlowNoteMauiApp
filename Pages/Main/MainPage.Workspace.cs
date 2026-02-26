@@ -65,11 +65,11 @@ public partial class MainPage
                 Padding = new Thickness(9, 3),
                 Margin = new Thickness(0, 2, 2, 0),
                 BackgroundColor = isActive
-                    ? (IsDarkTheme ? Color.FromArgb("#2A3B53") : Color.FromArgb("#FFFFFF"))
-                    : (IsDarkTheme ? Color.FromArgb("#1E2D42") : Color.FromArgb("#DEE5F1")),
+                    ? Color.FromArgb("#4A90E2")
+                    : Color.FromArgb("#FFFFFF"),
                 Stroke = isActive
-                    ? (IsDarkTheme ? Color.FromArgb("#5E83AF") : Color.FromArgb("#C4CFDF"))
-                    : (IsDarkTheme ? Color.FromArgb("#2F425B") : Color.FromArgb("#CBD5E4")),
+                    ? Color.FromArgb("#2F74D0")
+                    : Color.FromArgb("#CBD5E4"),
                 StrokeThickness = 1,
                 StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(10, 10, 4, 4) },
                 MinimumWidthRequest = 108,
@@ -93,7 +93,7 @@ public partial class MainPage
                 WidthRequest = 11,
                 HeightRequest = 11,
                 VerticalOptions = LayoutOptions.Center,
-                Opacity = isActive ? 0.88 : 0.72
+                Opacity = isActive ? 0.96 : 0.72
             });
 
             var titleLabel = new Label
@@ -104,7 +104,7 @@ public partial class MainPage
                 FontSize = 11.5,
                 MaxLines = 1,
                 LineBreakMode = LineBreakMode.TailTruncation,
-                TextColor = ThemePrimaryText
+                TextColor = isActive ? Colors.White : ThemePrimaryText
             };
             tabGrid.Children.Add(titleLabel);
             Grid.SetColumn(titleLabel, 1);
@@ -112,13 +112,15 @@ public partial class MainPage
             var closeButton = new ImageButton
             {
                 Source = "icon_x.png",
-                WidthRequest = 18,
-                HeightRequest = 18,
-                Padding = 3,
-                CornerRadius = 9,
-                BackgroundColor = Colors.Transparent,
+                WidthRequest = 14,
+                HeightRequest = 14,
+                MinimumWidthRequest = 18,
+                MinimumHeightRequest = 18,
+                Padding = 2,
+                CornerRadius = 7,
+                BackgroundColor = isActive ? Color.FromArgb("#2F74D0") : Colors.Transparent,
                 BorderWidth = 0,
-                Opacity = isActive ? 0.88 : 0.72,
+                Opacity = isActive ? 0.95 : 0.7,
                 CommandParameter = tab.NoteId
             };
             closeButton.Clicked += OnEditorTabCloseClicked;
