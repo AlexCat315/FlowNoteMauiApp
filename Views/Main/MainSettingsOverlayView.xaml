@@ -386,6 +386,26 @@
                                     FontSize="13"
                                     TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}"
                                 />
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                <Label
+                                        x:Name="AllowSideWritingTitleLabel"
+                                        Text="允许在 PDF 两侧书写"
+                                        FontFamily="OpenSansSemibold"
+                                        FontSize="18"
+                                        VerticalOptions="Center"
+                                    />
+                                <Switch
+                                        x:Name="AllowSideWritingSwitch"
+                                        Grid.Column="1"
+                                        VerticalOptions="Center"
+                                    />
+                            </Grid>
+                            <Label
+                                    x:Name="AllowSideWritingHintLabel"
+                                    Text="关闭后，仅允许在页面内和页间距落笔；PDF 左右两侧区域会拦截落笔。"
+                                    FontSize="13"
+                                    TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}"
+                                />
                         </VerticalStackLayout>
                     </Border>
                 </VerticalStackLayout>

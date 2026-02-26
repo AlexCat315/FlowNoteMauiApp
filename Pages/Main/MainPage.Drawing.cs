@@ -55,7 +55,6 @@ public partial class MainPage
     private CancellationTokenSource? _toolTintUpdateCts;
     private readonly Dictionary<string, ImageSource> _thumbnailSourceCache = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<int, PdfPageBounds> _pageBoundsCache = new();
-    private bool _pageBoundsQueryUnavailable;
     private CancellationTokenSource? _thumbnailLoadCts;
     private const int ThumbnailRequestWidth = 220;
     private const int ThumbnailRequestHeight = 320;
@@ -1515,6 +1514,12 @@ public partial class MainPage
             if (stroke.Points.Count < 2 || !DoesStrokeIntersectPage(stroke, pageBounds))
                 continue;
 
+            if (ShouldDrawThumbnailPressureStrokeSegments(stroke))
+            {
+                DrawThumbnailPressureStrokeSegments(overlayCanvas, stroke, snapshot.LayerOpacity, strokeScale, transform, paint);
+                continue;
+            }
+
             using var path = new SKPath(stroke.CreatePath());
             path.Transform(transform);
 
@@ -1543,6 +1548,52 @@ public partial class MainPage
             return SKBlendMode.Clear;
 
         return SKBlendMode.SrcOver;
+    }
+
+    private static bool ShouldDrawThumbnailPressureStrokeSegments(DrawingStroke stroke)
+    {
+        if (stroke.IsEraser || !stroke.Options.PressureEnabled || stroke.Points.Count < 2)
+            return false;
+
+        return stroke.BrushType == BrushType.Pen
+            || stroke.BrushType == BrushType.Pencil
+            || stroke.BrushType == BrushType.Watercolor;
+    }
+
+    private static void DrawThumbnailPressureStrokeSegments(
+        SKCanvas canvas,
+        DrawingStroke stroke,
+        float layerOpacity,
+        float strokeScale,
+        SKMatrix transform,
+        SKPaint paint)
+    {
+        var alpha = (byte)Math.Clamp(
+            (int)Math.Round(stroke.Color.Alpha * layerOpacity * stroke.Opacity),
+            0,
+            255);
+        paint.Color = stroke.Color.WithAlpha(alpha);
+        paint.BlendMode = GetThumbnailStrokeBlendMode(stroke);
+
+        var minPressure = Math.Max(0.02f, stroke.Options.MinPressure);
+        var maxPressure = Math.Max(minPressure + 0.01f, stroke.Options.MaxPressure);
+        for (var index = 1; index < stroke.Points.Count; index++)
+        {
+            var previous = stroke.Points[index - 1];
+            var current = stroke.Points[index];
+            var mappedPrev = MapPoint(transform, previous.X, previous.Y);
+            var mappedCurrent = MapPoint(transform, current.X, current.Y);
+            var pressure = Math.Clamp((previous.Pressure + current.Pressure) * 0.5f, minPressure, maxPressure);
+            paint.StrokeWidth = Math.Max(0.4f, stroke.StrokeWidth * strokeScale * pressure);
+            canvas.DrawLine(mappedPrev, mappedCurrent, paint);
+        }
+    }
+
+    private static SKPoint MapPoint(SKMatrix matrix, float x, float y)
+    {
+        var mappedX = (matrix.ScaleX * x) + (matrix.SkewX * y) + matrix.TransX;
+        var mappedY = (matrix.SkewY * x) + (matrix.ScaleY * y) + matrix.TransY;
+        return new SKPoint(mappedX, mappedY);
     }
 
     private static bool DoesStrokeIntersectPage(DrawingStroke stroke, PdfPageBounds pageBounds)
@@ -1575,12 +1626,90 @@ public partial class MainPage
     private void ResetPdfPageBoundsCache()
     {
         _pageBoundsCache.Clear();
-        _pageBoundsQueryUnavailable = false;
+    }
+
+    private bool CanDrawAtDocumentLocation(float documentX, float documentY)
+    {
+        if (_allowSideWriting)
+            return true;
+
+        if (_pageBoundsCache.IsEmpty)
+            return true;
+
+        PdfPageBounds? nearestByVerticalDistance = null;
+        var nearestDistance = double.MaxValue;
+        foreach (var bounds in _pageBoundsCache.Values)
+        {
+            var left = bounds.X;
+            var right = bounds.X + bounds.Width;
+            var top = bounds.Y;
+            var bottom = bounds.Y + bounds.Height;
+
+            if (documentX >= left
+                && documentX <= right
+                && documentY >= top
+                && documentY <= bottom)
+            {
+                return true;
+            }
+
+            var verticalDistance = documentY < top
+                ? top - documentY
+                : documentY > bottom
+                    ? documentY - bottom
+                    : 0d;
+            if (verticalDistance < nearestDistance)
+            {
+                nearestDistance = verticalDistance;
+                nearestByVerticalDistance = bounds;
+            }
+        }
+
+        if (nearestByVerticalDistance is not PdfPageBounds nearestBounds)
+            return true;
+
+        return documentX >= nearestBounds.X
+            && documentX <= nearestBounds.X + nearestBounds.Width;
+    }
+
+    private async Task PrimeAllPageBoundsAsync()
+    {
+        if (!IsEditorInitialized || _totalPageCount <= 0)
+            return;
+
+        if (_currentPageIndex >= 0 && _currentPageIndex < _totalPageCount)
+        {
+            await GetCachedPageBoundsAsync(_currentPageIndex).ConfigureAwait(false);
+        }
+
+        for (var pageIndex = 0; pageIndex < _totalPageCount; pageIndex++)
+        {
+            if (pageIndex == _currentPageIndex)
+                continue;
+            await GetCachedPageBoundsAsync(pageIndex).ConfigureAwait(false);
+        }
+    }
+
+    private void EnsureSideWritingGuardBoundsReady()
+    {
+        if (_allowSideWriting || !IsEditorInitialized || _totalPageCount <= 0)
+            return;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await PrimeAllPageBoundsAsync().ConfigureAwait(false);
+            }
+            catch
+            {
+            }
+        });
     }
 
     private async Task<PdfPageBounds?> GetCachedPageBoundsAsync(int pageIndex)
     {
-        if (!IsEditorInitialized || pageIndex < 0 || _pageBoundsQueryUnavailable)
+        if (!IsEditorInitialized || pageIndex < 0)
             return null;
 
         if (_pageBoundsCache.TryGetValue(pageIndex, out var cachedBounds))
@@ -1593,29 +1722,118 @@ public partial class MainPage
             return bounds;
         }
 
-        _pageBoundsQueryUnavailable = true;
         return null;
     }
 
-    private async Task<bool> DoesStrokeIntersectAnyPageAsync(DrawingStroke stroke)
+    private async Task<IReadOnlyList<PdfPageBounds>> GetAvailablePageBoundsAsync()
     {
-        if (!IsEditorInitialized || stroke.Points.Count == 0 || _totalPageCount <= 0)
-            return true;
+        if (!IsEditorInitialized || _totalPageCount <= 0)
+            return Array.Empty<PdfPageBounds>();
 
-        var checkedAnyPageBounds = false;
+        var bounds = new List<PdfPageBounds>(_totalPageCount);
         for (var pageIndex = 0; pageIndex < _totalPageCount; pageIndex++)
         {
-            var bounds = await GetCachedPageBoundsAsync(pageIndex);
-            if (bounds is not PdfPageBounds pageBounds)
+            var cachedBounds = await GetCachedPageBoundsAsync(pageIndex);
+            if (cachedBounds is not PdfPageBounds pageBounds)
                 continue;
 
-            checkedAnyPageBounds = true;
-            if (DoesStrokeIntersectPage(stroke, pageBounds))
-                return true;
+            bounds.Add(pageBounds);
         }
 
-        // If page bounds are unavailable on this platform/document, keep the stroke.
-        return !checkedAnyPageBounds;
+        return bounds;
+    }
+
+    private static bool IsPointInsideAnyPage(DrawingPoint point, IReadOnlyList<PdfPageBounds> pageBoundsList)
+    {
+        foreach (var bounds in pageBoundsList)
+        {
+            if (point.X >= bounds.X
+                && point.X <= bounds.X + bounds.Width
+                && point.Y >= bounds.Y
+                && point.Y <= bounds.Y + bounds.Height)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool AreAllStrokePointsInsidePages(DrawingStroke stroke, IReadOnlyList<PdfPageBounds> pageBoundsList)
+    {
+        if (stroke.Points.Count == 0)
+            return false;
+
+        foreach (var point in stroke.Points)
+        {
+            if (!IsPointInsideAnyPage(point, pageBoundsList))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static List<DrawingStroke> BuildClippedStrokeSegments(DrawingStroke stroke, IReadOnlyList<PdfPageBounds> pageBoundsList)
+    {
+        var clippedStrokes = new List<DrawingStroke>();
+        var currentSegmentPoints = new List<DrawingPoint>();
+
+        void FlushSegment()
+        {
+            if (currentSegmentPoints.Count < 2)
+            {
+                currentSegmentPoints.Clear();
+                return;
+            }
+
+            clippedStrokes.Add(CreateStrokeSegment(stroke, currentSegmentPoints));
+            currentSegmentPoints.Clear();
+        }
+
+        foreach (var point in stroke.Points)
+        {
+            if (IsPointInsideAnyPage(point, pageBoundsList))
+            {
+                currentSegmentPoints.Add(point);
+                continue;
+            }
+
+            FlushSegment();
+        }
+
+        FlushSegment();
+        return clippedStrokes;
+    }
+
+    private static DrawingStroke CreateStrokeSegment(DrawingStroke template, IReadOnlyList<DrawingPoint> points)
+    {
+        var segment = new DrawingStroke
+        {
+            Color = template.Color,
+            StrokeWidth = template.StrokeWidth,
+            Opacity = template.Opacity,
+            IsEraser = template.IsEraser,
+            BrushType = template.BrushType,
+            Options = new StrokeOptions
+            {
+                PressureEnabled = template.Options.PressureEnabled,
+                SmoothingEnabled = template.Options.SmoothingEnabled,
+                SmoothingFactor = template.Options.SmoothingFactor,
+                MinPressure = template.Options.MinPressure,
+                MaxPressure = template.Options.MaxPressure,
+                TaperEnabled = template.Options.TaperEnabled,
+                TaperStart = template.Options.TaperStart,
+                TaperEnd = template.Options.TaperEnd,
+                Streamline = template.Options.Streamline
+            }
+        };
+
+        foreach (var point in points)
+        {
+            segment.AddPoint(new DrawingPoint(point.X, point.Y, point.Pressure, point.Timestamp));
+        }
+
+        return segment;
     }
 
     private async Task<int> ClearCurrentPageInkAsync(int pageIndex)
@@ -1863,11 +2081,15 @@ public partial class MainPage
         if (!IsEditorInitialized || e.Stroke.Points.Count == 0)
             return;
 
-        var intersectsAnyPage = await DoesStrokeIntersectAnyPageAsync(e.Stroke);
-        if (intersectsAnyPage)
+        var pageBounds = await GetAvailablePageBoundsAsync();
+        if (pageBounds.Count == 0)
             return;
 
-        if (!DrawingCanvas.RemoveStroke(e.Stroke))
+        if (AreAllStrokePointsInsidePages(e.Stroke, pageBounds))
+            return;
+
+        var clippedStrokes = BuildClippedStrokeSegments(e.Stroke, pageBounds);
+        if (!DrawingCanvas.ReplaceStroke(e.LayerIndex, e.Stroke, clippedStrokes))
             return;
 
         InvalidateThumbnailCache();

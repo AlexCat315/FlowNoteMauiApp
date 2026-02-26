@@ -205,6 +205,7 @@ public class DrawingCanvas : SKCanvasView
     private bool _isLassoErasing;
 
     public Func<float, float, bool>? CanDrawAtViewPoint { get; set; }
+    public Func<float, float, bool>? CanDrawAtDocumentPoint { get; set; }
 
     public event EventHandler? StrokeCommitted;
     public event EventHandler? StrokeStarted;
@@ -436,6 +437,40 @@ public class DrawingCanvas : SKCanvasView
         }
 
         return false;
+    }
+
+    public bool ReplaceStroke(int layerIndex, DrawingStroke? originalStroke, IReadOnlyList<DrawingStroke>? replacementStrokes)
+    {
+        if (originalStroke is null)
+            return false;
+        if (layerIndex < 0 || layerIndex >= Layers.Count)
+            return false;
+
+        var layer = Layers[layerIndex];
+        var originalIndex = layer.Strokes.IndexOf(originalStroke);
+        if (originalIndex < 0)
+            return false;
+
+        layer.Strokes.RemoveAt(originalIndex);
+        RemoveStrokeFromHistory(originalStroke);
+
+        if (replacementStrokes is { Count: > 0 })
+        {
+            var insertIndex = originalIndex;
+            foreach (var stroke in replacementStrokes)
+            {
+                if (stroke is null || stroke.Points.Count < 2)
+                    continue;
+
+                layer.Strokes.Insert(insertIndex, stroke);
+                _undoStack.Push(new StrokeHistoryEntry(layerIndex, stroke));
+                insertIndex++;
+            }
+        }
+
+        _redoStack.Clear();
+        InvalidateSurface();
+        return true;
     }
 
     public void Undo()
@@ -882,6 +917,30 @@ public class DrawingCanvas : SKCanvasView
             (e.Location.X + (float)effectiveScrollX) / zoom,
             (e.Location.Y + (float)effectiveScrollY) / zoom,
             normalizedPressure);
+
+        var pointAllowed = CanDrawAtDocumentPoint?.Invoke(location.X, location.Y)
+            ?? CanDrawAtViewPoint?.Invoke(e.Location.X, e.Location.Y)
+            ?? true;
+        if (!pointAllowed && e.ActionType == SKTouchAction.Pressed)
+        {
+            CancelCurrentStroke();
+            e.Handled = true;
+            LogTouch("skip-bounds", e, "outside-draw-zone");
+            return;
+        }
+
+        if (!pointAllowed && e.ActionType == SKTouchAction.Moved)
+        {
+            if (_isDrawing)
+            {
+                EndDrawing();
+                InvalidateSurface();
+            }
+
+            e.Handled = true;
+            LogTouch("skip-bounds", e, "outside-draw-zone");
+            return;
+        }
 
         if (usesAdvancedEraser)
         {

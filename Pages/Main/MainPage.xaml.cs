@@ -115,7 +115,7 @@ public partial class MainPage : ContentPage
             PressureSensitivity = _pressureSensitivity,
             UsePressureSensitivity = true
         };
-        _drawingCanvas.CanDrawAtViewPoint = (x, y) => PdfViewer.IsPointOnDocument(x, y);
+        _drawingCanvas.CanDrawAtDocumentPoint = CanDrawAtDocumentLocation;
 
         _drawingCanvas.Layers.CollectionChanged += (_, _) => RefreshLayerList();
         _drawingCanvas.StrokeStarted += OnDrawingStrokeStarted;

@@ -79,6 +79,8 @@ public partial class MainPage
         FindInSettings<Label>("TextSelectionTitleLabel").Text = T("TextSelection", "Text Selection");
         FindInSettings<Label>("ZoomFollowTitleLabel").Text = T("ZoomFollow", "Zoom Follow");
         FindInSettings<Label>("ZoomFollowHintLabel").Text = T("ZoomFollowHint", "When enabled, stroke width scales with zoom; otherwise remains screen-pixel width.");
+        FindInSettings<Label>("AllowSideWritingTitleLabel").Text = T("AllowSideWriting", "Allow Side Writing");
+        FindInSettings<Label>("AllowSideWritingHintLabel").Text = T("AllowSideWritingHint", "When off, writing is only accepted on pages and between-page gaps; left and right side areas are blocked.");
         FindInSettings<Label>("DisplayModeTitleLabel").Text = T("DisplayModeTitle", "Display Mode");
         ThemeLightButton.Text = T("ThemeLight", "Light");
         ThemeDarkButton.Text = T("ThemeDark", "Dark");

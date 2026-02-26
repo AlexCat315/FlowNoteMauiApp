@@ -118,6 +118,7 @@ public partial class MainPage
     private Label PageNumberPositionValueLabel => FindInSettings<Label>(nameof(PageNumberPositionValueLabel));
     private Label TextSelectionValueLabel => FindInSettings<Label>(nameof(TextSelectionValueLabel));
     private Switch ZoomFollowSwitch => FindInSettings<Switch>(nameof(ZoomFollowSwitch));
+    private Switch AllowSideWritingSwitch => FindInSettings<Switch>(nameof(AllowSideWritingSwitch));
     private VerticalStackLayout DisplaySettingsView => FindInSettings<VerticalStackLayout>(nameof(DisplaySettingsView));
     private Button ThemeLightButton => FindInSettings<Button>(nameof(ThemeLightButton));
     private Button ThemeDarkButton => FindInSettings<Button>(nameof(ThemeDarkButton));

@@ -32,6 +32,7 @@ public partial class MainPage
     private const string EnableLinkKey = "settings.viewer.enable_link";
 
     private const string ZoomFollowKey = "settings.page.zoom_follow";
+    private const string AllowSideWritingKey = "settings.page.allow_side_writing";
     private const string PageNumberPositionKey = "settings.page.page_number_position";
     private const string TextSelectionKey = "settings.page.allow_text_selection";
 
@@ -49,6 +50,7 @@ public partial class MainPage
     private bool _savedEnableLink = true;
 
     private bool _zoomFollowEnabled = true;
+    private bool _allowSideWriting = true;
     private int _pageNumberPositionIndex;
     private bool _allowTextSelection = true;
 
@@ -77,6 +79,7 @@ public partial class MainPage
         _savedEnableLink = GetPreferenceBoolSafe(EnableLinkKey, true);
 
         _zoomFollowEnabled = GetPreferenceBoolSafe(ZoomFollowKey, true);
+        _allowSideWriting = GetPreferenceBoolSafe(AllowSideWritingKey, true);
         _pageNumberPositionIndex = Math.Clamp(GetPreferenceIntSafe(PageNumberPositionKey, 0), 0, 1);
         _allowTextSelection = GetPreferenceBoolSafe(TextSelectionKey, true);
 
@@ -117,6 +120,7 @@ public partial class MainPage
         Preferences.Set(EnableLinkKey, _savedEnableLink);
 
         Preferences.Set(ZoomFollowKey, _zoomFollowEnabled);
+        Preferences.Set(AllowSideWritingKey, _allowSideWriting);
         Preferences.Set(PageNumberPositionKey, _pageNumberPositionIndex);
         Preferences.Set(TextSelectionKey, _allowTextSelection);
 
@@ -168,6 +172,7 @@ public partial class MainPage
             LanguageSettingsSummaryLabel.Text = GetLanguageSummary();
 
             ZoomFollowSwitch.IsToggled = _zoomFollowEnabled;
+            AllowSideWritingSwitch.IsToggled = _allowSideWriting;
             var forceNativeGestures = RequiresNativePdfGesturesOnPlatform();
             EnableZoomSwitch.IsToggled = forceNativeGestures ? true : _savedEnableZoom;
             EnableSwipeSwitch.IsToggled = forceNativeGestures ? true : _savedEnableSwipe;
@@ -330,6 +335,19 @@ public partial class MainPage
             DrawingCanvas.ZoomAffectsStrokeWidth = _zoomFollowEnabled;
         SavePersistedAppSettings();
         RefreshSettingsUiState();
+    }
+
+    private void OnAllowSideWritingToggled(object? sender, ToggledEventArgs e)
+    {
+        if (_isUpdatingSettingsControls)
+            return;
+
+        _allowSideWriting = e.Value;
+        SavePersistedAppSettings();
+        if (!_allowSideWriting)
+        {
+            EnsureSideWritingGuardBoundsReady();
+        }
     }
 
     private void OnThemeLightClicked(object? sender, EventArgs e)
@@ -657,6 +675,7 @@ public partial class MainPage
         _savedEnableLink = true;
 
         _zoomFollowEnabled = true;
+        _allowSideWriting = true;
         _pageNumberPositionIndex = 0;
         _allowTextSelection = true;
 

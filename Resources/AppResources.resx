@@ -405,6 +405,13 @@ Unlock full note workflow</value>
     <value
         >When enabled, stroke width scales with zoom; otherwise remains screen-pixel width.</value>
   </data>
+  <data name="AllowSideWriting" xml:space="preserve">
+    <value>Allow Side Writing</value>
+  </data>
+  <data name="AllowSideWritingHint" xml:space="preserve">
+    <value
+        >When off, writing is only accepted on pages and between-page gaps; left and right side areas are blocked.</value>
+  </data>
   <data name="DisplayModeTitle" xml:space="preserve">
     <value>Display Mode</value>
   </data>

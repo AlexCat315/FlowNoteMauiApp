@@ -142,6 +142,7 @@ public partial class MainPage
         FindInSettings<TapGestureRecognizer>("TextSelectionTapGesture").Tapped += OnTextSelectionTapped;
 
         ZoomFollowSwitch.Toggled += OnZoomFollowToggled;
+        AllowSideWritingSwitch.Toggled += OnAllowSideWritingToggled;
 
         ThemeLightButton.Clicked += OnThemeLightClicked;
         ThemeDarkButton.Clicked += OnThemeDarkClicked;

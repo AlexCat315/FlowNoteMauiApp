@@ -403,6 +403,13 @@
   <data name="ZoomFollowHint" xml:space="preserve">
     <value>开启后，笔迹粗细会跟随页面缩放变化；关闭后保持屏幕像素粗细。</value>
   </data>
+  <data name="AllowSideWriting" xml:space="preserve">
+    <value>允许在 PDF 两侧书写</value>
+  </data>
+  <data name="AllowSideWritingHint" xml:space="preserve">
+    <value
+        >关闭后，仅允许在页面内和页间距落笔；PDF 左右两侧区域会拦截落笔。</value>
+  </data>
   <data name="DisplayModeTitle" xml:space="preserve">
     <value>显示模式</value>
   </data>

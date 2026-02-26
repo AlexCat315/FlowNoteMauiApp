@@ -246,6 +246,7 @@ public partial class MainPage
         ResetPdfPageBoundsCache();
         _totalPageCount = e.PageCount;
         _currentPageIndex = Math.Clamp(PdfViewer.CurrentPage, 0, Math.Max(0, _totalPageCount - 1));
+        EnsureSideWritingGuardBoundsReady();
         var zoom = ClampEditorZoom(PdfViewer.Zoom <= 0f ? 1f : PdfViewer.Zoom);
         DrawingCanvas.SetViewport(DrawingCanvas.ScrollX, DrawingCanvas.ScrollY, zoom);
         SyncZoomUiFromViewer(zoom);
@@ -261,6 +262,7 @@ public partial class MainPage
     {
         _currentPageIndex = e.PageIndex;
         _totalPageCount = e.PageCount;
+        EnsureSideWritingGuardBoundsReady();
         UpdatePageIndicators();
         if (ThumbnailPanel.IsVisible)
         {
