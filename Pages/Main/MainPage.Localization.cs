@@ -93,5 +93,10 @@ public partial class MainPage
         DisplayModePicker.Title = T("PickerMode", "Mode");
         OrientationPicker.Title = T("PickerDirection", "Direction");
         FitPolicyPicker.Title = T("PickerFit", "Fit");
+        FindInSettings<Label>("DebugZoomLabel").Text = T("Zoom", "Zoom");
+        FindInSettings<Label>("DebugSwipeLabel").Text = T("PageTurn", "Page Turn");
+        FindInSettings<Label>("DebugLinkLabel").Text = T("Link", "Link");
+        FindInSettings<Label>("DebugFingerDrawLabel").Text = T("FingerDraw", "Finger Draw");
+        EventInfoLabel.Text = T("UiReady", "Ready");
     }
 }

@@ -438,9 +438,9 @@
                     </HorizontalStackLayout>
 
                     <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                        <Picker x:Name="DisplayModePicker" Title="模式" />
-                        <Picker Grid.Column="1" x:Name="OrientationPicker" Title="方向" />
-                        <Picker Grid.Column="2" x:Name="FitPolicyPicker" Title="适配" />
+                        <Picker x:Name="DisplayModePicker" Title="" />
+                        <Picker Grid.Column="1" x:Name="OrientationPicker" Title="" />
+                        <Picker Grid.Column="2" x:Name="FitPolicyPicker" Title="" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <Slider x:Name="ZoomSlider" Minimum="0.5" Maximum="4" Value="1" />
@@ -448,23 +448,23 @@
                     </Grid>
 
                     <HorizontalStackLayout Spacing="8">
-                        <Label Text="缩放" VerticalOptions="Center" FontSize="12" />
+                        <Label x:Name="DebugZoomLabel" Text="" VerticalOptions="Center" FontSize="12" />
                         <Switch x:Name="EnableZoomSwitch" IsToggled="True" />
                     </HorizontalStackLayout>
                     <HorizontalStackLayout Spacing="8">
-                        <Label Text="翻页" VerticalOptions="Center" FontSize="12" />
+                        <Label x:Name="DebugSwipeLabel" Text="" VerticalOptions="Center" FontSize="12" />
                         <Switch x:Name="EnableSwipeSwitch" IsToggled="True" />
                     </HorizontalStackLayout>
                     <HorizontalStackLayout Spacing="8">
-                        <Label Text="链接" VerticalOptions="Center" FontSize="12" />
+                        <Label x:Name="DebugLinkLabel" Text="" VerticalOptions="Center" FontSize="12" />
                         <Switch x:Name="EnableLinkSwitch" IsToggled="True" />
                     </HorizontalStackLayout>
                     <HorizontalStackLayout Spacing="8">
-                        <Label Text="手指绘制" VerticalOptions="Center" FontSize="12" />
+                        <Label x:Name="DebugFingerDrawLabel" Text="" VerticalOptions="Center" FontSize="12" />
                         <Switch x:Name="EnableFingerDrawSwitch" IsToggled="False" />
                     </HorizontalStackLayout>
 
-                    <Label x:Name="EventInfoLabel" Text="Ready" FontSize="11" />
+                    <Label x:Name="EventInfoLabel" Text="" FontSize="11" />
                 </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>

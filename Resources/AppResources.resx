@@ -130,8 +130,14 @@
   <data name="Swipe" xml:space="preserve">
     <value>Swipe</value>
   </data>
+  <data name="PageTurn" xml:space="preserve">
+    <value>Page Turn</value>
+  </data>
   <data name="Link" xml:space="preserve">
     <value>Link</value>
+  </data>
+  <data name="FingerDraw" xml:space="preserve">
+    <value>Finger Draw</value>
   </data>
   <data name="PageInfo" xml:space="preserve">
     <value>Page: - / -</value>

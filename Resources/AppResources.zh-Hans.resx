@@ -130,8 +130,14 @@
   <data name="Swipe" xml:space="preserve">
     <value>滑动</value>
   </data>
+  <data name="PageTurn" xml:space="preserve">
+    <value>翻页</value>
+  </data>
   <data name="Link" xml:space="preserve">
     <value>链接</value>
+  </data>
+  <data name="FingerDraw" xml:space="preserve">
+    <value>手指绘制</value>
   </data>
   <data name="PageInfo" xml:space="preserve">
     <value>页码: - / -</value>

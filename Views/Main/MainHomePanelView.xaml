@@ -13,9 +13,9 @@
     <Grid Grid.Row="0" RowDefinitions="Auto,1" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2C3E}">
         <Grid Grid.Row="0" Padding="20,9,20,9" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
             <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
-                <ImageButton x:Name="HomeMenuButton" Style="{StaticResource FlatTopIconButton}" Source="home_menu.png" />
-                <ImageButton x:Name="HomeDrawerRecentButton" Style="{StaticResource FlatTopIconButton}" Source="home_bell.png" />
-                <ImageButton x:Name="HomeDrawerAllDocsButton" Style="{StaticResource FlatTopIconButton}" Source="home_cloud.png" />
+                <ImageButton x:Name="HomeMenuButton" Style="{StaticResource HomeTopIconButton}" Source="home_menu.png" />
+                <ImageButton x:Name="HomeDrawerRecentButton" Style="{StaticResource HomeTopIconButton}" Source="home_bell.png" />
+                <ImageButton x:Name="HomeDrawerAllDocsButton" Style="{StaticResource HomeTopIconButton}" Source="home_cloud.png" />
             </HorizontalStackLayout>
 
             <Image Grid.Column="1"
@@ -27,9 +27,9 @@
                    VerticalOptions="Center" />
 
             <HorizontalStackLayout Grid.Column="2" Spacing="12" VerticalOptions="Center">
-                <ImageButton x:Name="HomeDrawerFavoriteButton" Style="{StaticResource FlatTopIconButton}" Source="home_done.png" />
-                <ImageButton x:Name="HomeRefreshButton" Style="{StaticResource FlatTopIconButton}" Source="home_search.png" />
-                <ImageButton x:Name="HomeOpenSettingsButton" Style="{StaticResource FlatTopIconButton}" Source="home_settings.png" />
+                <ImageButton x:Name="HomeDrawerFavoriteButton" Style="{StaticResource HomeTopIconButton}" Source="home_done.png" />
+                <ImageButton x:Name="HomeRefreshButton" Style="{StaticResource HomeTopIconButton}" Source="home_search.png" />
+                <ImageButton x:Name="HomeOpenSettingsButton" Style="{StaticResource HomeTopIconButton}" Source="home_settings.png" />
             </HorizontalStackLayout>
         </Grid>
         <BoxView Grid.Row="1" Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}" />
