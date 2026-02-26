@@ -82,16 +82,7 @@ public partial class MainPage
 
     private void OnPenModeClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        if (_activeInkTool == InkToolKind.Ballpoint && DrawingToolbarPanel.IsVisible)
-        {
-            DrawingToolbarPanel.IsVisible = false;
-            return;
-        }
-
-        ArmInkTool(InkToolKind.Ballpoint);
+        HandleInkToolClicked(InkToolKind.Ballpoint);
     }
 
     private void SetInputModePanelVisible(bool visible)
@@ -108,13 +99,14 @@ public partial class MainPage
     private void ApplyTopModeButtonVisual()
     {
         var palette = Palette;
+        var collapsedBackground = IsDarkTheme
+            ? Color.FromArgb("#EAF1FB")
+            : Color.FromArgb("#F5F8FC");
         TopModePenButton.BackgroundColor = InputModePanel.IsVisible
             ? palette.ModeButtonExpandedBackground
-            : palette.ModeButtonCollapsedBackground;
-        TopModePenButton.BorderColor = InputModePanel.IsVisible
-            ? palette.ModeButtonExpandedBorder
-            : palette.ModeButtonCollapsedBorder;
-        TopModePenButton.BorderWidth = 1;
+            : collapsedBackground;
+        TopModePenButton.BorderColor = palette.ModeButtonExpandedBorder;
+        TopModePenButton.BorderWidth = InputModePanel.IsVisible ? 1 : 0;
         TopModePenButton.Source = _drawingInputMode switch
         {
             DrawingInputMode.FingerCapacitive => "icon_hand.png",
@@ -260,7 +252,7 @@ public partial class MainPage
         UpdateToolSettingsPanelState();
     }
 
-    private void ArmInkTool(InkToolKind tool, bool showStatus = false)
+    private void ArmInkTool(InkToolKind tool, bool showStatus = false, bool showToolbar = false)
     {
         _activeInkTool = tool;
         SetInputModePanelVisible(false);
@@ -274,7 +266,7 @@ public partial class MainPage
         {
             DrawingCanvas.EnableDrawing = true;
         }
-        DrawingToolbarPanel.IsVisible = _drawingInputMode != DrawingInputMode.TapRead;
+        DrawingToolbarPanel.IsVisible = showToolbar && _drawingInputMode != DrawingInputMode.TapRead;
         if (DrawingToolbarPanel.IsVisible)
         {
             PositionDrawingToolbarPanelUnderTool(_activeInkTool);
@@ -291,6 +283,29 @@ public partial class MainPage
                 InkToolKind.Eraser => "橡皮擦已选中",
                 _ => T("StatusPenArmed", "Pen selected.")
             });
+        }
+    }
+
+    private void HandleInkToolClicked(InkToolKind tool)
+    {
+        if (!EnsureDrawingReady())
+            return;
+
+        var isSameTool = _activeInkTool == tool;
+        if (!isSameTool)
+        {
+            // First click after switching tool: only select tool, keep panel hidden.
+            ArmInkTool(tool, showToolbar: false);
+            return;
+        }
+
+        if (_drawingInputMode == DrawingInputMode.TapRead)
+            return;
+
+        DrawingToolbarPanel.IsVisible = !DrawingToolbarPanel.IsVisible;
+        if (DrawingToolbarPanel.IsVisible)
+        {
+            PositionDrawingToolbarPanelUnderTool(_activeInkTool);
         }
     }
 
@@ -340,7 +355,7 @@ public partial class MainPage
                 DrawingCanvas.IsPenMode = true;
                 DrawingCanvas.EnableDrawing = targetDrawingEnabled;
                 DrawingCanvas.IsVisible = true;
-                DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
+                DrawingToolbarPanel.IsVisible = DrawingToolbarPanel.IsVisible && targetDrawingEnabled;
                 if (DrawingToolbarPanel.IsVisible)
                 {
                     PositionDrawingToolbarPanelUnderTool(_activeInkTool);
@@ -358,7 +373,7 @@ public partial class MainPage
                 DrawingCanvas.IsPenMode = false;
                 DrawingCanvas.EnableDrawing = targetDrawingEnabled;
                 DrawingCanvas.IsVisible = true;
-                DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
+                DrawingToolbarPanel.IsVisible = DrawingToolbarPanel.IsVisible && targetDrawingEnabled;
                 if (DrawingToolbarPanel.IsVisible)
                 {
                     PositionDrawingToolbarPanelUnderTool(_activeInkTool);
@@ -433,11 +448,14 @@ public partial class MainPage
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            void ApplyPosition()
+            void ApplyPosition(int attempt)
             {
+                if (!DrawingToolbarPanel.IsVisible)
+                    return;
+
                 var panelWidth = DrawingToolbarPanel.Width > 1
                     ? DrawingToolbarPanel.Width
-                    : (DrawingToolbarPanel.WidthRequest > 1 ? DrawingToolbarPanel.WidthRequest : 320d);
+                    : (DrawingToolbarPanel.WidthRequest > 1 ? DrawingToolbarPanel.WidthRequest : 236d);
                 var panelHeight = DrawingToolbarPanel.Height > 1 ? DrawingToolbarPanel.Height : 0d;
 
                 var anchorX = GetVisualOffsetX(anchorButton, TopBarPanel) + TopBarPanel.X;
@@ -445,23 +463,41 @@ public partial class MainPage
                 var anchorWidth = anchorButton.Width > 1 ? anchorButton.Width : anchorButton.WidthRequest;
                 var anchorHeight = anchorButton.Height > 1 ? anchorButton.Height : anchorButton.HeightRequest;
 
+                var hasValidLayout = anchorWidth > 1
+                    && anchorHeight > 1
+                    && TopBarPanel.Height > 1
+                    && EditorChromeView.Width > 1
+                    && anchorX > 1
+                    && anchorY > 1;
+                if (!hasValidLayout && attempt < 10)
+                {
+                    DrawingToolbarPanel.Dispatcher.DispatchDelayed(
+                        TimeSpan.FromMilliseconds(16),
+                        () => ApplyPosition(attempt + 1));
+                    return;
+                }
+
                 var targetX = anchorX + (anchorWidth / 2d) - (panelWidth / 2d);
-                var maxX = Math.Max(8d, EditorChromeView.Width - panelWidth - 8d);
-                targetX = Math.Clamp(targetX, 8d, maxX);
+                var maxX = Math.Max(12d, EditorChromeView.Width - panelWidth - 12d);
+                targetX = Math.Clamp(targetX, 12d, maxX);
 
                 var targetY = anchorY + anchorHeight + 10d;
+                var minY = Math.Max(TopBarPanel.Height + 6d, 12d);
                 if (panelHeight > 1 && EditorChromeView.Height > 1)
                 {
-                    var maxY = Math.Max(8d, EditorChromeView.Height - panelHeight - 8d);
-                    targetY = Math.Clamp(targetY, 8d, maxY);
+                    var maxY = Math.Max(minY, EditorChromeView.Height - panelHeight - 12d);
+                    targetY = Math.Clamp(targetY, minY, maxY);
+                }
+                else
+                {
+                    targetY = Math.Max(targetY, minY);
                 }
 
                 DrawingToolbarPanel.TranslationX = targetX;
                 DrawingToolbarPanel.TranslationY = targetY;
             }
 
-            ApplyPosition();
-            DrawingToolbarPanel.Dispatcher.Dispatch(ApplyPosition);
+            ApplyPosition(0);
         });
     }
 
@@ -522,34 +558,22 @@ public partial class MainPage
 
     private void OnHighlighterClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        ArmInkTool(InkToolKind.Fountain);
+        HandleInkToolClicked(InkToolKind.Fountain);
     }
 
     private void OnPencilClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        ArmInkTool(InkToolKind.Pencil);
+        HandleInkToolClicked(InkToolKind.Pencil);
     }
 
     private void OnMarkerClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        ArmInkTool(InkToolKind.Marker);
+        HandleInkToolClicked(InkToolKind.Marker);
     }
 
     private void OnEraserClicked(object? sender, EventArgs e)
     {
-        if (!EnsureDrawingReady())
-            return;
-
-        ArmInkTool(InkToolKind.Eraser);
+        HandleInkToolClicked(InkToolKind.Eraser);
     }
 
     private void UpdateToolSelection(InkToolKind selectedTool)

@@ -284,22 +284,22 @@
             VerticalOptions="Start"
             HorizontalOptions="Start"
             Margin="0"
-            WidthRequest="320"
-            MaximumWidthRequest="340"
+            WidthRequest="236"
+            MaximumWidthRequest="248"
             Padding="0"
             Style="{StaticResource PanelCard}"
         >
             <VerticalStackLayout Spacing="0">
                 <Grid
-                    Padding="18,14"
+                    Padding="12,10"
                     ColumnDefinitions="*,Auto"
-                    ColumnSpacing="10"
+                    ColumnSpacing="6"
                 >
                     <Label
                         x:Name="ToolSettingsTitleLabel"
                         Text="圆珠笔"
                         FontFamily="OpenSansSemibold"
-                        FontSize="28"
+                        FontSize="16"
                         HorizontalTextAlignment="Center"
                         VerticalOptions="Center"
                     />
@@ -311,30 +311,37 @@
                     />
                 </Grid>
 
-                <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#ECEFF4, Dark=#36475F}" />
+                <BoxView
+                    HeightRequest="1"
+                    Color="{AppThemeBinding Light=#ECEFF4, Dark=#36475F}"
+                />
 
-                <VerticalStackLayout Padding="18,16" Spacing="14">
-                    <VerticalStackLayout x:Name="EraserModePanel" IsVisible="False" Spacing="10">
-                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                <VerticalStackLayout Padding="12,10" Spacing="10">
+                    <VerticalStackLayout
+                        x:Name="EraserModePanel"
+                        IsVisible="False"
+                        Spacing="10"
+                    >
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
                             <Button
                                 x:Name="PixelEraserModeButton"
                                 Text="像素擦除"
                                 Style="{StaticResource InputModeItemButton}"
-                                FontSize="14"
+                                FontSize="12"
                             />
                             <Button
                                 x:Name="StrokeEraserModeButton"
                                 Grid.Column="1"
                                 Text="整笔擦除"
                                 Style="{StaticResource InputModeItemButton}"
-                                FontSize="14"
+                                FontSize="12"
                             />
                             <Button
                                 x:Name="LassoEraserModeButton"
                                 Grid.Column="2"
                                 Text="圈选擦除"
                                 Style="{StaticResource InputModeItemButton}"
-                                FontSize="14"
+                                FontSize="12"
                             />
                         </Grid>
                     </VerticalStackLayout>
@@ -344,14 +351,14 @@
                             x:Name="DrawingPenWidthLabel"
                             Text="粗细"
                             FontFamily="OpenSansSemibold"
-                            FontSize="20"
+                            FontSize="13"
                             VerticalOptions="Center"
                         />
                         <Label
                             x:Name="StrokeWidthLabel"
                             Grid.Column="2"
                             Text="3.0mm"
-                            FontSize="20"
+                            FontSize="12"
                             VerticalOptions="Center"
                             HorizontalTextAlignment="End"
                             TextColor="{AppThemeBinding Light=#8A8F99, Dark=#A8B3C4}"
@@ -359,11 +366,11 @@
                     </Grid>
 
                     <Border
-                        Padding="12"
+                        Padding="8"
                         BackgroundColor="{AppThemeBinding Light=#FAFBFD, Dark=#27384F}"
                         Stroke="{AppThemeBinding Light=#ECEEF3, Dark=#36465E}"
                         StrokeThickness="1"
-                        StrokeShape="RoundRectangle 18"
+                        StrokeShape="RoundRectangle 12"
                     >
                         <Slider
                             x:Name="StrokeWidthSlider"
@@ -379,18 +386,18 @@
                             x:Name="ToolColorTitleLabel"
                             Text="颜色"
                             FontFamily="OpenSansSemibold"
-                            FontSize="20"
+                            FontSize="13"
                             VerticalOptions="Center"
                         />
                         <Border
-                            Padding="10"
+                            Padding="8"
                             BackgroundColor="{AppThemeBinding Light=#FAFBFD, Dark=#27384F}"
                             Stroke="{AppThemeBinding Light=#ECEEF3, Dark=#36465E}"
                             StrokeThickness="1"
-                            StrokeShape="RoundRectangle 18"
+                            StrokeShape="RoundRectangle 12"
                         >
                             <HorizontalStackLayout
-                                Spacing="8"
+                                Spacing="6"
                                 VerticalOptions="Center"
                             >
                                 <Button
@@ -481,7 +488,7 @@
                     x:Name="InputModeTitleLabel"
                     Text="模式切换"
                     FontFamily="OpenSansSemibold"
-                    FontSize="14"
+                    FontSize="13"
                     TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}"
                 />
         <Label
@@ -495,7 +502,7 @@
                         x:Name="InputModePenButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
-                        ImageSource="icon_pencil.png"
+                        ImageSource="icon_stylus_mode.png"
                         ContentLayout="Left,8"
                         Text="手写模式"
                     />
@@ -504,7 +511,7 @@
                         Grid.Column="1"
                         VerticalOptions="Center"
                         Text="✓"
-                        FontSize="24"
+                        FontSize="17"
                         TextColor="{StaticResource PrimaryBlue}"
                     />
         </Grid>
@@ -513,7 +520,7 @@
                         x:Name="InputModeFingerButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
-                        ImageSource="icon_hand.png"
+                        ImageSource="icon_hand_mode.png"
                         ContentLayout="Left,8"
                         Text="触控模式"
                     />
@@ -522,7 +529,7 @@
                         Grid.Column="1"
                         VerticalOptions="Center"
                         Text="✓"
-                        FontSize="24"
+                        FontSize="19"
                         TextColor="{StaticResource PrimaryBlue}"
                         IsVisible="False"
                     />
@@ -541,7 +548,7 @@
                         Grid.Column="1"
                         VerticalOptions="Center"
                         Text="✓"
-                        FontSize="24"
+                        FontSize="19"
                         TextColor="{StaticResource PrimaryBlue}"
                         IsVisible="False"
                     />
