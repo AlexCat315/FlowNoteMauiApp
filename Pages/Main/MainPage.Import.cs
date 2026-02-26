@@ -271,14 +271,27 @@ public partial class MainPage
             return null;
         }
 
-        var extension = Path.GetExtension(sourcePath);
-        if (string.IsNullOrWhiteSpace(extension))
+        var originalFileName = Path.GetFileName(sourcePath);
+        if (string.IsNullOrWhiteSpace(originalFileName))
         {
-            extension = ".pdf";
+            var extension = Path.GetExtension(sourcePath);
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                extension = ".pdf";
+            }
+
+            originalFileName = $"Imported-{DateTime.UtcNow:yyyyMMddHHmmss}{extension}";
         }
 
-        var localFileName = $"picked-{Guid.NewGuid():N}{extension}";
+        var localFileName = originalFileName;
         var localPath = Path.Combine(FileSystem.CacheDirectory, localFileName);
+        if (File.Exists(localPath))
+        {
+            var nameWithoutExt = Path.GetFileNameWithoutExtension(localFileName);
+            var ext = Path.GetExtension(localFileName);
+            localFileName = $"{nameWithoutExt}-{DateTime.UtcNow:yyyyMMddHHmmss}{ext}";
+            localPath = Path.Combine(FileSystem.CacheDirectory, localFileName);
+        }
         var hasSecurityScope = pickedUrl.StartAccessingSecurityScopedResource();
 
         try
