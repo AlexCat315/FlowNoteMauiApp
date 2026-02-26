@@ -252,6 +252,7 @@ public partial class MainPage
 
         EnsureEditorInitialized();
         InvalidateThumbnailCache();
+        ResetPdfPageBoundsCache();
         ClearArmedInkTool(hideDrawingToolbar: true);
         PdfViewer.Source = new BytesPdfSource(bytes);
         ShowEditorScreen();

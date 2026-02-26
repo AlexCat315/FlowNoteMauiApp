@@ -4,6 +4,7 @@ using Flow.PDFView.Abstractions;
 using FlowNoteMauiApp.Controls;
 using FlowNoteMauiApp.Models;
 using System.Diagnostics;
+using System.Collections.Concurrent;
 using Microsoft.Maui.Devices;
 
 namespace FlowNoteMauiApp;
@@ -53,6 +54,8 @@ public partial class MainPage
     private readonly Dictionary<string, ImageSource> _toolIconSourceCache = new();
     private CancellationTokenSource? _toolTintUpdateCts;
     private readonly Dictionary<string, ImageSource> _thumbnailSourceCache = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<int, PdfPageBounds> _pageBoundsCache = new();
+    private bool _pageBoundsQueryUnavailable;
     private CancellationTokenSource? _thumbnailLoadCts;
     private const int ThumbnailRequestWidth = 220;
     private const int ThumbnailRequestHeight = 320;
@@ -1349,12 +1352,9 @@ public partial class MainPage
         if (!IsEditorInitialized || token.IsCancellationRequested)
             return;
 
-        if (PdfViewer is not PdfView pdfView)
-            return;
-
         try
         {
-            var thumbnailStream = await pdfView
+            var thumbnailStream = await PdfViewer
                 .GetThumbnailAsync(pageIndex, ThumbnailRequestWidth, ThumbnailRequestHeight)
                 .ConfigureAwait(false);
             if (thumbnailStream is null || token.IsCancellationRequested)
@@ -1375,7 +1375,7 @@ public partial class MainPage
                 && overlaySnapshots is { Count: > 0 }
                 && !token.IsCancellationRequested)
             {
-                var pageBounds = await pdfView.GetPageBoundsAsync(pageIndex).ConfigureAwait(false);
+                var pageBounds = await GetCachedPageBoundsAsync(pageIndex).ConfigureAwait(false);
                 if (pageBounds is PdfPageBounds bounds)
                 {
                     var composedBytes = await Task
@@ -1572,19 +1572,65 @@ public partial class MainPage
             && minY <= pageBottom;
     }
 
+    private void ResetPdfPageBoundsCache()
+    {
+        _pageBoundsCache.Clear();
+        _pageBoundsQueryUnavailable = false;
+    }
+
+    private async Task<PdfPageBounds?> GetCachedPageBoundsAsync(int pageIndex)
+    {
+        if (!IsEditorInitialized || pageIndex < 0 || _pageBoundsQueryUnavailable)
+            return null;
+
+        if (_pageBoundsCache.TryGetValue(pageIndex, out var cachedBounds))
+            return cachedBounds;
+
+        var pageBounds = await PdfViewer.GetPageBoundsAsync(pageIndex).ConfigureAwait(false);
+        if (pageBounds is PdfPageBounds bounds)
+        {
+            _pageBoundsCache[pageIndex] = bounds;
+            return bounds;
+        }
+
+        _pageBoundsQueryUnavailable = true;
+        return null;
+    }
+
+    private async Task<bool> DoesStrokeIntersectAnyPageAsync(DrawingStroke stroke)
+    {
+        if (!IsEditorInitialized || stroke.Points.Count == 0 || _totalPageCount <= 0)
+            return true;
+
+        var checkedAnyPageBounds = false;
+        for (var pageIndex = 0; pageIndex < _totalPageCount; pageIndex++)
+        {
+            var bounds = await GetCachedPageBoundsAsync(pageIndex);
+            if (bounds is not PdfPageBounds pageBounds)
+                continue;
+
+            checkedAnyPageBounds = true;
+            if (DoesStrokeIntersectPage(stroke, pageBounds))
+                return true;
+        }
+
+        // If page bounds are unavailable on this platform/document, keep the stroke.
+        return !checkedAnyPageBounds;
+    }
+
     private async Task<int> ClearCurrentPageInkAsync(int pageIndex)
     {
         if (!IsEditorInitialized || pageIndex < 0)
             return 0;
 
-        var pageBounds = await PdfViewer.GetPageBoundsAsync(pageIndex);
-        if (pageBounds is not PdfPageBounds bounds)
+        var bounds = await GetCachedPageBoundsAsync(pageIndex);
+        if (bounds is not PdfPageBounds pageBounds)
             return 0;
 
         var removedCount = 0;
         foreach (var layer in DrawingCanvas.Layers)
         {
-            removedCount += layer.Strokes.RemoveAll(stroke => DoesStrokeIntersectPage(stroke, bounds));
+            removedCount += layer.Strokes.RemoveAll(stroke => DoesStrokeIntersectPage(stroke, pageBounds));
         }
 
         return removedCount;
@@ -1810,6 +1856,26 @@ public partial class MainPage
     private void OnDrawingStrokeStarted(object? sender, EventArgs e)
     {
         StopTwoFingerInertia();
+    }
+
+    private async void OnDrawingStrokeFinalized(object? sender, DrawingCanvas.StrokeFinalizedEventArgs e)
+    {
+        if (!IsEditorInitialized || e.Stroke.Points.Count == 0)
+            return;
+
+        var intersectsAnyPage = await DoesStrokeIntersectAnyPageAsync(e.Stroke);
+        if (intersectsAnyPage)
+            return;
+
+        if (!DrawingCanvas.RemoveStroke(e.Stroke))
+            return;
+
+        InvalidateThumbnailCache();
+        if (ThumbnailPanel.IsVisible)
+        {
+            RefreshThumbnailList();
+        }
+        QueueInkSave();
     }
 
     private void OnDrawingStrokeCommitted(object? sender, EventArgs e)

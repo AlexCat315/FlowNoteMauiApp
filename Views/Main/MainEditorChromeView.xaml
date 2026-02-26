@@ -101,7 +101,8 @@
                             HeightRequest="24"
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
-                            Padding="3"
+                            Padding="1"
+                            Aspect="AspectFill"
                             TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
                             Source="icon_stylus_mode.png"
                         />

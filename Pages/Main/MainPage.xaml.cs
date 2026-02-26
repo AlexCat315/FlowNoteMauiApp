@@ -119,6 +119,7 @@ public partial class MainPage : ContentPage
 
         _drawingCanvas.Layers.CollectionChanged += (_, _) => RefreshLayerList();
         _drawingCanvas.StrokeStarted += OnDrawingStrokeStarted;
+        _drawingCanvas.StrokeFinalized += OnDrawingStrokeFinalized;
         _drawingCanvas.StrokeCommitted += OnDrawingStrokeCommitted;
         _drawingCanvas.TwoFingerSwipe += OnDrawingCanvasTwoFingerSwipe;
         _drawingCanvas.TwoFingerPan += OnDrawingCanvasTwoFingerPan;

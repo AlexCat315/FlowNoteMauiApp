@@ -83,6 +83,18 @@ public class DrawingCanvas : SKCanvasView
         public bool IsWheelInput { get; }
     }
 
+    public sealed class StrokeFinalizedEventArgs : EventArgs
+    {
+        public StrokeFinalizedEventArgs(int layerIndex, DrawingStroke stroke)
+        {
+            LayerIndex = layerIndex;
+            Stroke = stroke;
+        }
+
+        public int LayerIndex { get; }
+        public DrawingStroke Stroke { get; }
+    }
+
     public static readonly BindableProperty LayersProperty =
         BindableProperty.Create(nameof(Layers), typeof(ObservableCollection<DrawingLayer>), typeof(DrawingCanvas),
             propertyChanged: OnLayersChanged);
@@ -196,6 +208,7 @@ public class DrawingCanvas : SKCanvasView
 
     public event EventHandler? StrokeCommitted;
     public event EventHandler? StrokeStarted;
+    public event EventHandler<StrokeFinalizedEventArgs>? StrokeFinalized;
     public event EventHandler<TwoFingerSwipeEventArgs>? TwoFingerSwipe;
     public event EventHandler<TwoFingerPanEventArgs>? TwoFingerPan;
 
@@ -404,6 +417,25 @@ public class DrawingCanvas : SKCanvasView
         ResetHistory();
         InvalidateSurface();
         StrokeCommitted?.Invoke(this, EventArgs.Empty);
+    }
+
+    public bool RemoveStroke(DrawingStroke? stroke)
+    {
+        if (stroke is null)
+            return false;
+
+        for (var layerIndex = 0; layerIndex < Layers.Count; layerIndex++)
+        {
+            var layer = Layers[layerIndex];
+            if (!layer.Strokes.Remove(stroke))
+                continue;
+
+            RemoveStrokeFromHistory(stroke);
+            InvalidateSurface();
+            return true;
+        }
+
+        return false;
     }
 
     public void Undo()
@@ -821,28 +853,6 @@ public class DrawingCanvas : SKCanvasView
         {
             e.Handled = false;
             LogTouch("skip-layer", e, "layer-locked");
-            return;
-        }
-
-        var pointAllowed = CanDrawAtViewPoint?.Invoke(e.Location.X, e.Location.Y) ?? true;
-        if (!pointAllowed && e.ActionType == SKTouchAction.Pressed)
-        {
-            CancelCurrentStroke();
-            e.Handled = true;
-            LogTouch("skip-bounds", e, "outside-pdf");
-            return;
-        }
-
-        if (!pointAllowed && e.ActionType == SKTouchAction.Moved)
-        {
-            if (_isDrawing)
-            {
-                EndDrawing();
-                InvalidateSurface();
-            }
-
-            e.Handled = true;
-            LogTouch("skip-bounds", e, "outside-pdf");
             return;
         }
 
@@ -1319,6 +1329,7 @@ public class DrawingCanvas : SKCanvasView
             Layers[CurrentLayerIndex].AddStroke(committedStroke);
             _undoStack.Push(new StrokeHistoryEntry(CurrentLayerIndex, committedStroke));
             _redoStack.Clear();
+            StrokeFinalized?.Invoke(this, new StrokeFinalizedEventArgs(CurrentLayerIndex, committedStroke));
             StrokeCommitted?.Invoke(this, EventArgs.Empty);
         }
 
@@ -1603,6 +1614,28 @@ public class DrawingCanvas : SKCanvasView
     {
         _undoStack.Clear();
         _redoStack.Clear();
+    }
+
+    private void RemoveStrokeFromHistory(DrawingStroke stroke)
+    {
+        RemoveStrokeFromHistoryStack(_undoStack, stroke);
+        RemoveStrokeFromHistoryStack(_redoStack, stroke);
+    }
+
+    private static void RemoveStrokeFromHistoryStack(Stack<StrokeHistoryEntry> stack, DrawingStroke stroke)
+    {
+        if (stack.Count == 0)
+            return;
+
+        var retained = stack
+            .Reverse()
+            .Where(entry => !ReferenceEquals(entry.Stroke, stroke))
+            .ToArray();
+        stack.Clear();
+        foreach (var entry in retained)
+        {
+            stack.Push(entry);
+        }
     }
 
     private static uint ToArgb(SKColor color)
