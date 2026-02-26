@@ -25,7 +25,8 @@ public partial class MainPage
     private const double PanInertiaFrameIntervalMs = 20d;
     private const double PanInertiaVelocityStopThreshold = 8d;
     private const double PanInertiaStartSpeedThreshold = 34d;
-    private const double PanInertiaMaxStartSpeed = 6200d;
+    private const double PanInertiaMaxStartSpeed = 3200d;
+    private const double PanInertiaMaxFrameDelta = 220d;
     private const string PenInputModeIcon = "icon_pencil.png";
     private const string FingerInputModeIcon = "icon_hand.png";
     private const string ReadInputModeIcon = "icon_read_mode.png";
@@ -35,6 +36,7 @@ public partial class MainPage
     private double _panVelocityX;
     private double _panVelocityY;
     private bool _panInertiaFrameQueued;
+    private bool _hasPanSampleInGesture;
     private InkToolKind _activeInkTool = InkToolKind.None;
 
     private bool EnsureDrawingReady(bool showHint = false)
@@ -54,6 +56,7 @@ public partial class MainPage
             return;
 
         StopTwoFingerInertia();
+        ClearArmedInkTool(hideDrawingToolbar: true);
         SetInputModePanelVisible(false);
         ApplyInputMode(DrawingInputMode.TapRead, showStatus: true, activateDrawing: false);
     }
@@ -123,7 +126,11 @@ public partial class MainPage
         var palette = Palette;
         button.BackgroundColor = isSelected
             ? palette.ModeSelectionBackground
-            : Colors.Transparent;
+            : palette.ModeButtonCollapsedBackground;
+        button.BorderColor = isSelected
+            ? palette.ModeButtonExpandedBorder
+            : palette.ModeButtonCollapsedBorder;
+        button.BorderWidth = 1;
         button.TextColor = isSelected
             ? palette.ModeSelectionText
             : ThemePrimaryText;
@@ -184,6 +191,20 @@ public partial class MainPage
                 InkToolKind.Eraser => T("StatusEraserArmed", "Eraser selected."),
                 _ => T("StatusPenArmed", "Pen selected.")
             });
+        }
+    }
+
+    private void ClearArmedInkTool(bool hideDrawingToolbar)
+    {
+        _activeInkTool = InkToolKind.None;
+        if (!IsEditorInitialized)
+            return;
+
+        ApplyActiveInkToolVisual();
+        DrawingCanvas.EnableDrawing = false;
+        if (hideDrawingToolbar)
+        {
+            DrawingToolbarPanel.IsVisible = false;
         }
     }
 
@@ -249,7 +270,7 @@ public partial class MainPage
                 DrawingCanvas.IsPenMode = false;
                 DrawingCanvas.EnableDrawing = false;
                 DrawingCanvas.IsVisible = true;
-                DrawingToolbarPanel.IsVisible = false;
+                ClearArmedInkTool(hideDrawingToolbar: true);
                 LayerPanel.IsVisible = false;
                 if (wasDrawingEnabled)
                     QueueInkSave();
@@ -602,6 +623,7 @@ public partial class MainPage
             StopTwoFingerInertia();
             _panVelocityX = 0d;
             _panVelocityY = 0d;
+            _hasPanSampleInGesture = false;
             _lastPanSampleUtc = DateTime.UtcNow;
             LogInputGesture($"pan-begin wheel={e.IsWheelInput} mode={_drawingInputMode}");
         }
@@ -629,6 +651,12 @@ public partial class MainPage
 
         var adjustedX = ApplyPanResistance(e.DeltaX);
         var adjustedY = ApplyPanResistance(e.DeltaY);
+        if (!e.IsWheelInput)
+        {
+            adjustedX = Math.Clamp(adjustedX, -280d, 280d);
+            adjustedY = Math.Clamp(adjustedY, -280d, 280d);
+        }
+
         PdfViewer.PanBy(adjustedX, adjustedY);
 
         if (allowInertia)
@@ -661,19 +689,25 @@ public partial class MainPage
     private void UpdatePanVelocity(double deltaX, double deltaY)
     {
         var now = DateTime.UtcNow;
-        var seconds = Math.Max(0.001d, (now - _lastPanSampleUtc).TotalSeconds);
+        var seconds = (now - _lastPanSampleUtc).TotalSeconds;
         _lastPanSampleUtc = now;
+        if (seconds < 0.009d)
+            return;
 
         var sampleVx = deltaX / seconds;
         var sampleVy = deltaY / seconds;
-        const double smoothing = 0.24d;
+        var maxSampleVelocity = PanInertiaMaxStartSpeed * 1.15d;
+        sampleVx = Math.Clamp(sampleVx, -maxSampleVelocity, maxSampleVelocity);
+        sampleVy = Math.Clamp(sampleVy, -maxSampleVelocity, maxSampleVelocity);
+        const double smoothing = 0.18d;
         _panVelocityX = (_panVelocityX * (1d - smoothing)) + (sampleVx * smoothing);
         _panVelocityY = (_panVelocityY * (1d - smoothing)) + (sampleVy * smoothing);
+        _hasPanSampleInGesture = true;
     }
 
     private void StartTwoFingerInertiaIfNeeded()
     {
-        if (!_pageFreeMoveEnabled)
+        if (!_pageFreeMoveEnabled || !_hasPanSampleInGesture)
         {
             _panVelocityX = 0d;
             _panVelocityY = 0d;
@@ -702,7 +736,7 @@ public partial class MainPage
         _panInertiaCts = new CancellationTokenSource();
         var token = _panInertiaCts.Token;
         var resistance = Math.Clamp(_pageMoveResistancePercent / 100d, 0d, 1d);
-        var damping = Math.Clamp(0.90d - (resistance * 0.16d) - Math.Min(0.04d, speed / 24000d), 0.72d, 0.90d);
+        var damping = Math.Clamp(0.86d - (resistance * 0.18d) - Math.Min(0.05d, speed / 18000d), 0.66d, 0.86d);
         var velocityX = initialVelocityX;
         var velocityY = initialVelocityY;
 
@@ -727,6 +761,8 @@ public partial class MainPage
 
                     var deltaX = velocityX * deltaSeconds;
                     var deltaY = velocityY * deltaSeconds;
+                    deltaX = Math.Clamp(deltaX, -PanInertiaMaxFrameDelta, PanInertiaMaxFrameDelta);
+                    deltaY = Math.Clamp(deltaY, -PanInertiaMaxFrameDelta, PanInertiaMaxFrameDelta);
 
                     if (_panInertiaFrameQueued)
                     {
@@ -789,6 +825,11 @@ public partial class MainPage
     private static void LogInputGesture(string message)
     {
         Debug.WriteLine($"[FlowNote Gesture] {message}");
+    }
+
+    private void OnDrawingStrokeStarted(object? sender, EventArgs e)
+    {
+        StopTwoFingerInertia();
     }
 
     private void OnDrawingStrokeCommitted(object? sender, EventArgs e)

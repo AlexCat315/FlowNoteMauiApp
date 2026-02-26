@@ -456,6 +456,13 @@ public partial class MainPage
         RefreshSettingsUiState();
         RefreshEditorTabsVisual();
         RefreshHomeFeed();
+        if (IsEditorInitialized)
+        {
+            UpdateInputModeSelectionVisual();
+            ApplyActiveInkToolVisual();
+            RefreshLayerList();
+        }
+
         ApplyDarkModeInversion();
     }
 

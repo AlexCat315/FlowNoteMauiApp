@@ -112,16 +112,17 @@ public partial class MainPage
 
             var closeButton = new ImageButton
             {
-                Source = "icon_x.png",
-                WidthRequest = 12,
-                HeightRequest = 12,
-                MinimumWidthRequest = 14,
-                MinimumHeightRequest = 14,
-                Padding = 1,
+                Source = isActive ? "icon_x_white.png" : "icon_x.png",
+                WidthRequest = 10,
+                HeightRequest = 10,
+                MinimumWidthRequest = 12,
+                MinimumHeightRequest = 12,
+                Padding = 0,
                 CornerRadius = 6,
-                BackgroundColor = Colors.Transparent,
-                BorderWidth = 0,
-                Opacity = isActive ? 0.88 : 0.66,
+                BackgroundColor = isActive ? Color.FromArgb("#38FFFFFF") : Color.FromArgb("#EEF3FA"),
+                BorderColor = isActive ? Color.FromArgb("#77FFFFFF") : palette.TabInactiveBorder,
+                BorderWidth = 1,
+                Opacity = isActive ? 0.94 : 0.80,
                 CommandParameter = tab.NoteId
             };
             closeButton.Clicked += OnEditorTabCloseClicked;
@@ -231,7 +232,7 @@ public partial class MainPage
         await _workspaceService.MarkOpenedAsync(note.Id);
 
         EnsureEditorInitialized();
-        _activeInkTool = InkToolKind.None;
+        ClearArmedInkTool(hideDrawingToolbar: true);
         PdfViewer.Source = new BytesPdfSource(bytes);
         ShowEditorScreen();
         RefreshEditorTabsVisual();
@@ -275,7 +276,7 @@ public partial class MainPage
         if (IsEditorInitialized)
         {
             PdfViewer.IsVisible = false;
-            DrawingCanvas.EnableDrawing = false;
+            ClearArmedInkTool(hideDrawingToolbar: true);
             DrawingCanvas.IsVisible = false;
         }
     }

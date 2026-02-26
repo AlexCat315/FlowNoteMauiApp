@@ -156,9 +156,16 @@ public class DrawingCanvas : SKCanvasView
     private SKPoint _penTouchPanAnchor;
     private bool _suspendViewportInvalidation;
     private bool _pendingViewportInvalidation;
+    private bool _isStrokeViewportLocked;
+    private double _strokeViewportScrollX;
+    private double _strokeViewportScrollY;
+    private float _strokeViewportZoom = 1f;
     private DateTime _lastTouchMoveLogUtc = DateTime.MinValue;
 
+    public Func<float, float, bool>? CanDrawAtViewPoint { get; set; }
+
     public event EventHandler? StrokeCommitted;
+    public event EventHandler? StrokeStarted;
     public event EventHandler<TwoFingerSwipeEventArgs>? TwoFingerSwipe;
     public event EventHandler<TwoFingerPanEventArgs>? TwoFingerPan;
 
@@ -745,10 +752,39 @@ public class DrawingCanvas : SKCanvasView
             return;
         }
 
-        var zoom = Math.Max(0.1f, ViewportZoom);
+        var pointAllowed = CanDrawAtViewPoint?.Invoke(e.Location.X, e.Location.Y) ?? true;
+        if (!pointAllowed && e.ActionType == SKTouchAction.Pressed)
+        {
+            CancelCurrentStroke();
+            e.Handled = true;
+            LogTouch("skip-bounds", e, "outside-pdf");
+            return;
+        }
+
+        if (!pointAllowed && e.ActionType == SKTouchAction.Moved)
+        {
+            if (_isDrawing)
+            {
+                EndDrawing();
+                InvalidateSurface();
+            }
+
+            e.Handled = true;
+            LogTouch("skip-bounds", e, "outside-pdf");
+            return;
+        }
+
+        if (e.ActionType == SKTouchAction.Pressed)
+        {
+            BeginStrokeViewportLock();
+        }
+
+        var effectiveScrollX = _isStrokeViewportLocked ? _strokeViewportScrollX : ScrollX;
+        var effectiveScrollY = _isStrokeViewportLocked ? _strokeViewportScrollY : ScrollY;
+        var zoom = _isStrokeViewportLocked ? _strokeViewportZoom : Math.Max(0.1f, ViewportZoom);
         var location = new DrawingPoint(
-            (e.Location.X + (float)ScrollX) / zoom,
-            (e.Location.Y + (float)ScrollY) / zoom,
+            (e.Location.X + (float)effectiveScrollX) / zoom,
+            (e.Location.Y + (float)effectiveScrollY) / zoom,
             e.Pressure <= 0 ? 1f : e.Pressure);
 
         switch (e.ActionType)
@@ -1076,6 +1112,7 @@ public class DrawingCanvas : SKCanvasView
     {
         _isDrawing = false;
         _currentStroke = null;
+        EndStrokeViewportLock();
     }
 
     private void StartDrawing(DrawingPoint point)
@@ -1106,6 +1143,7 @@ public class DrawingCanvas : SKCanvasView
             }
         };
         _currentStroke.AddPoint(point);
+        StrokeStarted?.Invoke(this, EventArgs.Empty);
     }
 
     private void ContinueDrawing(DrawingPoint point)
@@ -1119,7 +1157,10 @@ public class DrawingCanvas : SKCanvasView
     private void EndDrawing()
     {
         if (!_isDrawing || _currentStroke == null)
+        {
+            EndStrokeViewportLock();
             return;
+        }
 
         if (CurrentLayerIndex >= 0 && CurrentLayerIndex < Layers.Count && _currentStroke.Points.Count > 0)
         {
@@ -1132,6 +1173,23 @@ public class DrawingCanvas : SKCanvasView
 
         _isDrawing = false;
         _currentStroke = null;
+        EndStrokeViewportLock();
+    }
+
+    private void BeginStrokeViewportLock()
+    {
+        _strokeViewportScrollX = ScrollX;
+        _strokeViewportScrollY = ScrollY;
+        _strokeViewportZoom = Math.Max(0.1f, ViewportZoom);
+        _isStrokeViewportLocked = true;
+    }
+
+    private void EndStrokeViewportLock()
+    {
+        _isStrokeViewportLocked = false;
+        _strokeViewportScrollX = 0d;
+        _strokeViewportScrollY = 0d;
+        _strokeViewportZoom = 1f;
     }
 
     private static SKBlendMode GetBlendMode(DrawingStroke stroke)

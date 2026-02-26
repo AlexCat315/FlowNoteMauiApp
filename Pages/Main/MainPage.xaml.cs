@@ -111,8 +111,10 @@ public partial class MainPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             ZoomAffectsStrokeWidth = _zoomFollowEnabled
         };
+        _drawingCanvas.CanDrawAtViewPoint = (x, y) => PdfViewer.IsPointOnDocument(x, y);
 
         _drawingCanvas.Layers.CollectionChanged += (_, _) => RefreshLayerList();
+        _drawingCanvas.StrokeStarted += OnDrawingStrokeStarted;
         _drawingCanvas.StrokeCommitted += OnDrawingStrokeCommitted;
         _drawingCanvas.TwoFingerSwipe += OnDrawingCanvasTwoFingerSwipe;
         _drawingCanvas.TwoFingerPan += OnDrawingCanvasTwoFingerPan;

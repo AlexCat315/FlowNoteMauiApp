@@ -4,6 +4,9 @@ public partial class MainPage
 {
     private sealed class ThemePalette
     {
+        public const string LightKey = "light";
+        public const string DarkKey = "dark";
+
         public static readonly ThemePalette Light = new(
             modeButtonExpandedBackground: Color.FromArgb("#E8F4FD"),
             modeButtonCollapsedBackground: Color.FromArgb("#FFFFFF"),
@@ -55,6 +58,12 @@ public partial class MainPage
             tabInactiveBackground: Colors.White,
             tabInactiveBorder: Color.FromArgb("#C7D6EA"),
             tabInactiveText: Color.FromArgb("#1C1C1E"));
+
+        private static readonly IReadOnlyDictionary<string, ThemePalette> Presets = new Dictionary<string, ThemePalette>(StringComparer.OrdinalIgnoreCase)
+        {
+            [LightKey] = Light,
+            [DarkKey] = Dark
+        };
 
         private ThemePalette(
             Color modeButtonExpandedBackground,
@@ -132,7 +141,12 @@ public partial class MainPage
         public Color TabInactiveBackground { get; }
         public Color TabInactiveBorder { get; }
         public Color TabInactiveText { get; }
+
+        public static ThemePalette Resolve(string key)
+        {
+            return Presets.TryGetValue(key, out var palette) ? palette : Light;
+        }
     }
 
-    private ThemePalette Palette => IsDarkTheme ? ThemePalette.Dark : ThemePalette.Light;
+    private ThemePalette Palette => ThemePalette.Resolve(IsDarkTheme ? ThemePalette.DarkKey : ThemePalette.LightKey);
 }

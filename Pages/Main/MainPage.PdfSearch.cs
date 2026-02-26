@@ -11,6 +11,9 @@ namespace FlowNoteMauiApp;
 public partial class MainPage
 {
     private DateTime _lastViewportLogUtc = DateTime.MinValue;
+    private double _lastViewportLogX;
+    private double _lastViewportLogY;
+    private double _lastViewportLogZoom = 1d;
 
     private void OnEditorSearchClicked(object? sender, EventArgs e)
     {
@@ -265,9 +268,30 @@ public partial class MainPage
         var zoom = ClampEditorZoom(e.Zoom <= 0f ? 1f : e.Zoom);
         DrawingCanvas.SetViewport(e.OffsetX, e.OffsetY, zoom);
         SyncZoomUiFromViewer(zoom);
+        if (!ShouldLogViewportChanged(e.OffsetX, e.OffsetY, zoom))
+            return;
+
         LogPdfGesture(
             $"viewport-changed platform={DeviceInfo.Platform} mode={_drawingInputMode} " +
             $"x={e.OffsetX:0.0} y={e.OffsetY:0.0} zoom={zoom:0.00} size={e.ViewportWidth:0.0}x{e.ViewportHeight:0.0}");
+    }
+
+    private bool ShouldLogViewportChanged(double x, double y, double zoom)
+    {
+        var now = DateTime.UtcNow;
+        var elapsedMs = (now - _lastViewportLogUtc).TotalMilliseconds;
+        var moved = Math.Abs(x - _lastViewportLogX) + Math.Abs(y - _lastViewportLogY);
+        var zoomDelta = Math.Abs(zoom - _lastViewportLogZoom);
+        if (elapsedMs < 140 && moved < 48d && zoomDelta < 0.02d)
+        {
+            return false;
+        }
+
+        _lastViewportLogUtc = now;
+        _lastViewportLogX = x;
+        _lastViewportLogY = y;
+        _lastViewportLogZoom = zoom;
+        return true;
     }
 
     private static float ClampEditorZoom(float zoom)
