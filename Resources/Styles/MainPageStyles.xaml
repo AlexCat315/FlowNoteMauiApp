@@ -83,12 +83,12 @@
     </Style>
 
     <Style x:Key="ToolbarToolIconButton" TargetType="ImageButton">
-        <Setter Property="WidthRequest" Value="30" />
-        <Setter Property="HeightRequest" Value="30" />
-        <Setter Property="MinimumWidthRequest" Value="30" />
-        <Setter Property="MinimumHeightRequest" Value="30" />
-        <Setter Property="CornerRadius" Value="15" />
-        <Setter Property="Padding" Value="5" />
+        <Setter Property="WidthRequest" Value="28" />
+        <Setter Property="HeightRequest" Value="28" />
+        <Setter Property="MinimumWidthRequest" Value="28" />
+        <Setter Property="MinimumHeightRequest" Value="28" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Padding" Value="4" />
         <Setter Property="Aspect" Value="AspectFit" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="BorderWidth" Value="1" />
@@ -207,12 +207,12 @@
     </Style>
 
     <Style x:Key="FlatTopIconButton" TargetType="ImageButton">
-        <Setter Property="WidthRequest" Value="22" />
-        <Setter Property="HeightRequest" Value="22" />
-        <Setter Property="MinimumWidthRequest" Value="22" />
-        <Setter Property="MinimumHeightRequest" Value="22" />
+        <Setter Property="WidthRequest" Value="24" />
+        <Setter Property="HeightRequest" Value="24" />
+        <Setter Property="MinimumWidthRequest" Value="24" />
+        <Setter Property="MinimumHeightRequest" Value="24" />
         <Setter Property="CornerRadius" Value="0" />
-        <Setter Property="Padding" Value="3" />
+        <Setter Property="Padding" Value="2" />
         <Setter Property="Aspect" Value="AspectFit" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="BorderWidth" Value="0" />
@@ -223,10 +223,10 @@
         TargetType="ImageButton"
         BasedOn="{StaticResource FlatTopIconButton}"
     >
-        <Setter Property="WidthRequest" Value="20" />
-        <Setter Property="HeightRequest" Value="20" />
-        <Setter Property="MinimumWidthRequest" Value="20" />
-        <Setter Property="MinimumHeightRequest" Value="20" />
+        <Setter Property="WidthRequest" Value="22" />
+        <Setter Property="HeightRequest" Value="22" />
+        <Setter Property="MinimumWidthRequest" Value="22" />
+        <Setter Property="MinimumHeightRequest" Value="22" />
         <Setter Property="Padding" Value="2" />
     </Style>
 

@@ -1,6 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root>
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema
+        id="root"
+        xmlns=""
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+    >
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -25,19 +30,43 @@
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element
+                                    name="value"
+                                    type="xsd:string"
+                                    minOccurs="0"
+                                    msdata:Ordinal="1"
+                                />
+                <xsd:element
+                                    name="comment"
+                                    type="xsd:string"
+                                    minOccurs="0"
+                                    msdata:Ordinal="2"
+                                />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute
+                                name="name"
+                                type="xsd:string"
+                                use="required"
+                                msdata:Ordinal="1"
+                            />
               <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute
+                                name="mimetype"
+                                type="xsd:string"
+                                msdata:Ordinal="4"
+                            />
               <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element
+                                    name="value"
+                                    type="xsd:string"
+                                    minOccurs="0"
+                                    msdata:Ordinal="1"
+                                />
               </xsd:sequence>
               <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
@@ -53,10 +82,12 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value
+        >System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value
+        >System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ToolbarToggle" xml:space="preserve">
     <value>打开工具栏</value>
@@ -291,19 +322,19 @@
 解锁全功能笔记工作流</value>
   </data>
   <data name="InputModeTitle" xml:space="preserve">
-    <value>输入方式</value>
+    <value>模式切换</value>
   </data>
   <data name="InputModeHint" xml:space="preserve">
-    <value>手指/电容笔模式下：单指书写，双指翻页或移动页面</value>
+    <value>手写：笔写+手势导航；触控：单指写双指移；阅读：保留笔记仅浏览</value>
   </data>
   <data name="InputModePen" xml:space="preserve">
-    <value>手写笔</value>
+    <value>手写模式</value>
   </data>
   <data name="InputModeFinger" xml:space="preserve">
-    <value>手指/电容笔（双指移动）</value>
+    <value>触控模式</value>
   </data>
   <data name="InputModeRead" xml:space="preserve">
-    <value>点读模式</value>
+    <value>阅读模式</value>
   </data>
   <data name="DrawingPenWidth" xml:space="preserve">
     <value>笔宽</value>
@@ -348,7 +379,8 @@
     <value>页面自由移动</value>
   </data>
   <data name="PageFreeMoveHint" xml:space="preserve">
-    <value>开启后，在双指滑动结束时继续惯性滚动，可通过阻力控制滑动衰减。</value>
+    <value
+        >开启后，在双指滑动结束时继续惯性滚动，可通过阻力控制滑动衰减。</value>
   </data>
   <data name="Resistance" xml:space="preserve">
     <value>阻力</value>
@@ -555,13 +587,13 @@
     <value>文件夹名称无效。</value>
   </data>
   <data name="StatusPenMode" xml:space="preserve">
-    <value>已切换到手写笔模式</value>
+    <value>手写模式：笔书写，手指/鼠标可平移和缩放</value>
   </data>
   <data name="StatusFingerMode" xml:space="preserve">
-    <value>手指/电容笔模式：单指书写，双指滚动/缩放；仅单页模式双指可翻页</value>
+    <value>触控模式：单指书写，双指平移/缩放；单页模式下双指可翻页</value>
   </data>
   <data name="StatusReadMode" xml:space="preserve">
-    <value>已切换到点读模式</value>
+    <value>阅读模式：PDF 与笔记同时显示，仅禁用书写</value>
   </data>
   <data name="StatusTextToolSoon" xml:space="preserve">
     <value>文本工具即将支持</value>

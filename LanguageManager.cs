@@ -14,7 +14,16 @@ public static class LanguageManager
 
     public static void Initialize()
     {
-        var savedLanguage = Preferences.Get(LanguageKey, null);
+        string? savedLanguage;
+        try
+        {
+            savedLanguage = Preferences.Get(LanguageKey, null);
+        }
+        catch
+        {
+            Preferences.Remove(LanguageKey);
+            savedLanguage = null;
+        }
         if (!string.IsNullOrEmpty(savedLanguage))
         {
             var culture = new CultureInfo(savedLanguage);

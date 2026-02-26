@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using FlowNoteMauiApp.Models;
-using Microsoft.Maui.Devices;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
@@ -117,6 +117,10 @@ public class DrawingCanvas : SKCanvasView
         BindableProperty.Create(nameof(EnableDrawing), typeof(bool), typeof(DrawingCanvas),
             defaultValue: false, propertyChanged: OnEnableDrawingChanged);
 
+    public static readonly BindableProperty ForceInputTransparentProperty =
+        BindableProperty.Create(nameof(ForceInputTransparent), typeof(bool), typeof(DrawingCanvas),
+            defaultValue: false, propertyChanged: OnForceInputTransparentChanged);
+
     public static readonly BindableProperty EnableTwoFingerSwipeNavigationProperty =
         BindableProperty.Create(nameof(EnableTwoFingerSwipeNavigation), typeof(bool), typeof(DrawingCanvas),
             defaultValue: true);
@@ -144,9 +148,13 @@ public class DrawingCanvas : SKCanvasView
     private const float TwoFingerPanSwitchDelta = 10f;
     private const float TwoFingerZoomDominanceRatio = 1.25f;
     private const float MouseWheelPanStep = 16f;
+    private const int TouchMoveLogIntervalMs = 90;
     private TwoFingerGestureIntent _twoFingerGestureIntent = TwoFingerGestureIntent.None;
     private long? _penTouchPanId;
     private SKPoint _penTouchPanAnchor;
+    private bool _suspendViewportInvalidation;
+    private bool _pendingViewportInvalidation;
+    private DateTime _lastTouchMoveLogUtc = DateTime.MinValue;
 
     public event EventHandler? StrokeCommitted;
     public event EventHandler<TwoFingerSwipeEventArgs>? TwoFingerSwipe;
@@ -164,6 +172,7 @@ public class DrawingCanvas : SKCanvasView
         IgnorePixelScaling = false;
         EnableTouchEvents = true;
         Touch += OnCanvasTouch;
+        UpdateInputTransparency();
     }
 
     public ObservableCollection<DrawingLayer> Layers
@@ -238,6 +247,12 @@ public class DrawingCanvas : SKCanvasView
         set => SetValue(EnableTwoFingerSwipeNavigationProperty, value);
     }
 
+    public bool ForceInputTransparent
+    {
+        get => (bool)GetValue(ForceInputTransparentProperty);
+        set => SetValue(ForceInputTransparentProperty, value);
+    }
+
     public bool ZoomAffectsStrokeWidth
     {
         get => (bool)GetValue(ZoomAffectsStrokeWidthProperty);
@@ -246,6 +261,33 @@ public class DrawingCanvas : SKCanvasView
 
     public bool CanUndo => _undoStack.Count > 0;
     public bool CanRedo => _redoStack.Count > 0;
+
+    public void SetViewport(double scrollX, double scrollY, float viewportZoom)
+    {
+        var clampedZoom = Math.Max(0.1f, viewportZoom);
+        _suspendViewportInvalidation = true;
+        _pendingViewportInvalidation = false;
+
+        try
+        {
+            if (Math.Abs(ScrollX - scrollX) > 0.01)
+                ScrollX = scrollX;
+            if (Math.Abs(ScrollY - scrollY) > 0.01)
+                ScrollY = scrollY;
+            if (Math.Abs(ViewportZoom - clampedZoom) > 0.0001f)
+                ViewportZoom = clampedZoom;
+        }
+        finally
+        {
+            _suspendViewportInvalidation = false;
+        }
+
+        if (_pendingViewportInvalidation)
+        {
+            _pendingViewportInvalidation = false;
+            InvalidateSurface();
+        }
+    }
 
     public void AddLayer(string name = "Layer")
     {
@@ -538,6 +580,12 @@ public class DrawingCanvas : SKCanvasView
     {
         if (bindable is DrawingCanvas canvas)
         {
+            if (canvas._suspendViewportInvalidation)
+            {
+                canvas._pendingViewportInvalidation = true;
+                return;
+            }
+
             canvas.InvalidateSurface();
         }
     }
@@ -554,7 +602,7 @@ public class DrawingCanvas : SKCanvasView
     {
         if (bindable is DrawingCanvas canvas)
         {
-            canvas.InputTransparent = !(bool)newValue;
+            canvas.UpdateInputTransparency();
             if (!(bool)newValue)
             {
                 canvas.ResetTouchTracking();
@@ -562,15 +610,34 @@ public class DrawingCanvas : SKCanvasView
         }
     }
 
+    private static void OnForceInputTransparentChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (bindable is DrawingCanvas canvas)
+        {
+            canvas.UpdateInputTransparency();
+            if ((bool)newValue)
+            {
+                canvas.ResetTouchTracking();
+            }
+        }
+    }
+
+    private void UpdateInputTransparency()
+    {
+        InputTransparent = ForceInputTransparent || !EnableDrawing;
+    }
+
     private void OnCanvasTouch(object? sender, SKTouchEventArgs e)
     {
         if (!EnableDrawing)
         {
             e.Handled = false;
+            LogTouch("skip-disabled", e, "drawing-disabled");
             return;
         }
 
         var isStylus = e.DeviceType == SKTouchDeviceType.Pen;
+        LogTouch("input", e, isStylus ? "stylus" : "pointer");
 
         if (e.ActionType == SKTouchAction.WheelChanged)
         {
@@ -588,15 +655,31 @@ public class DrawingCanvas : SKCanvasView
             }
 
             e.Handled = true;
+            LogTouch("wheel", e, "wheel-pan");
             return;
         }
 
-        // Stylus mode on Apple platforms: any non-stylus pointer drags/pans the PDF.
-        // This also covers simulator/driver paths that report Unknown instead of Touch/Mouse.
-        var isApplePlatform = DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst;
-        if (IsPenMode && isApplePlatform && !isStylus)
+        // Stylus mode: non-stylus pointers are for navigation (single pointer pan, two-finger pan/zoom).
+        if (IsPenMode && !isStylus)
         {
+            TrackTouch(e);
+
+            if (_activeTouchIds.Count >= 2)
+            {
+                _penTouchPanId = null;
+                _penTouchPanAnchor = SKPoint.Empty;
+                CancelCurrentStroke();
+                _suspendDrawingUntilTouchesReleased = true;
+                HandleTwoFingerGesture();
+                e.Handled = true;
+                InvalidateSurface();
+                LogTouch("pen-gesture", e, "two-finger-pan-zoom");
+                return;
+            }
+
+            _suspendDrawingUntilTouchesReleased = false;
             HandlePenModeTouchPan(e);
+            LogTouch("pen-gesture", e, "single-pointer-pan");
             return;
         }
 
@@ -614,24 +697,21 @@ public class DrawingCanvas : SKCanvasView
             HandleTwoFingerGesture();
             e.Handled = true;
             InvalidateSurface();
+            LogTouch("finger-gesture", e, "two-finger-pan-zoom");
             return;
         }
 
         if (_suspendDrawingUntilTouchesReleased)
         {
             e.Handled = true;
-            return;
-        }
-
-        if (IsPenMode && !isStylus && !SupportsNonStylusPenFallback())
-        {
-            e.Handled = true;
+            LogTouch("finger-gesture", e, "suspended");
             return;
         }
 
         if (Layers.Count == 0 || CurrentLayerIndex < 0 || CurrentLayerIndex >= Layers.Count)
         {
             e.Handled = false;
+            LogTouch("skip-layer", e, "no-active-layer");
             return;
         }
 
@@ -639,6 +719,7 @@ public class DrawingCanvas : SKCanvasView
         if (currentLayer.IsLocked)
         {
             e.Handled = false;
+            LogTouch("skip-layer", e, "layer-locked");
             return;
         }
 
@@ -664,11 +745,7 @@ public class DrawingCanvas : SKCanvasView
 
         InvalidateSurface();
         e.Handled = true;
-    }
-
-    private static bool SupportsNonStylusPenFallback()
-    {
-        return DeviceInfo.Platform == DevicePlatform.MacCatalyst;
+        LogTouch("draw", e, "stroke");
     }
 
     private void TrackTouch(SKTouchEventArgs e)
@@ -678,7 +755,7 @@ public class DrawingCanvas : SKCanvasView
             case SKTouchAction.Pressed:
                 _activeTouchIds.Add(e.Id);
                 _activeTouchPoints[e.Id] = e.Location;
-                if (!IsPenMode && _activeTouchIds.Count >= 2 && !_isTwoFingerGestureActive)
+                if (_activeTouchIds.Count >= 2 && !_isTwoFingerGestureActive)
                 {
                     _isTwoFingerGestureActive = true;
                     _twoFingerAnchor = GetTouchCenter();
@@ -708,9 +785,7 @@ public class DrawingCanvas : SKCanvasView
                 _activeTouchPoints.Remove(e.Id);
                 if (_activeTouchIds.Count < 2)
                 {
-                    if (!EnableTwoFingerSwipeNavigation
-                        && _isTwoFingerGestureActive
-                        && _twoFingerGestureIntent != TwoFingerGestureIntent.None)
+                    if (!EnableTwoFingerSwipeNavigation && _isTwoFingerGestureActive)
                     {
                         TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
                             0f,
@@ -747,17 +822,34 @@ public class DrawingCanvas : SKCanvasView
         switch (e.ActionType)
         {
             case SKTouchAction.Pressed:
-                _penTouchPanId = e.Id;
-                _penTouchPanAnchor = e.Location;
-                TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
-                    0f,
-                    0f,
-                    1f,
-                    e.Location.X,
-                    e.Location.Y,
-                    TwoFingerPanPhase.Begin));
+                if (_penTouchPanId is null)
+                {
+                    _penTouchPanId = e.Id;
+                    _penTouchPanAnchor = e.Location;
+                    TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
+                        0f,
+                        0f,
+                        1f,
+                        e.Location.X,
+                        e.Location.Y,
+                        TwoFingerPanPhase.Begin));
+                }
                 break;
             case SKTouchAction.Moved:
+                if (_penTouchPanId is null)
+                {
+                    _penTouchPanId = e.Id;
+                    _penTouchPanAnchor = e.Location;
+                    TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
+                        0f,
+                        0f,
+                        1f,
+                        e.Location.X,
+                        e.Location.Y,
+                        TwoFingerPanPhase.Begin));
+                    break;
+                }
+
                 if (_penTouchPanId != e.Id)
                     break;
 
@@ -794,6 +886,23 @@ public class DrawingCanvas : SKCanvasView
         }
 
         e.Handled = true;
+    }
+
+    [Conditional("DEBUG")]
+    private void LogTouch(string phase, SKTouchEventArgs e, string branch)
+    {
+        if (e.ActionType == SKTouchAction.Moved)
+        {
+            var now = DateTime.UtcNow;
+            if ((now - _lastTouchMoveLogUtc).TotalMilliseconds < TouchMoveLogIntervalMs)
+                return;
+            _lastTouchMoveLogUtc = now;
+        }
+
+        Debug.WriteLine(
+            $"[DrawingCanvas] phase={phase} action={e.ActionType} device={e.DeviceType} id={e.Id} " +
+            $"x={e.Location.X:0.0} y={e.Location.Y:0.0} penMode={IsPenMode} enableDrawing={EnableDrawing} " +
+            $"activeTouches={_activeTouchIds.Count} branch={branch}");
     }
 
     private SKPoint GetTouchCenter()

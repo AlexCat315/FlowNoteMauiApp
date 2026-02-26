@@ -284,9 +284,7 @@ public partial class MainPage
         SetDrawerVisible(false);
         SetSettingsVisible(false);
         PdfViewer.IsVisible = true;
-        ApplyInputMode(
-            _drawingInputMode == DrawingInputMode.TapRead ? DrawingInputMode.PenStylus : _drawingInputMode,
-            activateDrawing: true);
+        ApplyInputMode(_drawingInputMode, activateDrawing: true);
     }
 
     private void RenderHomeNotes(IReadOnlyList<WorkspaceNote> notes)

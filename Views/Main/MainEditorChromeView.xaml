@@ -370,14 +370,14 @@
     <VerticalStackLayout Spacing="6">
         <Label
                     x:Name="InputModeTitleLabel"
-                    Text="输入方式"
+                    Text="模式切换"
                     FontFamily="OpenSansSemibold"
                     FontSize="14"
                     TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}"
                 />
         <Label
                     x:Name="InputModeHintLabel"
-                    Text="手指/电容笔模式下：单指书写，双指翻页或移动页面"
+                    Text="手写: 笔写+手势导航 | 触控: 单指写双指移 | 阅读: 保留笔记仅浏览"
                     FontSize="12"
                     TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
                 />
@@ -386,7 +386,7 @@
                         x:Name="InputModePenButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
-                        Text="手写笔"
+                        Text="手写模式"
                     />
             <Label
                         x:Name="InputModePenCheck"
@@ -402,7 +402,7 @@
                         x:Name="InputModeFingerButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
-                        Text="手指/电容笔（双指移动）"
+                        Text="触控模式"
                     />
             <Label
                         x:Name="InputModeFingerCheck"
@@ -419,7 +419,7 @@
                         x:Name="InputModeReadButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
-                        Text="点读模式"
+                        Text="阅读模式"
                     />
             <Label
                         x:Name="InputModeReadCheck"

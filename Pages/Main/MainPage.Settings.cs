@@ -66,31 +66,31 @@ public partial class MainPage
     private void LoadPersistedAppSettings()
     {
         _savedDisplayMode = ParseEnumOrDefault(
-            Preferences.Get(DisplayModeKey, PdfDisplayMode.SinglePageContinuous.ToString()),
+            GetPreferenceStringSafe(DisplayModeKey, PdfDisplayMode.SinglePageContinuous.ToString()),
             PdfDisplayMode.SinglePageContinuous);
         _savedScrollOrientation = ParseEnumOrDefault(
-            Preferences.Get(ScrollOrientationKey, PdfScrollOrientation.Vertical.ToString()),
+            GetPreferenceStringSafe(ScrollOrientationKey, PdfScrollOrientation.Vertical.ToString()),
             PdfScrollOrientation.Vertical);
         _savedFitPolicy = ParseEnumOrDefault(
-            Preferences.Get(FitPolicyKey, FitPolicy.Width.ToString()),
+            GetPreferenceStringSafe(FitPolicyKey, FitPolicy.Width.ToString()),
             FitPolicy.Width);
-        _savedZoom = (float)Math.Clamp(Preferences.Get(ZoomValueKey, 1d), EditorMinZoom, EditorMaxZoom);
-        _savedEnableZoom = Preferences.Get(EnableZoomKey, true);
-        _savedEnableSwipe = Preferences.Get(EnableSwipeKey, true);
-        _savedEnableLink = Preferences.Get(EnableLinkKey, true);
+        _savedZoom = Math.Clamp(GetPreferenceFloatCompat(ZoomValueKey, 1f), EditorMinZoom, EditorMaxZoom);
+        _savedEnableZoom = GetPreferenceBoolSafe(EnableZoomKey, true);
+        _savedEnableSwipe = GetPreferenceBoolSafe(EnableSwipeKey, true);
+        _savedEnableLink = GetPreferenceBoolSafe(EnableLinkKey, true);
 
-        _pageFreeMoveEnabled = Preferences.Get(PageFreeMoveKey, true);
-        _pageMoveResistancePercent = Math.Clamp(Preferences.Get(PageMoveResistanceKey, 65d), 0d, 100d);
-        _zoomFollowEnabled = Preferences.Get(ZoomFollowKey, true);
-        _pageNumberPositionIndex = Math.Clamp(Preferences.Get(PageNumberPositionKey, 0), 0, 1);
-        _allowTextSelection = Preferences.Get(TextSelectionKey, true);
+        _pageFreeMoveEnabled = GetPreferenceBoolSafe(PageFreeMoveKey, true);
+        _pageMoveResistancePercent = Math.Clamp(GetPreferenceDoubleSafe(PageMoveResistanceKey, 65d), 0d, 100d);
+        _zoomFollowEnabled = GetPreferenceBoolSafe(ZoomFollowKey, true);
+        _pageNumberPositionIndex = Math.Clamp(GetPreferenceIntSafe(PageNumberPositionKey, 0), 0, 1);
+        _allowTextSelection = GetPreferenceBoolSafe(TextSelectionKey, true);
 
-        _themePreference = ParseThemePreference(Preferences.Get(ThemePreferenceKey, "system"));
+        _themePreference = ParseThemePreference(GetPreferenceStringSafe(ThemePreferenceKey, "system"));
         _dateFormatPreference = ParseEnumOrDefault(
-            Preferences.Get(DateFormatKey, DateFormatPreference.YYMMDD.ToString()),
+            GetPreferenceStringSafe(DateFormatKey, DateFormatPreference.YYMMDD.ToString()),
             DateFormatPreference.YYMMDD);
-        _keepScreenOnEnabled = Preferences.Get(KeepScreenOnKey, false);
-        _darkModeInvertEnabled = Preferences.Get(DarkModeInvertKey, false);
+        _keepScreenOnEnabled = GetPreferenceBoolSafe(KeepScreenOnKey, false);
+        _darkModeInvertEnabled = GetPreferenceBoolSafe(DarkModeInvertKey, false);
     }
 
     private void ApplyGlobalSettings()
@@ -480,6 +480,97 @@ public partial class MainPage
             DateFormatPreference.MMDDYY => local.ToString("MM/dd/yy HH:mm"),
             _ => local.ToString("yy/MM/dd HH:mm")
         };
+    }
+
+    private static string GetPreferenceStringSafe(string key, string fallback)
+    {
+        try
+        {
+            return Preferences.Get(key, fallback);
+        }
+        catch
+        {
+            Preferences.Remove(key);
+            return fallback;
+        }
+    }
+
+    private static bool GetPreferenceBoolSafe(string key, bool fallback)
+    {
+        try
+        {
+            return Preferences.Get(key, fallback);
+        }
+        catch
+        {
+            Preferences.Remove(key);
+            return fallback;
+        }
+    }
+
+    private static int GetPreferenceIntSafe(string key, int fallback)
+    {
+        try
+        {
+            return Preferences.Get(key, fallback);
+        }
+        catch
+        {
+            Preferences.Remove(key);
+            return fallback;
+        }
+    }
+
+    private static double GetPreferenceDoubleSafe(string key, double fallback)
+    {
+        try
+        {
+            return Preferences.Get(key, fallback);
+        }
+        catch
+        {
+            Preferences.Remove(key);
+            return fallback;
+        }
+    }
+
+    private static float GetPreferenceFloatCompat(string key, float fallback)
+    {
+        try
+        {
+            return Preferences.Get(key, fallback);
+        }
+        catch
+        {
+            // Older builds may have persisted this key as double/string on Android.
+        }
+
+        try
+        {
+            var valueAsDouble = Preferences.Get(key, (double)fallback);
+            var migrated = (float)valueAsDouble;
+            Preferences.Set(key, migrated);
+            return migrated;
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            var raw = Preferences.Get(key, string.Empty);
+            if (float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
+            {
+                Preferences.Set(key, parsed);
+                return parsed;
+            }
+        }
+        catch
+        {
+        }
+
+        Preferences.Remove(key);
+        return fallback;
     }
 
     private static T ParseEnumOrDefault<T>(string raw, T fallback) where T : struct, Enum

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Diagnostics;
 using Flow.PDFView.Abstractions;
 using FlowNoteMauiApp.Resources;
 using PdfPageChangedEventArgs = Flow.PDFView.Abstractions.PageChangedEventArgs;
@@ -8,6 +9,8 @@ namespace FlowNoteMauiApp;
 
 public partial class MainPage
 {
+    private DateTime _lastViewportLogUtc = DateTime.MinValue;
+
     private void OnEditorSearchClicked(object? sender, EventArgs e)
     {
         if (!EnsurePdfLoaded(showHint: true))
@@ -219,7 +222,7 @@ public partial class MainPage
         PdfViewer.MinZoom = EditorMinZoom;
         PdfViewer.MaxZoom = EditorMaxZoom;
         PdfViewer.Zoom = zoom;
-        DrawingCanvas.ViewportZoom = zoom;
+        DrawingCanvas.SetViewport(DrawingCanvas.ScrollX, DrawingCanvas.ScrollY, zoom);
         _savedZoom = zoom;
         SavePersistedAppSettings();
         RefreshSettingsUiState();
@@ -230,7 +233,7 @@ public partial class MainPage
         _totalPageCount = e.PageCount;
         _currentPageIndex = Math.Clamp(PdfViewer.CurrentPage, 0, Math.Max(0, _totalPageCount - 1));
         var zoom = ClampEditorZoom(PdfViewer.Zoom <= 0f ? 1f : PdfViewer.Zoom);
-        DrawingCanvas.ViewportZoom = zoom;
+        DrawingCanvas.SetViewport(DrawingCanvas.ScrollX, DrawingCanvas.ScrollY, zoom);
         SyncZoomUiFromViewer(zoom);
         UpdatePageIndicators();
         ShowStatus(AppResources.DocumentLoadedFormat.Replace("{0}", _totalPageCount.ToString()));
@@ -248,11 +251,10 @@ public partial class MainPage
         if (!IsEditorInitialized)
             return;
 
-        DrawingCanvas.ScrollX = e.OffsetX;
-        DrawingCanvas.ScrollY = e.OffsetY;
         var zoom = ClampEditorZoom(e.Zoom <= 0f ? 1f : e.Zoom);
-        DrawingCanvas.ViewportZoom = zoom;
+        DrawingCanvas.SetViewport(e.OffsetX, e.OffsetY, zoom);
         SyncZoomUiFromViewer(zoom);
+        LogViewport(e.OffsetX, e.OffsetY, zoom, e.ViewportWidth, e.ViewportHeight);
     }
 
     private static float ClampEditorZoom(float zoom)
@@ -356,6 +358,18 @@ public partial class MainPage
         var hasResults = _searchResults.Count > 0;
         SearchPrevButton.IsEnabled = hasResults;
         SearchNextButton.IsEnabled = hasResults;
+    }
+
+    [Conditional("DEBUG")]
+    private void LogViewport(double offsetX, double offsetY, float zoom, double viewportWidth, double viewportHeight)
+    {
+        var now = DateTime.UtcNow;
+        if ((now - _lastViewportLogUtc).TotalMilliseconds < 120)
+            return;
+
+        _lastViewportLogUtc = now;
+        Debug.WriteLine(
+            $"[FlowNote Viewport] x={offsetX:0.0} y={offsetY:0.0} zoom={zoom:0.00} size={viewportWidth:0.0}x{viewportHeight:0.0}");
     }
 
     private void GoToSearchResultWithOffset(int offset)

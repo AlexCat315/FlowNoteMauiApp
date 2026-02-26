@@ -1,6 +1,7 @@
 using SkiaSharp;
 using FlowNoteMauiApp.Controls;
 using System.Diagnostics;
+using Microsoft.Maui.Devices;
 
 namespace FlowNoteMauiApp;
 
@@ -54,12 +55,7 @@ public partial class MainPage
 
         StopTwoFingerInertia();
         SetInputModePanelVisible(false);
-        DrawingCanvas.EnableDrawing = false;
-        DrawingCanvas.IsVisible = false;
-        DrawingToolbarPanel.IsVisible = false;
-        LayerPanel.IsVisible = false;
-        UpdateDrawingToggleVisual(false);
-        QueueInkSave();
+        ApplyInputMode(DrawingInputMode.TapRead, showStatus: true, activateDrawing: false);
     }
 
     private void OnPenModeClicked(object? sender, EventArgs e)
@@ -121,40 +117,54 @@ public partial class MainPage
             return;
 
         var wasDrawingEnabled = DrawingCanvas.EnableDrawing;
+        var forceNativeInputPassthrough =
+            DeviceInfo.Platform == DevicePlatform.MacCatalyst
+            || (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.DeviceType == DeviceType.Virtual);
         var targetDrawingEnabled = mode != DrawingInputMode.TapRead && (activateDrawing || DrawingCanvas.EnableDrawing);
         DrawingCanvas.IsErasing = false;
         DrawingCanvas.IsHighlighter = false;
+        DrawingCanvas.ForceInputTransparent = forceNativeInputPassthrough || mode == DrawingInputMode.TapRead;
+        Debug.WriteLine($"[FlowNote Mode] switch={mode} activateDrawing={activateDrawing} targetDrawingEnabled={targetDrawingEnabled}");
 
         switch (mode)
         {
             case DrawingInputMode.PenStylus:
                 DrawingCanvas.IsPenMode = true;
                 DrawingCanvas.EnableDrawing = targetDrawingEnabled;
-                DrawingCanvas.IsVisible = targetDrawingEnabled;
+                DrawingCanvas.IsVisible = true;
                 DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
                 UpdateToolSelection("Pen");
                 if (showStatus)
-                    ShowStatus(T("StatusPenMode", "Switched to stylus mode"));
+                {
+                    ShowStatus(forceNativeInputPassthrough
+                        ? T("StatusDesktopNativeInput", "Desktop/simulator uses native PDF gestures. Touch writing capture is limited in this environment.")
+                        : T("StatusPenMode", "Handwriting mode: stylus writes, finger/mouse pans and zooms."));
+                }
                 break;
             case DrawingInputMode.FingerCapacitive:
                 DrawingCanvas.IsPenMode = false;
                 DrawingCanvas.EnableDrawing = targetDrawingEnabled;
-                DrawingCanvas.IsVisible = targetDrawingEnabled;
+                DrawingCanvas.IsVisible = true;
                 DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
                 UpdateToolSelection("Finger");
                 if (showStatus)
-                    ShowStatus(T("StatusFingerMode", "Finger mode: one finger writes, two fingers pan/zoom; in single-page mode two-finger swipe flips page"));
+                {
+                    ShowStatus(forceNativeInputPassthrough
+                        ? T("StatusDesktopNativeInput", "Desktop/simulator uses native PDF gestures. Touch writing capture is limited in this environment.")
+                        : T("StatusFingerMode", "Touch mode: one finger writes, two fingers pan/zoom; in single-page mode two-finger swipe flips page."));
+                }
                 break;
             case DrawingInputMode.TapRead:
+                DrawingCanvas.IsPenMode = false;
                 DrawingCanvas.EnableDrawing = false;
-                DrawingCanvas.IsVisible = false;
+                DrawingCanvas.IsVisible = true;
                 DrawingToolbarPanel.IsVisible = false;
                 LayerPanel.IsVisible = false;
                 if (wasDrawingEnabled)
                     QueueInkSave();
                 UpdateToolSelection("Read");
                 if (showStatus)
-                    ShowStatus(T("StatusReadMode", "Switched to read mode"));
+                    ShowStatus(T("StatusReadMode", "Read mode: PDF and notes visible, writing disabled."));
                 break;
         }
 
@@ -485,7 +495,7 @@ public partial class MainPage
         if (_drawingInputMode == DrawingInputMode.TapRead)
             return;
 
-        var allowInertia = _drawingInputMode == DrawingInputMode.FingerCapacitive && !e.IsWheelInput;
+        var allowInertia = !e.IsWheelInput;
 
         if (e.Phase == DrawingCanvas.TwoFingerPanPhase.Begin)
         {

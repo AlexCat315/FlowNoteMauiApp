@@ -1,5 +1,6 @@
 using FlowNoteMauiApp.Resources;
 using Microsoft.Maui.Devices;
+using System.Diagnostics;
 
 namespace FlowNoteMauiApp;
 
@@ -101,19 +102,33 @@ public partial class MainPage
                 PickerTitle = AppResources.SelectPdfFile
             };
 
-            var isApple = DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst;
-            if (!isApple)
+            var isIos = DeviceInfo.Platform == DevicePlatform.iOS;
+            if (!isIos)
             {
                 options.FileTypes = PdfPickerFileType;
             }
 
+            LogPicker($"pick-start platform={DeviceInfo.Platform} isIos={isIos}");
             var result = await FilePicker.Default.PickAsync(options);
+
+            if (result is null && DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+            {
+                // Some MacCatalyst builds return null with strict UTType filters; retry once without filters.
+                LogPicker("pick-result null on maccatalyst, retrying without file type filter");
+                result = await FilePicker.Default.PickAsync(new PickOptions
+                {
+                    PickerTitle = AppResources.SelectPdfFile
+                });
+            }
 
             if (result is null)
             {
+                LogPicker("pick-result null");
                 ShowStatus(AppResources.FileSelectionCancelled);
                 return;
             }
+
+            LogPicker($"pick-result file={result.FileName} contentType={result.ContentType}");
 
             await using var stream = await result.OpenReadAsync();
             using var memory = new MemoryStream();
@@ -161,10 +176,12 @@ public partial class MainPage
         }
         catch (OperationCanceledException)
         {
+            LogPicker("pick-cancelled operation canceled");
             ShowStatus(AppResources.FileSelectionCancelled);
         }
         catch (Exception ex)
         {
+            LogPicker($"pick-failed {ex.GetType().Name}: {ex.Message}");
             ShowStatus($"{AppResources.SelectFileFailed}: {ex.Message}");
         }
         finally
@@ -173,6 +190,12 @@ public partial class MainPage
             _pickerCooldownUntilUtc = DateTime.UtcNow.Add(PickerReentryCooldown);
             SetImportButtonsEnabled(true);
         }
+    }
+
+    [Conditional("DEBUG")]
+    private static void LogPicker(string message)
+    {
+        Debug.WriteLine($"[FlowNote Picker] {message}");
     }
 
     private void SetImportButtonsEnabled(bool enabled)

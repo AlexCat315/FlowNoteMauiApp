@@ -1,6 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root>
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema
+        id="root"
+        xmlns=""
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+    >
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -25,19 +30,43 @@
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element
+                                    name="value"
+                                    type="xsd:string"
+                                    minOccurs="0"
+                                    msdata:Ordinal="1"
+                                />
+                <xsd:element
+                                    name="comment"
+                                    type="xsd:string"
+                                    minOccurs="0"
+                                    msdata:Ordinal="2"
+                                />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute
+                                name="name"
+                                type="xsd:string"
+                                use="required"
+                                msdata:Ordinal="1"
+                            />
               <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute
+                                name="mimetype"
+                                type="xsd:string"
+                                msdata:Ordinal="4"
+                            />
               <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element
+                                    name="value"
+                                    type="xsd:string"
+                                    minOccurs="0"
+                                    msdata:Ordinal="1"
+                                />
               </xsd:sequence>
               <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
@@ -53,10 +82,12 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value
+        >System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value
+        >System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ToolbarToggle" xml:space="preserve">
     <value>Open Toolbar</value>
@@ -291,16 +322,17 @@
 Unlock full note workflow</value>
   </data>
   <data name="InputModeTitle" xml:space="preserve">
-    <value>Input Mode</value>
+    <value>Mode Switch</value>
   </data>
   <data name="InputModeHint" xml:space="preserve">
-    <value>In finger/capacitive mode: one finger writes, two fingers move/turn pages</value>
+    <value
+        >Handwriting: stylus writes + gesture navigation; Touch: one finger writes + two-finger move/zoom; Read: notes stay visible with writing disabled</value>
   </data>
   <data name="InputModePen" xml:space="preserve">
-    <value>Stylus</value>
+    <value>Handwriting</value>
   </data>
   <data name="InputModeFinger" xml:space="preserve">
-    <value>Finger/Capacitive (2-finger move)</value>
+    <value>Touch</value>
   </data>
   <data name="InputModeRead" xml:space="preserve">
     <value>Read Mode</value>
@@ -348,7 +380,8 @@ Unlock full note workflow</value>
     <value>Free Page Movement</value>
   </data>
   <data name="PageFreeMoveHint" xml:space="preserve">
-    <value>After two-finger pan ends, inertia continues. Resistance controls deceleration.</value>
+    <value
+        >After two-finger pan ends, inertia continues. Resistance controls deceleration.</value>
   </data>
   <data name="Resistance" xml:space="preserve">
     <value>Resistance</value>
@@ -357,7 +390,8 @@ Unlock full note workflow</value>
     <value>Zoom Follow</value>
   </data>
   <data name="ZoomFollowHint" xml:space="preserve">
-    <value>When enabled, stroke width scales with zoom; otherwise remains screen-pixel width.</value>
+    <value
+        >When enabled, stroke width scales with zoom; otherwise remains screen-pixel width.</value>
   </data>
   <data name="DisplayModeTitle" xml:space="preserve">
     <value>Display Mode</value>
@@ -555,13 +589,14 @@ Unlock full note workflow</value>
     <value>Invalid folder name.</value>
   </data>
   <data name="StatusPenMode" xml:space="preserve">
-    <value>Switched to stylus mode</value>
+    <value>Handwriting mode: stylus writes, finger/mouse pans and zooms.</value>
   </data>
   <data name="StatusFingerMode" xml:space="preserve">
-    <value>Finger mode: one finger writes, two fingers pan/zoom; in single-page mode two-finger swipe flips page</value>
+    <value
+        >Touch mode: one finger writes, two fingers pan/zoom; in single-page mode two-finger swipe flips page.</value>
   </data>
   <data name="StatusReadMode" xml:space="preserve">
-    <value>Switched to read mode</value>
+    <value>Read mode: PDF and notes remain visible, writing is disabled.</value>
   </data>
   <data name="StatusTextToolSoon" xml:space="preserve">
     <value>Text tool is coming soon.</value>
@@ -576,7 +611,8 @@ Unlock full note workflow</value>
     <value>Open a PDF first.</value>
   </data>
   <data name="StatusSearchEntryOpened" xml:space="preserve">
-    <value>Search entry opened (advanced panel can be configured in settings).</value>
+    <value
+        >Search entry opened (advanced panel can be configured in settings).</value>
   </data>
   <data name="TextSelectionEnabled" xml:space="preserve">
     <value>Allow Selection</value>
