@@ -387,7 +387,7 @@ public partial class MainPage
             
             var visibilityIcon = new ImageButton
             {
-                Source = layer.IsVisible ? "icon_eye.svg" : "icon_eye_off.svg",
+                Source = layer.IsVisible ? "icon_eye.png" : "icon_eye_off.png",
                 WidthRequest = 28,
                 HeightRequest = 28,
                 CornerRadius = 14,

@@ -5,33 +5,33 @@ namespace FlowNoteMauiApp.Helpers;
 
 public static class IconHelper
 {
-    public static ImageSource GetOutlineIcon(string name) => ImageSource.FromFile($"icon_{name.Replace('-', '_')}.svg");
-    public static ImageSource GetFilledIcon(string name) => ImageSource.FromFile($"icon_{name.Replace('-', '_')}.svg");
+    public static ImageSource GetOutlineIcon(string name) => ImageSource.FromFile($"icon_{name.Replace('-', '_')}.png");
+    public static ImageSource GetFilledIcon(string name) => ImageSource.FromFile($"icon_{name.Replace('-', '_')}.png");
 
     public static readonly (string Name, string Outline, string Filled)[] DrawingTools = new[]
     {
-        ("pencil", "icon_pencil.svg", "icon_pencil.svg"),
-        ("highlighter", "icon_brush.svg", "icon_brush.svg"),
-        ("eraser", "icon_eraser.svg", "icon_eraser.svg"),
+        ("pencil", "icon_pencil.png", "icon_pencil.png"),
+        ("highlighter", "icon_brush.png", "icon_brush.png"),
+        ("eraser", "icon_eraser.png", "icon_eraser.png"),
     };
 
     public static readonly (string Name, string Icon)[] ToolBarIcons = new[]
     {
-        ("menu", "icon_menu.svg"),
-        ("prevPage", "icon_arrow_left.svg"),
-        ("nextPage", "icon_arrow_right.svg"),
-        ("draw", "icon_pencil.svg"),
-        ("undo", "icon_arrow_back_up.svg"),
-        ("redo", "icon_arrow_forward_up.svg"),
-        ("clear", "icon_trash.svg"),
-        ("layers", "icon_layers_selected.svg"),
-        ("close", "icon_x.svg"),
-        ("settings", "icon_settings.svg"),
-        ("search", "icon_search.svg"),
-        ("home", "icon_home.svg"),
-        ("folder", "icon_folder.svg"),
-        ("file", "icon_file.svg"),
-        ("plus", "icon_plus.svg"),
-        ("minus", "icon_minus.svg"),
+        ("menu", "icon_menu.png"),
+        ("prevPage", "icon_arrow_left.png"),
+        ("nextPage", "icon_arrow_right.png"),
+        ("draw", "icon_pencil.png"),
+        ("undo", "icon_arrow_back_up.png"),
+        ("redo", "icon_arrow_forward_up.png"),
+        ("clear", "icon_trash.png"),
+        ("layers", "icon_layers_selected.png"),
+        ("close", "icon_x.png"),
+        ("settings", "icon_settings.png"),
+        ("search", "icon_search.png"),
+        ("home", "icon_home.png"),
+        ("folder", "icon_folder.png"),
+        ("file", "icon_file.png"),
+        ("plus", "icon_plus.png"),
+        ("minus", "icon_minus.png"),
     };
 }

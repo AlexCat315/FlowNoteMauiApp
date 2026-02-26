@@ -41,7 +41,7 @@
                                  BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2B3D57}"
                                  BorderColor="{AppThemeBinding Light=#D5DBE8, Dark=#697F9F}"
                                  BorderWidth="1"
-                                 Source="icon_arrow_left.svg"
+                                 Source="icon_arrow_left.png"
  />
                     <Label x:Name="SettingsTitleLabel"
                            Grid.Column="1"
@@ -60,7 +60,7 @@
                                  BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2B3D57}"
                                  BorderColor="{AppThemeBinding Light=#D5DBE8, Dark=#697F9F}"
                                  BorderWidth="1"
-                                 Source="icon_x.svg"
+                                 Source="icon_x.png"
  />
                 </Grid>
 
@@ -78,7 +78,7 @@
                                     <TapGestureRecognizer x:Name="OpenPageSettingsTapGesture" />
                                 </Border.GestureRecognizers>
                                 <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-                                    <Image Source="icon_file.svg" WidthRequest="24" HeightRequest="24" />
+                                    <Image Source="icon_file.png" WidthRequest="24" HeightRequest="24" />
                                     <Label Grid.Column="1" Text="页面设置" FontSize="16" VerticalOptions="Center" />
                                     <Label x:Name="PageSettingsSummaryLabel"
                                            Grid.Column="2"
@@ -98,7 +98,7 @@
                                     <TapGestureRecognizer x:Name="OpenDisplaySettingsTapGesture" />
                                 </Border.GestureRecognizers>
                                 <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-                                    <Image Source="icon_eye.svg" WidthRequest="24" HeightRequest="24" />
+                                    <Image Source="icon_eye.png" WidthRequest="24" HeightRequest="24" />
                                     <Label Grid.Column="1" Text="显示" FontSize="16" VerticalOptions="Center" />
                                     <Label x:Name="DisplaySettingsSummaryLabel"
                                            Grid.Column="2"
@@ -118,7 +118,7 @@
                                     <TapGestureRecognizer x:Name="OpenLanguageSettingsTapGesture" />
                                 </Border.GestureRecognizers>
                                 <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-                                    <Image Source="icon_search.svg" WidthRequest="24" HeightRequest="24" />
+                                    <Image Source="icon_search.png" WidthRequest="24" HeightRequest="24" />
                                     <Label Grid.Column="1" Text="语言与日期" FontSize="16" VerticalOptions="Center" />
                                     <Label x:Name="LanguageSettingsSummaryLabel"
                                            Grid.Column="2"
@@ -436,12 +436,12 @@
                                      Grid.Column="1"
                                      WidthRequest="40"
                                      HeightRequest="40"
-                                     Source="icon_search.svg"
+                                     Source="icon_search.png"
  />
                     </Grid>
                     <HorizontalStackLayout Spacing="8">
-                        <ImageButton x:Name="SearchPrevButton" WidthRequest="40" HeightRequest="40" Source="icon_arrow_left.svg" />
-                        <ImageButton x:Name="SearchNextButton" WidthRequest="40" HeightRequest="40" Source="icon_arrow_right.svg" />
+                        <ImageButton x:Name="SearchPrevButton" WidthRequest="40" HeightRequest="40" Source="icon_arrow_left.png" />
+                        <ImageButton x:Name="SearchNextButton" WidthRequest="40" HeightRequest="40" Source="icon_arrow_right.png" />
                         <Label x:Name="SearchStatusLabel" VerticalOptions="Center" FontSize="11" />
                     </HorizontalStackLayout>
 

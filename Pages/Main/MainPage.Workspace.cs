@@ -84,7 +84,7 @@ public partial class MainPage
 
             tabGrid.Children.Add(new Image
             {
-                Source = "icon_file.svg",
+                Source = "icon_file.png",
                 WidthRequest = 13,
                 HeightRequest = 13,
                 VerticalOptions = LayoutOptions.Center,
@@ -106,7 +106,7 @@ public partial class MainPage
 
             var closeButton = new ImageButton
             {
-                Source = "icon_x.svg",
+                Source = "icon_x.png",
                 WidthRequest = 20,
                 HeightRequest = 20,
                 Padding = 4,
@@ -248,6 +248,11 @@ public partial class MainPage
 
     private void ShowHomeScreen()
     {
+        HomePanelView.IsVisible = true;
+        HomePanelView.InputTransparent = false;
+        EditorChromeView.IsVisible = false;
+        EditorChromeView.InputTransparent = true;
+
         HomePanel.IsVisible = true;
         TopBarPanel.IsVisible = false;
         SetDrawerVisible(false);
@@ -267,6 +272,11 @@ public partial class MainPage
     private void ShowEditorScreen()
     {
         EnsureEditorInitialized();
+        HomePanelView.IsVisible = false;
+        HomePanelView.InputTransparent = true;
+        EditorChromeView.IsVisible = true;
+        EditorChromeView.InputTransparent = false;
+
         HomePanel.IsVisible = false;
         TopBarPanel.IsVisible = true;
         SetDrawerVisible(false);
@@ -404,7 +414,7 @@ public partial class MainPage
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
             Content = new Image
             {
-                Source = "icon_folder.svg",
+                Source = "icon_folder.png",
                 WidthRequest = 40,
                 HeightRequest = 40,
                 HorizontalOptions = LayoutOptions.Center,
@@ -529,7 +539,7 @@ public partial class MainPage
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
             Content = new Image
             {
-                Source = "icon_file.svg",
+                Source = "icon_file.png",
                 WidthRequest = 38,
                 HeightRequest = 38,
                 HorizontalOptions = LayoutOptions.Center,

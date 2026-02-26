@@ -33,6 +33,16 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         InitializeComponent();
+        HomePanelView.IsVisible = true;
+        HomePanelView.InputTransparent = false;
+        EditorChromeView.IsVisible = false;
+        EditorChromeView.InputTransparent = true;
+        DrawerOverlayView.IsVisible = false;
+        DrawerOverlayView.InputTransparent = true;
+        SettingsOverlayView.IsVisible = false;
+        SettingsOverlayView.InputTransparent = true;
+        StatusToastView.InputTransparent = true;
+
         WireComposedViewEvents();
         var services = Application.Current?.Handler?.MauiContext?.Services;
         _workspaceService = services?.GetService<IWorkspaceService>() ?? new WorkspaceService();

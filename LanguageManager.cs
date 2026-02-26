@@ -1,6 +1,6 @@
 using System.Globalization;
 using FlowNoteMauiApp.Resources;
-using Microsoft.Maui.Controls;
+using Microsoft.Maui.ApplicationModel;
 
 namespace FlowNoteMauiApp;
 
@@ -29,25 +29,22 @@ public static class LanguageManager
     public static void SetCulture(CultureInfo culture)
     {
         CurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
         Thread.CurrentThread.CurrentUICulture = culture;
         Thread.CurrentThread.CurrentCulture = culture;
-        CultureInfo.CurrentUICulture = culture;
-        CultureInfo.CurrentCulture = culture;
-        
+
         AppResources.Culture = culture;
 
         Preferences.Set(LanguageKey, culture.Name);
-        LanguageChanged?.Invoke();
-        
-        RefreshMainPage();
-    }
 
-    private static void RefreshMainPage()
-    {
-        if (Application.Current?.Windows.Count > 0)
+        if (MainThread.IsMainThread)
         {
-            var window = Application.Current.Windows[0];
-            window.Page = new AppShell();
+            LanguageChanged?.Invoke();
+        }
+        else
+        {
+            MainThread.BeginInvokeOnMainThread(() => LanguageChanged?.Invoke());
         }
     }
 

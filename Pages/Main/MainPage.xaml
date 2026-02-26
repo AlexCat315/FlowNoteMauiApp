@@ -16,9 +16,15 @@
         <Grid x:Name="EditorHost" />
 
         <views:MainHomePanelView x:Name="HomePanelView" />
-        <views:MainEditorChromeView x:Name="EditorChromeView" />
-        <views:MainDrawerOverlayView x:Name="DrawerOverlayView" />
-        <views:MainSettingsOverlayView x:Name="SettingsOverlayView" />
-        <views:MainStatusToastView x:Name="StatusToastView" />
+        <views:MainEditorChromeView x:Name="EditorChromeView"
+                                    InputTransparent="True" />
+        <views:MainDrawerOverlayView x:Name="DrawerOverlayView"
+                                     IsVisible="False"
+                                     InputTransparent="True" />
+        <views:MainSettingsOverlayView x:Name="SettingsOverlayView"
+                                       IsVisible="False"
+                                       InputTransparent="True" />
+        <views:MainStatusToastView x:Name="StatusToastView"
+                                   InputTransparent="True" />
     </Grid>
 </ContentPage>

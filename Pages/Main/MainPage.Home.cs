@@ -29,11 +29,15 @@ public partial class MainPage
 
     private void SetDrawerVisible(bool visible)
     {
+        DrawerOverlayView.IsVisible = visible;
+        DrawerOverlayView.InputTransparent = !visible;
         HomeDrawerOverlay.IsVisible = visible;
     }
 
     private void SetSettingsVisible(bool visible)
     {
+        SettingsOverlayView.IsVisible = visible;
+        SettingsOverlayView.InputTransparent = !visible;
         SettingsOverlay.IsVisible = visible;
         SettingsPanel.IsVisible = visible;
         if (visible)

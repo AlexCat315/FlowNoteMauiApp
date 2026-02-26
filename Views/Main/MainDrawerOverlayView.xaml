@@ -27,7 +27,7 @@
                                 Stroke="{AppThemeBinding Light=#D3DAE8, Dark=#4B607D}"
                                 StrokeThickness="1"
                                 BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2A3A52}">
-                            <Image Source="icon_file.svg" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Image Source="icon_file.png" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" HorizontalOptions="Center" />
                         </Border>
                         <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
                             <Label Text="登录/注册"
@@ -41,7 +41,7 @@
                         <ImageButton x:Name="DrawerHeaderCloseButton"
                                      Grid.Column="2"
                                      Style="{StaticResource HeaderIconButton}"
-                                     Source="icon_x.svg"
+                                     Source="icon_x.png"
  />
                     </Grid>
 
@@ -97,7 +97,7 @@
                             </LinearGradientBrush>
                         </Border.Background>
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                            <Image Source="icon_file.svg" WidthRequest="36" HeightRequest="36" Opacity="0.9" />
+                            <Image Source="icon_file.png" WidthRequest="36" HeightRequest="36" Opacity="0.9" />
                             <Label Grid.Column="1"
                                    Text="注册即领免费试用\n解锁全功能笔记工作流"
                                    FontFamily="OpenSansSemibold"
