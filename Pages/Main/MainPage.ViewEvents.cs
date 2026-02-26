@@ -51,7 +51,6 @@ public partial class MainPage
         HighlighterButton.Clicked += OnHighlighterClicked;
         EraserButton.Clicked += OnEraserClicked;
         ClearButton2.Clicked += OnClearClicked;
-        DrawingToggleButton.Clicked += OnDrawingToggleClicked;
         FindInEditor<ImageButton>("TopInlineLayerButton").Clicked += OnLayerToggleClicked;
         TextToolButton.Clicked += OnTextToolClicked;
         ImageToolButton.Clicked += OnImageToolClicked;
@@ -66,9 +65,9 @@ public partial class MainPage
         ColorOrange.Clicked += OnColorOrangeClicked;
         ColorWhite.Clicked += OnColorWhiteClicked;
 
-        FindInEditor<Button>("InputModePenButton").Clicked += OnInputModePenClicked;
-        FindInEditor<Button>("InputModeFingerButton").Clicked += OnInputModeFingerClicked;
-        FindInEditor<Button>("InputModeReadButton").Clicked += OnInputModeReadClicked;
+        InputModePenButton.Clicked += OnInputModePenClicked;
+        InputModeFingerButton.Clicked += OnInputModeFingerClicked;
+        InputModeReadButton.Clicked += OnInputModeReadClicked;
 
         StrokeWidthSlider.ValueChanged += OnStrokeWidthChanged;
         FindInEditor<ImageButton>("DrawingToolbarLayerButton").Clicked += OnLayerToggleClicked;

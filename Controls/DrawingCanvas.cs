@@ -4,6 +4,9 @@ using FlowNoteMauiApp.Models;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
+#if IOS || MACCATALYST
+using UIKit;
+#endif
 
 namespace FlowNoteMauiApp.Controls;
 
@@ -172,6 +175,12 @@ public class DrawingCanvas : SKCanvasView
         EnableTouchEvents = true;
         Touch += OnCanvasTouch;
         UpdateInputTransparency();
+    }
+
+    protected override void OnHandlerChanged()
+    {
+        base.OnHandlerChanged();
+        UpdatePlatformInteractionState();
     }
 
     public ObservableCollection<DrawingLayer> Layers
@@ -626,7 +635,18 @@ public class DrawingCanvas : SKCanvasView
         var shouldPassThrough = ForceInputTransparent || !EnableDrawing;
         InputTransparent = shouldPassThrough;
         EnableTouchEvents = !shouldPassThrough;
+        UpdatePlatformInteractionState();
         LogPointerState($"input-transparent={InputTransparent} touch-events={EnableTouchEvents} enable-drawing={EnableDrawing} force-pass-through={ForceInputTransparent}");
+    }
+
+    private void UpdatePlatformInteractionState()
+    {
+#if IOS || MACCATALYST
+        if (Handler?.PlatformView is UIView platformView)
+        {
+            platformView.UserInteractionEnabled = !InputTransparent;
+        }
+#endif
     }
 
     private void OnCanvasTouch(object? sender, SKTouchEventArgs e)

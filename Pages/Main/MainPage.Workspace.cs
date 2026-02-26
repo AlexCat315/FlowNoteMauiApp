@@ -112,15 +112,15 @@ public partial class MainPage
             var closeButton = new ImageButton
             {
                 Source = "icon_x.png",
-                WidthRequest = 14,
-                HeightRequest = 14,
-                MinimumWidthRequest = 18,
-                MinimumHeightRequest = 18,
-                Padding = 2,
-                CornerRadius = 7,
-                BackgroundColor = isActive ? Color.FromArgb("#2F74D0") : Colors.Transparent,
+                WidthRequest = 12,
+                HeightRequest = 12,
+                MinimumWidthRequest = 14,
+                MinimumHeightRequest = 14,
+                Padding = 1,
+                CornerRadius = 6,
+                BackgroundColor = Colors.Transparent,
                 BorderWidth = 0,
-                Opacity = isActive ? 0.95 : 0.7,
+                Opacity = isActive ? 0.88 : 0.66,
                 CommandParameter = tab.NoteId
             };
             closeButton.Clicked += OnEditorTabCloseClicked;

@@ -170,11 +170,6 @@
                                     Source="icon_trash.png"
                                 />
                                 <ImageButton
-                                    x:Name="DrawingToggleButton"
-                                    Style="{StaticResource ToolbarToolIconButtonSelected}"
-                                    Source="icon_pencil.png"
-                                />
-                                <ImageButton
                                     x:Name="TopInlineLayerButton"
                                     Style="{StaticResource ToolbarToolIconButton}"
                                     Source="icon_layers_selected.png"

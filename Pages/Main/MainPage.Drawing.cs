@@ -16,7 +16,7 @@ public partial class MainPage
 
     private const double PanInertiaFrameIntervalMs = 16d;
     private const double PanInertiaVelocityStopThreshold = 8d;
-    private const double PanInertiaStartSpeedThreshold = 55d;
+    private const double PanInertiaStartSpeedThreshold = 34d;
     private const string PenInputModeIcon = "icon_pencil.png";
     private const string FingerInputModeIcon = "icon_hand.png";
     private const string ReadInputModeIcon = "icon_read_mode.png";
@@ -36,22 +36,6 @@ public partial class MainPage
     }
 
     // Drawing related methods
-    private void OnDrawingToggleClicked(object? sender, EventArgs e)
-    {
-        if (!EnsureDrawingReady(showHint: true))
-            return;
-
-        SetInputModePanelVisible(false);
-
-        if (_drawingInputMode == DrawingInputMode.TapRead)
-        {
-            ApplyInputMode(DrawingInputMode.PenStylus, showStatus: true);
-            return;
-        }
-
-        ApplyInputMode(DrawingInputMode.TapRead, showStatus: true, activateDrawing: false);
-    }
-
     private void OnDrawingToolbarCloseClicked(object? sender, EventArgs e)
     {
         if (!EnsureDrawingReady())
@@ -67,30 +51,25 @@ public partial class MainPage
         if (!EnsureDrawingReady())
             return;
 
-        if (_drawingInputMode != DrawingInputMode.PenStylus)
-        {
-            ApplyInputMode(DrawingInputMode.PenStylus, showStatus: true);
-            SetInputModePanelVisible(false);
-            return;
-        }
-
         SetInputModePanelVisible(!InputModePanel.IsVisible);
     }
 
     private void SetInputModePanelVisible(bool visible)
     {
         InputModePanel.IsVisible = visible;
+        UpdateModeButtonVisual();
     }
 
-    private void UpdateDrawingToggleVisual(bool isEnabled)
+    private void UpdateModeButtonVisual()
     {
-        DrawingToggleButton.BackgroundColor = isEnabled
+        var isExpanded = InputModePanel.IsVisible;
+        PenModeButton.BackgroundColor = isExpanded
             ? (IsDarkTheme ? Color.FromArgb("#33527A") : Color.FromArgb("#E8F4FD"))
             : (IsDarkTheme ? Color.FromArgb("#2B3D57") : Color.FromArgb("#FFFFFF"));
-        DrawingToggleButton.BorderColor = isEnabled
+        PenModeButton.BorderColor = isExpanded
             ? Color.FromArgb("#4A90E2")
             : (IsDarkTheme ? Color.FromArgb("#4A607C") : Color.FromArgb("#D1D1D6"));
-        DrawingToggleButton.BorderWidth = 1;
+        PenModeButton.BorderWidth = 1;
     }
 
     private void SetFingerDrawSwitchState(bool isFingerMode)
@@ -105,15 +84,35 @@ public partial class MainPage
 
     private void UpdateInputModeSelectionVisual()
     {
-        InputModePenCheck.IsVisible = _drawingInputMode == DrawingInputMode.PenStylus;
-        InputModeFingerCheck.IsVisible = _drawingInputMode == DrawingInputMode.FingerCapacitive;
-        InputModeReadCheck.IsVisible = _drawingInputMode == DrawingInputMode.TapRead;
-        DrawingToggleButton.Source = _drawingInputMode switch
+        var isPen = _drawingInputMode == DrawingInputMode.PenStylus;
+        var isFinger = _drawingInputMode == DrawingInputMode.FingerCapacitive;
+        var isRead = _drawingInputMode == DrawingInputMode.TapRead;
+
+        InputModePenCheck.IsVisible = isPen;
+        InputModeFingerCheck.IsVisible = isFinger;
+        InputModeReadCheck.IsVisible = isRead;
+
+        UpdateInputModeButtonVisual(InputModePenButton, isPen);
+        UpdateInputModeButtonVisual(InputModeFingerButton, isFinger);
+        UpdateInputModeButtonVisual(InputModeReadButton, isRead);
+
+        PenModeButton.Source = _drawingInputMode switch
         {
             DrawingInputMode.FingerCapacitive => FingerInputModeIcon,
             DrawingInputMode.TapRead => ReadInputModeIcon,
             _ => PenInputModeIcon
         };
+        UpdateModeButtonVisual();
+    }
+
+    private void UpdateInputModeButtonVisual(Button button, bool isSelected)
+    {
+        button.BackgroundColor = isSelected
+            ? (IsDarkTheme ? Color.FromArgb("#33527A") : Color.FromArgb("#E8F4FD"))
+            : Colors.Transparent;
+        button.TextColor = isSelected
+            ? (IsDarkTheme ? Color.FromArgb("#F2F2F7") : Color.FromArgb("#1C1C1E"))
+            : ThemePrimaryText;
     }
 
     private void ApplyInputMode(DrawingInputMode mode, bool showStatus = false, bool activateDrawing = true)
@@ -139,6 +138,7 @@ public partial class MainPage
         DrawingCanvas.IsErasing = false;
         DrawingCanvas.IsHighlighter = false;
         DrawingCanvas.ForceInputTransparent = forceNativeInputPassthrough || mode == DrawingInputMode.TapRead;
+        DrawingCanvas.IsEnabled = !DrawingCanvas.ForceInputTransparent;
         LogInputGesture($"mode-switch={mode} platform={DeviceInfo.Platform} activate={activateDrawing} drawing={targetDrawingEnabled} native-pass-through={forceNativeInputPassthrough}");
 
         switch (mode)
@@ -183,7 +183,7 @@ public partial class MainPage
                 break;
         }
 
-        UpdateDrawingToggleVisual(DrawingCanvas.EnableDrawing);
+        UpdateModeButtonVisual();
     }
 
     private void OnInputModePenClicked(object? sender, EventArgs e)
@@ -238,16 +238,12 @@ public partial class MainPage
         var normalColor = IsDarkTheme ? Color.FromArgb("#2B3D57") : Color.FromArgb("#FFFFFF");
         var selectedBorder = Color.FromArgb("#4A90E2");
         var normalBorder = IsDarkTheme ? Color.FromArgb("#4A607C") : Color.FromArgb("#D1D1D6");
-        var isPenSelected = (selectedTool == "Pen" || selectedTool == "Finger") && _drawingInputMode != DrawingInputMode.TapRead;
 
-        PenModeButton.BackgroundColor = isPenSelected ? selectedColor : normalColor;
         HighlighterButton.BackgroundColor = selectedTool == "Highlighter" ? selectedColor : normalColor;
         EraserButton.BackgroundColor = selectedTool == "Eraser" ? selectedColor : normalColor;
 
-        PenModeButton.BorderColor = isPenSelected ? selectedBorder : normalBorder;
         HighlighterButton.BorderColor = selectedTool == "Highlighter" ? selectedBorder : normalBorder;
         EraserButton.BorderColor = selectedTool == "Eraser" ? selectedBorder : normalBorder;
-        PenModeButton.BorderWidth = 1;
         HighlighterButton.BorderWidth = 1;
         EraserButton.BorderWidth = 1;
     }

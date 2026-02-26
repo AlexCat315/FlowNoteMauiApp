@@ -47,7 +47,6 @@ public partial class MainPage
     private ImageButton HighlighterButton => FindInEditor<ImageButton>(nameof(HighlighterButton));
     private ImageButton EraserButton => FindInEditor<ImageButton>(nameof(EraserButton));
     private ImageButton ClearButton2 => FindInEditor<ImageButton>(nameof(ClearButton2));
-    private ImageButton DrawingToggleButton => FindInEditor<ImageButton>(nameof(DrawingToggleButton));
     private ImageButton TextToolButton => FindInEditor<ImageButton>(nameof(TextToolButton));
     private ImageButton ImageToolButton => FindInEditor<ImageButton>(nameof(ImageToolButton));
     private ImageButton ShapeToolButton => FindInEditor<ImageButton>(nameof(ShapeToolButton));
@@ -64,6 +63,9 @@ public partial class MainPage
     private Label InputModePenCheck => FindInEditor<Label>(nameof(InputModePenCheck));
     private Label InputModeFingerCheck => FindInEditor<Label>(nameof(InputModeFingerCheck));
     private Label InputModeReadCheck => FindInEditor<Label>(nameof(InputModeReadCheck));
+    private Button InputModePenButton => FindInEditor<Button>(nameof(InputModePenButton));
+    private Button InputModeFingerButton => FindInEditor<Button>(nameof(InputModeFingerButton));
+    private Button InputModeReadButton => FindInEditor<Button>(nameof(InputModeReadButton));
     private Border DrawingToolbarPanel => FindInEditor<Border>(nameof(DrawingToolbarPanel));
     private Slider StrokeWidthSlider => FindInEditor<Slider>(nameof(StrokeWidthSlider));
     private Label StrokeWidthLabel => FindInEditor<Label>(nameof(StrokeWidthLabel));

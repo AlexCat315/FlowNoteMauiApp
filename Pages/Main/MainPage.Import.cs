@@ -1,6 +1,10 @@
 using FlowNoteMauiApp.Resources;
 using Microsoft.Maui.Devices;
 using System.Diagnostics;
+#if IOS || MACCATALYST
+using Foundation;
+using UIKit;
+#endif
 
 namespace FlowNoteMauiApp;
 
@@ -187,22 +191,165 @@ public partial class MainPage
 
     private async Task<FileResult?> PickSingleFileAsync(PickOptions options, bool useMacCatalystPickerWorkaround)
     {
-        if (!useMacCatalystPickerWorkaround)
+        if (useMacCatalystPickerWorkaround)
         {
-            return await FilePicker.Default.PickAsync(options);
+#if IOS || MACCATALYST
+            var nativeResult = await PickSingleFileWithNativePickerAsync();
+            if (nativeResult is not null)
+            {
+                return nativeResult;
+            }
+
+            LogPicker("pick-native-result null on maccatalyst, fallback to maui-picker");
+#endif
         }
 
-        var picked = await FilePicker.Default.PickMultipleAsync(options);
-        if (picked is null)
+        return await FilePicker.Default.PickAsync(options);
+    }
+
+#if IOS || MACCATALYST
+    private async Task<FileResult?> PickSingleFileWithNativePickerAsync()
+    {
+        var tcs = new TaskCompletionSource<FileResult?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await MainThread.InvokeOnMainThreadAsync(() =>
         {
-            LogPicker("pick-result-collection null on maccatalyst");
+            var presenter = GetActivePresenter();
+            if (presenter is null)
+            {
+                LogPicker("pick-native-presenter null");
+                tcs.TrySetResult(null);
+                return;
+            }
+
+            LogPicker("pick-native-start");
+#pragma warning disable CA1422
+            var picker = new UIDocumentPickerViewController(new[] { "com.adobe.pdf", "public.pdf" }, UIDocumentPickerMode.Import)
+            {
+                AllowsMultipleSelection = false,
+                ModalPresentationStyle = UIModalPresentationStyle.FormSheet
+            };
+#pragma warning restore CA1422
+
+            NativePdfDocumentPickerDelegate? activeDelegate = null;
+            activeDelegate = new NativePdfDocumentPickerDelegate(
+                pickedUrl =>
+                {
+                    var fileResult = CreateFileResultFromNativePickedUrl(pickedUrl);
+                    LogPicker(fileResult is null
+                        ? "pick-native-picked null"
+                        : $"pick-native-picked file={fileResult.FileName}");
+                    picker.WeakDelegate = null;
+                    activeDelegate = null;
+                    tcs.TrySetResult(fileResult);
+                },
+                () =>
+                {
+                    LogPicker("pick-native-cancelled");
+                    picker.WeakDelegate = null;
+                    activeDelegate = null;
+                    tcs.TrySetResult(null);
+                });
+            picker.Delegate = activeDelegate;
+
+            presenter.PresentViewController(picker, true, null);
+        });
+
+        return await tcs.Task;
+    }
+
+    private static FileResult? CreateFileResultFromNativePickedUrl(NSUrl? pickedUrl)
+    {
+        if (pickedUrl is null || !pickedUrl.IsFileUrl)
+        {
             return null;
         }
 
-        var results = picked.ToList();
-        LogPicker($"pick-result-count={results.Count} on maccatalyst");
-        return results.FirstOrDefault();
+        var sourcePath = pickedUrl.Path;
+        if (string.IsNullOrWhiteSpace(sourcePath) || !File.Exists(sourcePath))
+        {
+            return null;
+        }
+
+        var extension = Path.GetExtension(sourcePath);
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            extension = ".pdf";
+        }
+
+        var localFileName = $"picked-{Guid.NewGuid():N}{extension}";
+        var localPath = Path.Combine(FileSystem.CacheDirectory, localFileName);
+        var hasSecurityScope = pickedUrl.StartAccessingSecurityScopedResource();
+
+        try
+        {
+            File.Copy(sourcePath, localPath, overwrite: true);
+            return new FileResult(localPath);
+        }
+        catch (Exception ex)
+        {
+            LogPicker($"pick-native-copy-failed {ex.GetType().Name}: {ex.Message}");
+            return new FileResult(sourcePath);
+        }
+        finally
+        {
+            if (hasSecurityScope)
+            {
+                pickedUrl.StopAccessingSecurityScopedResource();
+            }
+        }
     }
+
+    private static UIViewController? GetActivePresenter()
+    {
+        var connectedScene = UIApplication.SharedApplication
+            .ConnectedScenes
+            .OfType<UIWindowScene>()
+            .FirstOrDefault(scene => scene.ActivationState == UISceneActivationState.ForegroundActive);
+
+        var window = connectedScene?.Windows.FirstOrDefault(w => w.IsKeyWindow)
+            ?? UIApplication.SharedApplication
+                .ConnectedScenes
+                .OfType<UIWindowScene>()
+                .SelectMany(scene => scene.Windows)
+                .FirstOrDefault(w => w.IsKeyWindow);
+
+        var controller = window?.RootViewController;
+        while (controller?.PresentedViewController is not null)
+        {
+            controller = controller.PresentedViewController;
+        }
+
+        return controller;
+    }
+
+    private sealed class NativePdfDocumentPickerDelegate : UIDocumentPickerDelegate
+    {
+        private readonly Action<NSUrl?> _picked;
+        private readonly Action _cancelled;
+
+        public NativePdfDocumentPickerDelegate(Action<NSUrl?> picked, Action cancelled)
+        {
+            _picked = picked;
+            _cancelled = cancelled;
+        }
+
+        public override void DidPickDocument(UIDocumentPickerViewController controller, NSUrl url)
+        {
+            _picked(url);
+        }
+
+        public override void DidPickDocument(UIDocumentPickerViewController controller, NSUrl[] urls)
+        {
+            _picked(urls.FirstOrDefault());
+        }
+
+        public override void WasCancelled(UIDocumentPickerViewController controller)
+        {
+            _cancelled();
+        }
+    }
+#endif
 
     [Conditional("DEBUG")]
     private static void LogPicker(string message)
