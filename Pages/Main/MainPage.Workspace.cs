@@ -136,6 +136,7 @@ public partial class MainPage
             var openTab = new TapGestureRecognizer();
             openTab.Tapped += async (_, _) => await ActivateEditorTabAsync(tab.NoteId);
             tabBorder.GestureRecognizers.Add(openTab);
+            AttachEditorTabDragReorder(tabBorder, tab.NoteId);
 
             EditorTabsHost.Children.Add(tabBorder);
         }

@@ -88,6 +88,11 @@ public partial class MainPage
     private void SetInputModePanelVisible(bool visible)
     {
         InputModePanel.IsVisible = visible;
+        if (visible)
+        {
+            PositionInputModePanelUnderTopModeButton();
+        }
+
         UpdateModeButtonVisual();
     }
 
@@ -427,6 +432,66 @@ public partial class MainPage
         SetInputModePanelVisible(!InputModePanel.IsVisible);
     }
 
+    private void PositionInputModePanelUnderTopModeButton()
+    {
+        if (!InputModePanel.IsVisible)
+            return;
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            void ApplyPosition(int attempt)
+            {
+                if (!InputModePanel.IsVisible)
+                    return;
+
+                var panelWidth = InputModePanel.Width > 1
+                    ? InputModePanel.Width
+                    : (InputModePanel.WidthRequest > 1 ? InputModePanel.WidthRequest : 248d);
+                var panelHeight = InputModePanel.Height > 1 ? InputModePanel.Height : 0d;
+
+                var anchorX = GetVisualOffsetX(TopModePenButton, TopBarPanel) + TopBarPanel.X;
+                var anchorY = GetVisualOffsetY(TopModePenButton, TopBarPanel) + TopBarPanel.Y;
+                var anchorWidth = TopModePenButton.Width > 1 ? TopModePenButton.Width : TopModePenButton.WidthRequest;
+                var anchorHeight = TopModePenButton.Height > 1 ? TopModePenButton.Height : TopModePenButton.HeightRequest;
+
+                var hasValidLayout = anchorWidth > 1
+                    && anchorHeight > 1
+                    && TopBarPanel.Height > 1
+                    && EditorChromeView.Width > 1
+                    && anchorX > 1
+                    && anchorY > 1;
+                if (!hasValidLayout && attempt < 10)
+                {
+                    InputModePanel.Dispatcher.DispatchDelayed(
+                        TimeSpan.FromMilliseconds(16),
+                        () => ApplyPosition(attempt + 1));
+                    return;
+                }
+
+                var targetX = anchorX + (anchorWidth / 2d) - (panelWidth / 2d);
+                var maxX = Math.Max(8d, EditorChromeView.Width - panelWidth - 8d);
+                targetX = Math.Clamp(targetX, 8d, maxX);
+
+                var targetY = anchorY + anchorHeight + 8d;
+                var minY = Math.Max(TopBarPanel.Height + 4d, 8d);
+                if (panelHeight > 1 && EditorChromeView.Height > 1)
+                {
+                    var maxY = Math.Max(minY, EditorChromeView.Height - panelHeight - 8d);
+                    targetY = Math.Clamp(targetY, minY, maxY);
+                }
+                else
+                {
+                    targetY = Math.Max(targetY, minY);
+                }
+
+                InputModePanel.TranslationX = targetX;
+                InputModePanel.TranslationY = targetY;
+            }
+
+            ApplyPosition(0);
+        });
+    }
+
     private void PositionDrawingToolbarPanelUnderTool(InkToolKind tool)
     {
         var anchorButton = tool switch
@@ -439,6 +504,19 @@ public partial class MainPage
         };
 
         PositionDrawingToolbarPanel(anchorButton);
+    }
+
+    private void OnEditorChromeLayoutChanged(object? sender, EventArgs e)
+    {
+        if (InputModePanel.IsVisible)
+        {
+            PositionInputModePanelUnderTopModeButton();
+        }
+
+        if (DrawingToolbarPanel.IsVisible)
+        {
+            PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+        }
     }
 
     private void PositionDrawingToolbarPanel(VisualElement anchorButton)
@@ -714,10 +792,10 @@ public partial class MainPage
     {
         try
         {
-            var penSource = await CreateTintedToolIconSourceAsync("icon_pen.png", EnsureInkState(InkToolKind.Ballpoint).Color, token);
-            var highlighterSource = await CreateTintedToolIconSourceAsync("icon_gelpen.png", EnsureInkState(InkToolKind.Fountain).Color, token);
-            var pencilSource = await CreateTintedToolIconSourceAsync("icon_pencil.png", EnsureInkState(InkToolKind.Pencil).Color, token);
-            var markerSource = await CreateTintedToolIconSourceAsync("icon_brush.png", EnsureInkState(InkToolKind.Marker).Color, token);
+            var penSource = await CreateTintedToolIconSourceAsync("toolicons/icon_pen.png", EnsureInkState(InkToolKind.Ballpoint).Color, token);
+            var highlighterSource = await CreateTintedToolIconSourceAsync("toolicons/icon_gelpen.png", EnsureInkState(InkToolKind.Fountain).Color, token);
+            var pencilSource = await CreateTintedToolIconSourceAsync("toolicons/icon_pencil.png", EnsureInkState(InkToolKind.Pencil).Color, token);
+            var markerSource = await CreateTintedToolIconSourceAsync("toolicons/icon_brush.png", EnsureInkState(InkToolKind.Marker).Color, token);
             if (token.IsCancellationRequested)
                 return;
 
@@ -744,12 +822,13 @@ public partial class MainPage
         if (_toolIconSourceCache.TryGetValue(cacheKey, out var cachedSource))
             return cachedSource;
 
+        var fallbackFile = Path.GetFileName(iconFile);
         try
         {
             await using var rawStream = await FileSystem.OpenAppPackageFileAsync(iconFile);
             using var baseBitmap = SKBitmap.Decode(rawStream);
             if (baseBitmap is null)
-                return ImageSource.FromFile(iconFile);
+                return ImageSource.FromFile(fallbackFile);
 
             using var tintedBitmap = new SKBitmap(baseBitmap.Width, baseBitmap.Height, baseBitmap.ColorType, baseBitmap.AlphaType);
             using (var canvas = new SKCanvas(tintedBitmap))
@@ -774,7 +853,7 @@ public partial class MainPage
         }
         catch
         {
-            return ImageSource.FromFile(iconFile);
+            return ImageSource.FromFile(fallbackFile);
         }
     }
 

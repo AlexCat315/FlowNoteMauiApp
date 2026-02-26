@@ -159,7 +159,10 @@
                             StrokeThickness="0"
                             StrokeShape="RoundRectangle 8"
                         >
-                            <HorizontalStackLayout Spacing="2">
+                            <HorizontalStackLayout
+                                x:Name="InkToolsHost"
+                                Spacing="2"
+                            >
                                 <ImageButton
                                     x:Name="PenModeButton"
                                     Style="{StaticResource ToolbarToolIconButtonSelected}"
@@ -478,23 +481,24 @@
             InputTransparent="False"
             VerticalOptions="Start"
             HorizontalOptions="Start"
-            Margin="18,94,0,0"
-            Padding="12"
-            WidthRequest="356"
+            Margin="0"
+            Padding="10"
+            WidthRequest="248"
+            MaximumWidthRequest="264"
             Style="{StaticResource PanelCard}"
         >
-    <VerticalStackLayout Spacing="6">
+    <VerticalStackLayout Spacing="4">
         <Label
                     x:Name="InputModeTitleLabel"
                     Text="模式切换"
                     FontFamily="OpenSansSemibold"
-                    FontSize="13"
+                    FontSize="12"
                     TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}"
                 />
         <Label
                     x:Name="InputModeHintLabel"
                     Text="手写: 笔写+手势导航 | 触控: 单指写双指移 | 阅读: 保留笔记仅浏览"
-                    FontSize="12"
+                    FontSize="10"
                     TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
                 />
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
@@ -511,7 +515,7 @@
                         Grid.Column="1"
                         VerticalOptions="Center"
                         Text="✓"
-                        FontSize="17"
+                        FontSize="14"
                         TextColor="{StaticResource PrimaryBlue}"
                     />
         </Grid>
@@ -529,7 +533,7 @@
                         Grid.Column="1"
                         VerticalOptions="Center"
                         Text="✓"
-                        FontSize="19"
+                        FontSize="14"
                         TextColor="{StaticResource PrimaryBlue}"
                         IsVisible="False"
                     />
@@ -548,7 +552,7 @@
                         Grid.Column="1"
                         VerticalOptions="Center"
                         Text="✓"
-                        FontSize="19"
+                        FontSize="14"
                         TextColor="{StaticResource PrimaryBlue}"
                         IsVisible="False"
                     />

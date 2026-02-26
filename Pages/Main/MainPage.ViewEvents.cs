@@ -88,6 +88,10 @@ public partial class MainPage
         LassoEraserModeButton.Clicked += OnLassoEraserModeClicked;
         FindInEditor<ImageButton>("AddLayerButton").Clicked += OnAddLayerClicked;
         FindInEditor<ImageButton>("DeleteLayerButton").Clicked += OnDeleteLayerClicked;
+
+        EditorChromeView.SizeChanged += OnEditorChromeLayoutChanged;
+        TopBarPanel.SizeChanged += OnEditorChromeLayoutChanged;
+        WireInkToolReorderGestures();
     }
 
     private void WireDrawerEvents()
