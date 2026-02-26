@@ -61,9 +61,6 @@ public partial class MainPage
         FindInSettings<Label>("FitModeTitleLabel").Text = T("FitMode", "Fit Mode");
         FindInSettings<Label>("PageNumberPositionTitleLabel").Text = T("PageNumberPosition", "Page Number Position");
         FindInSettings<Label>("TextSelectionTitleLabel").Text = T("TextSelection", "Text Selection");
-        FindInSettings<Label>("PageFreeMoveTitleLabel").Text = T("PageFreeMove", "Free Page Movement");
-        FindInSettings<Label>("PageFreeMoveHintLabel").Text = T("PageFreeMoveHint", "After two-finger pan ends, inertia continues. Resistance controls deceleration.");
-        FindInSettings<Label>("PageResistanceTitleLabel").Text = T("Resistance", "Resistance");
         FindInSettings<Label>("ZoomFollowTitleLabel").Text = T("ZoomFollow", "Zoom Follow");
         FindInSettings<Label>("ZoomFollowHintLabel").Text = T("ZoomFollowHint", "When enabled, stroke width scales with zoom; otherwise remains screen-pixel width.");
         FindInSettings<Label>("DisplayModeTitleLabel").Text = T("DisplayModeTitle", "Display Mode");

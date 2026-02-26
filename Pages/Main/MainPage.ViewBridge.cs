@@ -90,9 +90,6 @@ public partial class MainPage
     private Label FitModeValueLabel => FindInSettings<Label>(nameof(FitModeValueLabel));
     private Label PageNumberPositionValueLabel => FindInSettings<Label>(nameof(PageNumberPositionValueLabel));
     private Label TextSelectionValueLabel => FindInSettings<Label>(nameof(TextSelectionValueLabel));
-    private Switch PageFreeMoveSwitch => FindInSettings<Switch>(nameof(PageFreeMoveSwitch));
-    private Slider PageMoveResistanceSlider => FindInSettings<Slider>(nameof(PageMoveResistanceSlider));
-    private Label PageMoveResistanceValueLabel => FindInSettings<Label>(nameof(PageMoveResistanceValueLabel));
     private Switch ZoomFollowSwitch => FindInSettings<Switch>(nameof(ZoomFollowSwitch));
     private VerticalStackLayout DisplaySettingsView => FindInSettings<VerticalStackLayout>(nameof(DisplaySettingsView));
     private Button ThemeLightButton => FindInSettings<Button>(nameof(ThemeLightButton));

@@ -22,9 +22,36 @@
         />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="BorderWidth" Value="0" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="10,8" />
         <Setter Property="MinimumHeightRequest" Value="38" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#1A0D223D" Radius="6" Offset="0,2" Opacity="0.65" />
+        </Setter>
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="Scale" Value="1" />
+                            <Setter Property="TranslationY" Value="0" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="PointerOver">
+                        <VisualState.Setters>
+                            <Setter Property="Scale" Value="1.02" />
+                            <Setter Property="TranslationY" Value="0" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Scale" Value="0.96" />
+                            <Setter Property="TranslationY" Value="1" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
     </Style>
 
     <Style x:Key="HeaderIconButton" TargetType="ImageButton">
@@ -32,18 +59,41 @@
         <Setter Property="HeightRequest" Value="34" />
         <Setter Property="MinimumWidthRequest" Value="34" />
         <Setter Property="MinimumHeightRequest" Value="34" />
-        <Setter Property="CornerRadius" Value="17" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="7" />
         <Setter Property="Aspect" Value="AspectFit" />
         <Setter
             Property="BackgroundColor"
             Value="{AppThemeBinding Light={StaticResource BackgroundPrimary}, Dark=#E6EEF9}"
         />
-        <Setter
-            Property="BorderColor"
-            Value="{AppThemeBinding Light={StaticResource Gray100}, Dark=#B7C8DE}"
-        />
-        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#1411283E" Radius="5" Offset="0,2" Opacity="0.65" />
+        </Setter>
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="Scale" Value="1" />
+                            <Setter Property="TranslationY" Value="0" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="PointerOver">
+                        <VisualState.Setters>
+                            <Setter Property="Scale" Value="1.03" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Scale" Value="0.95" />
+                            <Setter Property="TranslationY" Value="1" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
     </Style>
 
     <Style
@@ -55,16 +105,14 @@
         <Setter Property="HeightRequest" Value="30" />
         <Setter Property="MinimumWidthRequest" Value="30" />
         <Setter Property="MinimumHeightRequest" Value="30" />
-        <Setter Property="CornerRadius" Value="15" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="5" />
         <Setter
             Property="BackgroundColor"
             Value="{AppThemeBinding Light=#F4F5F8, Dark=#E6EEF9}"
         />
-        <Setter
-            Property="BorderColor"
-            Value="{AppThemeBinding Light={StaticResource Gray200}, Dark=#B7C8DE}"
-        />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
     </Style>
 
     <Style
@@ -80,6 +128,7 @@
             Property="BorderColor"
             Value="{AppThemeBinding Light={StaticResource PrimaryBlue}, Dark={StaticResource PrimaryBlueLight}}"
         />
+        <Setter Property="BorderWidth" Value="1" />
     </Style>
 
     <Style x:Key="ToolbarToolIconButton" TargetType="ImageButton">
@@ -87,18 +136,18 @@
         <Setter Property="HeightRequest" Value="28" />
         <Setter Property="MinimumWidthRequest" Value="28" />
         <Setter Property="MinimumHeightRequest" Value="28" />
-        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="4" />
         <Setter Property="Aspect" Value="AspectFit" />
         <Setter
             Property="BackgroundColor"
-            Value="{AppThemeBinding Light=Transparent, Dark=#EAF1FB}"
+            Value="{AppThemeBinding Light=#F7F9FC, Dark=#EAF1FB}"
         />
-        <Setter Property="BorderWidth" Value="1" />
-        <Setter
-            Property="BorderColor"
-            Value="{AppThemeBinding Light=Transparent, Dark=#C2D2E5}"
-        />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#140D223D" Radius="4" Offset="0,1.5" Opacity="0.6" />
+        </Setter>
     </Style>
 
     <Style
@@ -114,6 +163,7 @@
             Property="BorderColor"
             Value="{AppThemeBinding Light={StaticResource PrimaryBlue}, Dark={StaticResource PrimaryBlueLight}}"
         />
+        <Setter Property="BorderWidth" Value="1" />
     </Style>
 
     <Style x:Key="PanelCard" TargetType="Border">
@@ -217,18 +267,18 @@
         <Setter Property="HeightRequest" Value="24" />
         <Setter Property="MinimumWidthRequest" Value="24" />
         <Setter Property="MinimumHeightRequest" Value="24" />
-        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="CornerRadius" Value="9" />
         <Setter Property="Padding" Value="2" />
         <Setter Property="Aspect" Value="AspectFit" />
         <Setter
             Property="BackgroundColor"
-            Value="{AppThemeBinding Light=Transparent, Dark=#EAF1FB}"
+            Value="{AppThemeBinding Light=#F5F8FC, Dark=#EAF1FB}"
         />
-        <Setter Property="BorderWidth" Value="1" />
-        <Setter
-            Property="BorderColor"
-            Value="{AppThemeBinding Light=Transparent, Dark=#C2D2E5}"
-        />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#120D223D" Radius="4" Offset="0,1.5" Opacity="0.6" />
+        </Setter>
     </Style>
 
     <Style

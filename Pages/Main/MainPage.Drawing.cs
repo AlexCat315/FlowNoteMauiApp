@@ -22,21 +22,10 @@ public partial class MainPage
         Eraser
     }
 
-    private const double PanInertiaFrameIntervalMs = 20d;
-    private const double PanInertiaVelocityStopThreshold = 8d;
-    private const double PanInertiaStartSpeedThreshold = 34d;
-    private const double PanInertiaMaxStartSpeed = 3200d;
-    private const double PanInertiaMaxFrameDelta = 220d;
     private const string PenInputModeIcon = "icon_pencil.png";
     private const string FingerInputModeIcon = "icon_hand.png";
     private const string ReadInputModeIcon = "icon_read_mode.png";
-    private CancellationTokenSource? _panInertiaCts;
-    private DateTime _lastPanSampleUtc = DateTime.UtcNow;
     private DateTime _lastPanUpdateLogUtc = DateTime.MinValue;
-    private double _panVelocityX;
-    private double _panVelocityY;
-    private bool _panInertiaFrameQueued;
-    private bool _hasPanSampleInGesture;
     private InkToolKind _activeInkTool = InkToolKind.None;
 
     private bool EnsureDrawingReady(bool showHint = false)
@@ -530,6 +519,7 @@ public partial class MainPage
                     QueueInkSave();
                 })
             };
+            RegisterMicroInteraction(visibilityIcon);
 
             var label = new Label
             {
@@ -616,32 +606,18 @@ public partial class MainPage
         if (_drawingInputMode == DrawingInputMode.TapRead)
             return;
 
-        var allowInertia = !e.IsWheelInput;
-
         if (e.Phase == DrawingCanvas.TwoFingerPanPhase.Begin)
         {
-            StopTwoFingerInertia();
-            _panVelocityX = 0d;
-            _panVelocityY = 0d;
-            _hasPanSampleInGesture = false;
-            _lastPanSampleUtc = DateTime.UtcNow;
             LogInputGesture($"pan-begin wheel={e.IsWheelInput} mode={_drawingInputMode}");
         }
 
         if (e.Phase == DrawingCanvas.TwoFingerPanPhase.End)
         {
-            var releaseVelocityX = _panVelocityX;
-            var releaseVelocityY = _panVelocityY;
-            if (allowInertia)
-            {
-                StartTwoFingerInertiaIfNeeded();
-            }
-
-            LogInputGesture($"pan-end wheel={e.IsWheelInput} velocity=({releaseVelocityX:0.0},{releaseVelocityY:0.0})");
+            LogInputGesture($"pan-end wheel={e.IsWheelInput}");
             return;
         }
 
-        if (e.HasZoom && !e.IsWheelInput)
+        if (_drawingInputMode == DrawingInputMode.PenStylus && e.HasZoom && !e.IsWheelInput)
         {
             PdfViewer.ZoomBy(e.ScaleFactor, e.CenterX, e.CenterY);
         }
@@ -649,20 +625,9 @@ public partial class MainPage
         if (!e.HasPan)
             return;
 
-        var adjustedX = ApplyPanResistance(e.DeltaX);
-        var adjustedY = ApplyPanResistance(e.DeltaY);
-        if (!e.IsWheelInput)
-        {
-            adjustedX = Math.Clamp(adjustedX, -280d, 280d);
-            adjustedY = Math.Clamp(adjustedY, -280d, 280d);
-        }
-
+        var adjustedX = e.DeltaX;
+        var adjustedY = e.DeltaY;
         PdfViewer.PanBy(adjustedX, adjustedY);
-
-        if (allowInertia)
-        {
-            UpdatePanVelocity(adjustedX, adjustedY);
-        }
 
         var now = DateTime.UtcNow;
         var shouldLogPanUpdate = (now - _lastPanUpdateLogUtc).TotalMilliseconds >= 90
@@ -676,150 +641,7 @@ public partial class MainPage
         }
     }
 
-    private double ApplyPanResistance(double delta)
-    {
-        if (!_pageFreeMoveEnabled)
-            return delta;
-
-        var normalizedResistance = Math.Clamp(_pageMoveResistancePercent / 100d, 0d, 1d);
-        var factor = Math.Clamp(1d - (normalizedResistance * 0.62d), 0.28d, 1d);
-        return delta * factor;
-    }
-
-    private void UpdatePanVelocity(double deltaX, double deltaY)
-    {
-        var now = DateTime.UtcNow;
-        var seconds = (now - _lastPanSampleUtc).TotalSeconds;
-        _lastPanSampleUtc = now;
-        if (seconds < 0.009d)
-            return;
-
-        var sampleVx = deltaX / seconds;
-        var sampleVy = deltaY / seconds;
-        var maxSampleVelocity = PanInertiaMaxStartSpeed * 1.15d;
-        sampleVx = Math.Clamp(sampleVx, -maxSampleVelocity, maxSampleVelocity);
-        sampleVy = Math.Clamp(sampleVy, -maxSampleVelocity, maxSampleVelocity);
-        const double smoothing = 0.18d;
-        _panVelocityX = (_panVelocityX * (1d - smoothing)) + (sampleVx * smoothing);
-        _panVelocityY = (_panVelocityY * (1d - smoothing)) + (sampleVy * smoothing);
-        _hasPanSampleInGesture = true;
-    }
-
-    private void StartTwoFingerInertiaIfNeeded()
-    {
-        if (!_pageFreeMoveEnabled || !_hasPanSampleInGesture)
-        {
-            _panVelocityX = 0d;
-            _panVelocityY = 0d;
-            return;
-        }
-
-        var initialVelocityX = _panVelocityX;
-        var initialVelocityY = _panVelocityY;
-        var speed = Math.Sqrt((initialVelocityX * initialVelocityX) + (initialVelocityY * initialVelocityY));
-        if (speed < PanInertiaStartSpeedThreshold)
-        {
-            _panVelocityX = 0d;
-            _panVelocityY = 0d;
-            return;
-        }
-
-        if (speed > PanInertiaMaxStartSpeed)
-        {
-            var normalize = PanInertiaMaxStartSpeed / speed;
-            initialVelocityX *= normalize;
-            initialVelocityY *= normalize;
-            speed = PanInertiaMaxStartSpeed;
-        }
-
-        StopTwoFingerInertia(resetVelocity: false);
-        _panInertiaCts = new CancellationTokenSource();
-        var token = _panInertiaCts.Token;
-        var resistance = Math.Clamp(_pageMoveResistancePercent / 100d, 0d, 1d);
-        var damping = Math.Clamp(0.86d - (resistance * 0.18d) - Math.Min(0.05d, speed / 18000d), 0.66d, 0.86d);
-        var velocityX = initialVelocityX;
-        var velocityY = initialVelocityY;
-
-        _ = Task.Run(async () =>
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var last = stopwatch.Elapsed;
-            try
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(PanInertiaFrameIntervalMs), token);
-                    var current = stopwatch.Elapsed;
-                    var deltaSeconds = Math.Clamp((current - last).TotalSeconds, 0.008d, 0.04d);
-                    last = current;
-
-                    velocityX *= damping;
-                    velocityY *= damping;
-                    var currentSpeed = Math.Sqrt((velocityX * velocityX) + (velocityY * velocityY));
-                    if (currentSpeed < PanInertiaVelocityStopThreshold)
-                        break;
-
-                    var deltaX = velocityX * deltaSeconds;
-                    var deltaY = velocityY * deltaSeconds;
-                    deltaX = Math.Clamp(deltaX, -PanInertiaMaxFrameDelta, PanInertiaMaxFrameDelta);
-                    deltaY = Math.Clamp(deltaY, -PanInertiaMaxFrameDelta, PanInertiaMaxFrameDelta);
-
-                    if (_panInertiaFrameQueued)
-                    {
-                        continue;
-                    }
-
-                    _panInertiaFrameQueued = true;
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        try
-                        {
-                            if (token.IsCancellationRequested)
-                                return;
-
-                            _panVelocityX = velocityX;
-                            _panVelocityY = velocityY;
-                            if (HasLoadedDocument)
-                            {
-                                PdfViewer.PanBy(deltaX, deltaY);
-                            }
-                        }
-                        finally
-                        {
-                            _panInertiaFrameQueued = false;
-                        }
-                    });
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            finally
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    _panInertiaFrameQueued = false;
-                    _panVelocityX = 0d;
-                    _panVelocityY = 0d;
-                });
-            }
-        }, token);
-
-        LogInputGesture($"inertia-start speed={speed:0.0} resistance={resistance:0.00} damping={damping:0.00}");
-    }
-
-    private void StopTwoFingerInertia(bool resetVelocity = true)
-    {
-        _panInertiaCts?.Cancel();
-        _panInertiaCts?.Dispose();
-        _panInertiaCts = null;
-        _panInertiaFrameQueued = false;
-        if (resetVelocity)
-        {
-            _panVelocityX = 0d;
-            _panVelocityY = 0d;
-        }
-    }
+    private static void StopTwoFingerInertia() { }
 
     [Conditional("DEBUG")]
     private static void LogInputGesture(string message)

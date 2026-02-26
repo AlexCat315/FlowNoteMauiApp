@@ -39,8 +39,8 @@
                         Grid.Column="0"
                         Padding="1"
                         BackgroundColor="{AppThemeBinding Light=#EEF1F7, Dark=#1F2E43}"
-                        Stroke="{AppThemeBinding Light=#D4DBE8, Dark=#3B506A}"
-                        StrokeThickness="1"
+                        Stroke="Transparent"
+                        StrokeThickness="0"
                         StrokeShape="RoundRectangle 9"
                     >
                         <ImageButton
@@ -124,8 +124,8 @@
                         <Border
                             Padding="2,1"
                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="{AppThemeBinding Light=#D8DDE7, Dark=#415872}"
-                            StrokeThickness="1"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
                             StrokeShape="RoundRectangle 8"
                         >
                             <HorizontalStackLayout Spacing="2">
@@ -145,8 +145,8 @@
                         <Border
                             Padding="2,1"
                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="{AppThemeBinding Light=#D8DDE7, Dark=#415872}"
-                            StrokeThickness="1"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
                             StrokeShape="RoundRectangle 8"
                         >
                             <HorizontalStackLayout Spacing="2">
@@ -183,8 +183,8 @@
                             IsVisible="False"
                             Padding="6,1"
                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="{AppThemeBinding Light=#D8DDE7, Dark=#415872}"
-                            StrokeThickness="1"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
                             StrokeShape="RoundRectangle 8"
                         >
                             <HorizontalStackLayout
@@ -232,8 +232,8 @@
                         <Border
                             Padding="2,1"
                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="{AppThemeBinding Light=#D8DDE7, Dark=#415872}"
-                            StrokeThickness="1"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
                             StrokeShape="RoundRectangle 8"
                         >
                             <HorizontalStackLayout Spacing="2">
@@ -258,8 +258,8 @@
                         <Border
                             Padding="2,1"
                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="{AppThemeBinding Light=#D8DDE7, Dark=#415872}"
-                            StrokeThickness="1"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
                             StrokeShape="RoundRectangle 8"
                         >
                             <HorizontalStackLayout
@@ -276,8 +276,8 @@
                                     HeightRequest="28"
                                     VerticalOptions="Center"
                                     BackgroundColor="{AppThemeBinding Light=#F7F8FA, Dark=#2A3C55}"
-                                    Stroke="{AppThemeBinding Light=#D8DDE7, Dark=#415872}"
-                                    StrokeThickness="1"
+                                    Stroke="Transparent"
+                                    StrokeThickness="0"
                                     StrokeShape="RoundRectangle 8"
                                 >
                                     <Label
@@ -300,8 +300,8 @@
                         <Border
                             Padding="4,1"
                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="{AppThemeBinding Light=#D8DDE7, Dark=#415872}"
-                            StrokeThickness="1"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
                             StrokeShape="RoundRectangle 8"
                         >
                             <HorizontalStackLayout

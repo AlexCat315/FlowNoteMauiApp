@@ -40,7 +40,7 @@ public partial class MainPage
             modeButtonCollapsedBorder: Color.FromArgb("#9CB2CD"),
             modeSelectionBackground: Color.FromArgb("#D7E7FA"),
             modeSelectionText: Color.FromArgb("#0F172A"),
-            toolSelectedBackground: Color.FromArgb("#4A90E2"),
+            toolSelectedBackground: Color.FromArgb("#D8E9FB"),
             toolNormalBackground: Color.FromArgb("#E6EEF9"),
             toolSelectedBorder: Color.FromArgb("#2F74D0"),
             toolNormalBorder: Color.FromArgb("#B6C7DD"),

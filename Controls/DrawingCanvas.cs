@@ -151,15 +151,20 @@ public class DrawingCanvas : SKCanvasView
     private const float TwoFingerPanSwitchDelta = 10f;
     private const float TwoFingerZoomDominanceRatio = 1.25f;
     private const float MouseWheelPanStep = 16f;
+    private const float StrokeFirstMoveJumpThresholdScreen = 130f;
+    private const int StrokeFirstMoveJumpWindowMs = 90;
+    private const float StrokeMaxSegmentLengthScreen = 24f;
+    private const float StrokeInterpolationStepScreen = 9f;
     private TwoFingerGestureIntent _twoFingerGestureIntent = TwoFingerGestureIntent.None;
-    private long? _penTouchPanId;
-    private SKPoint _penTouchPanAnchor;
     private bool _suspendViewportInvalidation;
     private bool _pendingViewportInvalidation;
     private bool _isStrokeViewportLocked;
     private double _strokeViewportScrollX;
     private double _strokeViewportScrollY;
     private float _strokeViewportZoom = 1f;
+    private DrawingPoint? _lastStrokePoint;
+    private bool _hasStrokeSignificantMovement;
+    private long _strokeStartTimestampMs;
     private DateTime _lastTouchMoveLogUtc = DateTime.MinValue;
 
     public Func<float, float, bool>? CanDrawAtViewPoint { get; set; }
@@ -688,27 +693,11 @@ public class DrawingCanvas : SKCanvasView
             return;
         }
 
-        // Stylus mode: non-stylus pointers are for navigation (single pointer pan, two-finger pan/zoom).
+        // Stylus mode: non-stylus pointers are passed through so PDF uses native pan/zoom behavior.
         if (IsPenMode && !isStylus)
         {
-            TrackTouch(e);
-
-            if (_activeTouchIds.Count >= 2)
-            {
-                _penTouchPanId = null;
-                _penTouchPanAnchor = SKPoint.Empty;
-                CancelCurrentStroke();
-                _suspendDrawingUntilTouchesReleased = true;
-                HandleTwoFingerGesture();
-                e.Handled = true;
-                InvalidateSurface();
-                LogTouch("pen-gesture", e, "two-finger-pan-zoom");
-                return;
-            }
-
-            _suspendDrawingUntilTouchesReleased = false;
-            HandlePenModeTouchPan(e);
-            LogTouch("pen-gesture", e, "single-pointer-pan");
+            e.Handled = false;
+            LogTouch("pen-gesture", e, "native-pass-through");
             return;
         }
 
@@ -870,80 +859,7 @@ public class DrawingCanvas : SKCanvasView
         _isTwoFingerGestureActive = false;
         _twoFingerDistance = 0f;
         _twoFingerGestureIntent = TwoFingerGestureIntent.None;
-        _penTouchPanId = null;
-        _penTouchPanAnchor = SKPoint.Empty;
         CancelCurrentStroke();
-    }
-
-    private void HandlePenModeTouchPan(SKTouchEventArgs e)
-    {
-        switch (e.ActionType)
-        {
-            case SKTouchAction.Pressed:
-                if (_penTouchPanId is null)
-                {
-                    _penTouchPanId = e.Id;
-                    _penTouchPanAnchor = e.Location;
-                    TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
-                        0f,
-                        0f,
-                        1f,
-                        e.Location.X,
-                        e.Location.Y,
-                        TwoFingerPanPhase.Begin));
-                }
-                break;
-            case SKTouchAction.Moved:
-                if (_penTouchPanId is null)
-                {
-                    _penTouchPanId = e.Id;
-                    _penTouchPanAnchor = e.Location;
-                    TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
-                        0f,
-                        0f,
-                        1f,
-                        e.Location.X,
-                        e.Location.Y,
-                        TwoFingerPanPhase.Begin));
-                    break;
-                }
-
-                if (_penTouchPanId != e.Id)
-                    break;
-
-                var deltaX = e.Location.X - _penTouchPanAnchor.X;
-                var deltaY = e.Location.Y - _penTouchPanAnchor.Y;
-                _penTouchPanAnchor = e.Location;
-
-                if (Math.Abs(deltaX) > float.Epsilon || Math.Abs(deltaY) > float.Epsilon)
-                {
-                    TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
-                        deltaX,
-                        deltaY,
-                        1f,
-                        e.Location.X,
-                        e.Location.Y,
-                        TwoFingerPanPhase.Update));
-                }
-                break;
-            case SKTouchAction.Released:
-            case SKTouchAction.Cancelled:
-                if (_penTouchPanId == e.Id)
-                {
-                    TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
-                        0f,
-                        0f,
-                        1f,
-                        e.Location.X,
-                        e.Location.Y,
-                        TwoFingerPanPhase.End));
-                    _penTouchPanId = null;
-                    _penTouchPanAnchor = SKPoint.Empty;
-                }
-                break;
-        }
-
-        e.Handled = true;
     }
 
     [Conditional("DEBUG")]
@@ -1040,6 +956,21 @@ public class DrawingCanvas : SKCanvasView
         if (!EnableTwoFingerSwipeNavigation)
         {
             var panCandidate = panMagnitude >= TwoFingerPanMinDelta;
+            if (!IsPenMode)
+            {
+                if (!panCandidate)
+                    return;
+
+                TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
+                    deltaX,
+                    deltaY,
+                    1f,
+                    center.X,
+                    center.Y,
+                    TwoFingerPanPhase.Update));
+                return;
+            }
+
             var zoomCandidate = scaleDelta >= TwoFingerScaleMinDelta && distanceDelta >= TwoFingerScaleMinDistanceDelta;
 
             if (_twoFingerGestureIntent == TwoFingerGestureIntent.None)
@@ -1112,12 +1043,18 @@ public class DrawingCanvas : SKCanvasView
     {
         _isDrawing = false;
         _currentStroke = null;
+        _lastStrokePoint = null;
+        _hasStrokeSignificantMovement = false;
+        _strokeStartTimestampMs = 0;
         EndStrokeViewportLock();
     }
 
     private void StartDrawing(DrawingPoint point)
     {
         _isDrawing = true;
+        _lastStrokePoint = point;
+        _hasStrokeSignificantMovement = false;
+        _strokeStartTimestampMs = point.Timestamp;
 
         var brushType = IsErasing
             ? BrushType.Eraser
@@ -1151,7 +1088,70 @@ public class DrawingCanvas : SKCanvasView
         if (!_isDrawing || _currentStroke == null)
             return;
 
-        _currentStroke.AddPoint(point);
+        var last = _lastStrokePoint ?? _currentStroke.Points.LastOrDefault();
+        if (last == null)
+        {
+            _currentStroke.AddPoint(point);
+            _lastStrokePoint = point;
+            return;
+        }
+
+        var zoom = Math.Max(0.1f, _isStrokeViewportLocked ? _strokeViewportZoom : ViewportZoom);
+        var dx = point.X - last.X;
+        var dy = point.Y - last.Y;
+        var distance = MathF.Sqrt((dx * dx) + (dy * dy));
+        if (distance < 0.001f)
+            return;
+
+        var firstMoveJumpThreshold = StrokeFirstMoveJumpThresholdScreen / zoom;
+        if (!_hasStrokeSignificantMovement
+            && _currentStroke.Points.Count <= 2
+            && distance >= firstMoveJumpThreshold
+            && point.Timestamp - _strokeStartTimestampMs <= StrokeFirstMoveJumpWindowMs)
+        {
+            // Stylus drivers can report an unstable first move; reset anchor to current point.
+            if (_currentStroke.Points.Count > 0)
+            {
+                _currentStroke.Points[0] = point;
+                _currentStroke.MarkDirty();
+            }
+            else
+            {
+                _currentStroke.AddPoint(point);
+            }
+
+            _lastStrokePoint = point;
+            LogPointerState($"first-move-jump-filtered dist={distance:0.0} zoom={zoom:0.00}");
+            return;
+        }
+
+        var maxSegmentLength = StrokeMaxSegmentLengthScreen / zoom;
+        if (distance > maxSegmentLength)
+        {
+            var step = Math.Max(0.1f, StrokeInterpolationStepScreen / zoom);
+            var segmentCount = Math.Max(1, (int)MathF.Ceiling(distance / step));
+            for (var i = 1; i <= segmentCount; i++)
+            {
+                var t = i / (float)segmentCount;
+                var interpolated = new DrawingPoint(
+                    last.X + (dx * t),
+                    last.Y + (dy * t),
+                    last.Pressure + ((point.Pressure - last.Pressure) * t),
+                    last.Timestamp + (long)((point.Timestamp - last.Timestamp) * t));
+                _currentStroke.AddPoint(interpolated);
+                _lastStrokePoint = interpolated;
+            }
+        }
+        else
+        {
+            _currentStroke.AddPoint(point);
+            _lastStrokePoint = point;
+        }
+
+        if (!_hasStrokeSignificantMovement && distance >= (4f / zoom))
+        {
+            _hasStrokeSignificantMovement = true;
+        }
     }
 
     private void EndDrawing()
@@ -1173,6 +1173,9 @@ public class DrawingCanvas : SKCanvasView
 
         _isDrawing = false;
         _currentStroke = null;
+        _lastStrokePoint = null;
+        _hasStrokeSignificantMovement = false;
+        _strokeStartTimestampMs = 0;
         EndStrokeViewportLock();
     }
 

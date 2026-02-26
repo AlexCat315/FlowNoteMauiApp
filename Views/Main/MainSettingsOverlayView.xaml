@@ -365,56 +365,6 @@
                     </Border>
 
                     <Border Style="{StaticResource PanelCard}" Padding="20,16">
-                        <VerticalStackLayout Spacing="16">
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                                <Label
-                                        x:Name="PageFreeMoveTitleLabel"
-                                        Text="页面自由移动"
-                                        FontFamily="OpenSansSemibold"
-                                        FontSize="18"
-                                        VerticalOptions="Center"
-                                    />
-                                <Switch
-                                        x:Name="PageFreeMoveSwitch"
-                                        Grid.Column="1"
-                                        VerticalOptions="Center"
-                                    />
-                            </Grid>
-                            <Label
-                                    x:Name="PageFreeMoveHintLabel"
-                                    Text="开启后，在双指滑动结束时继续惯性滚动，可通过阻力控制滑动衰减。"
-                                    FontSize="13"
-                                    TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}"
-                                />
-                            <Grid
-                                    ColumnDefinitions="Auto,*,Auto"
-                                    ColumnSpacing="12"
-                                >
-                                <Label
-                                        x:Name="PageResistanceTitleLabel"
-                                        Text="阻力"
-                                        FontSize="16"
-                                        VerticalOptions="Center"
-                                    />
-                                <Slider
-                                        x:Name="PageMoveResistanceSlider"
-                                        Grid.Column="1"
-                                        Minimum="0"
-                                        Maximum="100"
-                                    />
-                                <Label
-                                        x:Name="PageMoveResistanceValueLabel"
-                                        Grid.Column="2"
-                                        FontSize="16"
-                                        VerticalOptions="Center"
-                                        WidthRequest="56"
-                                        HorizontalTextAlignment="End"
-                                    />
-                            </Grid>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <Border Style="{StaticResource PanelCard}" Padding="20,16">
                         <VerticalStackLayout Spacing="14">
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                 <Label

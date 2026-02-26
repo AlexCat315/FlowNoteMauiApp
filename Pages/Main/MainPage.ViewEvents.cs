@@ -15,6 +15,7 @@ public partial class MainPage
         WireEditorChromeEvents();
         WireDrawerEvents();
         WireSettingsEvents();
+        WireMicroInteractions();
     }
 
     private void WireHomePanelEvents()
@@ -108,8 +109,6 @@ public partial class MainPage
         FindInSettings<TapGestureRecognizer>("PageNumberPositionTapGesture").Tapped += OnPageNumberPositionTapped;
         FindInSettings<TapGestureRecognizer>("TextSelectionTapGesture").Tapped += OnTextSelectionTapped;
 
-        PageFreeMoveSwitch.Toggled += OnPageFreeMoveToggled;
-        PageMoveResistanceSlider.ValueChanged += OnPageMoveResistanceChanged;
         ZoomFollowSwitch.Toggled += OnZoomFollowToggled;
 
         ThemeLightButton.Clicked += OnThemeLightClicked;

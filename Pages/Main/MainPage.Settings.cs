@@ -31,8 +31,6 @@ public partial class MainPage
     private const string EnableSwipeKey = "settings.viewer.enable_swipe";
     private const string EnableLinkKey = "settings.viewer.enable_link";
 
-    private const string PageFreeMoveKey = "settings.page.free_move";
-    private const string PageMoveResistanceKey = "settings.page.move_resistance";
     private const string ZoomFollowKey = "settings.page.zoom_follow";
     private const string PageNumberPositionKey = "settings.page.page_number_position";
     private const string TextSelectionKey = "settings.page.allow_text_selection";
@@ -50,8 +48,6 @@ public partial class MainPage
     private bool _savedEnableSwipe = true;
     private bool _savedEnableLink = true;
 
-    private bool _pageFreeMoveEnabled = true;
-    private double _pageMoveResistancePercent = 65d;
     private bool _zoomFollowEnabled = true;
     private int _pageNumberPositionIndex;
     private bool _allowTextSelection = true;
@@ -80,8 +76,6 @@ public partial class MainPage
         _savedEnableSwipe = GetPreferenceBoolSafe(EnableSwipeKey, true);
         _savedEnableLink = GetPreferenceBoolSafe(EnableLinkKey, true);
 
-        _pageFreeMoveEnabled = GetPreferenceBoolSafe(PageFreeMoveKey, true);
-        _pageMoveResistancePercent = Math.Clamp(GetPreferenceDoubleSafe(PageMoveResistanceKey, 65d), 0d, 100d);
         _zoomFollowEnabled = GetPreferenceBoolSafe(ZoomFollowKey, true);
         _pageNumberPositionIndex = Math.Clamp(GetPreferenceIntSafe(PageNumberPositionKey, 0), 0, 1);
         _allowTextSelection = GetPreferenceBoolSafe(TextSelectionKey, true);
@@ -122,8 +116,6 @@ public partial class MainPage
         Preferences.Set(EnableSwipeKey, _savedEnableSwipe);
         Preferences.Set(EnableLinkKey, _savedEnableLink);
 
-        Preferences.Set(PageFreeMoveKey, _pageFreeMoveEnabled);
-        Preferences.Set(PageMoveResistanceKey, _pageMoveResistancePercent);
         Preferences.Set(ZoomFollowKey, _zoomFollowEnabled);
         Preferences.Set(PageNumberPositionKey, _pageNumberPositionIndex);
         Preferences.Set(TextSelectionKey, _allowTextSelection);
@@ -168,7 +160,6 @@ public partial class MainPage
             TextSelectionValueLabel.Text = _allowTextSelection
                 ? T("TextSelectionEnabled", "Allow Selection")
                 : T("TextSelectionReadOnly", "Read Only");
-            PageMoveResistanceValueLabel.Text = $"{_pageMoveResistancePercent:0}%";
             DateFormatValueLabel.Text = GetDateFormatText(_dateFormatPreference);
             LanguageDateFormatValueLabel.Text = DateFormatValueLabel.Text;
 
@@ -176,9 +167,6 @@ public partial class MainPage
             DisplaySettingsSummaryLabel.Text = GetThemeText(_themePreference);
             LanguageSettingsSummaryLabel.Text = GetLanguageSummary();
 
-            PageFreeMoveSwitch.IsToggled = _pageFreeMoveEnabled;
-            PageMoveResistanceSlider.Value = _pageMoveResistancePercent;
-            PageMoveResistanceSlider.IsEnabled = _pageFreeMoveEnabled;
             ZoomFollowSwitch.IsToggled = _zoomFollowEnabled;
             var forceNativeGestures = RequiresNativePdfGesturesOnPlatform();
             EnableZoomSwitch.IsToggled = forceNativeGestures ? true : _savedEnableZoom;
@@ -330,31 +318,6 @@ public partial class MainPage
             PdfViewer.EnableTapGestures = _allowTextSelection;
         SavePersistedAppSettings();
         RefreshSettingsUiState();
-    }
-
-    private void OnPageFreeMoveToggled(object? sender, ToggledEventArgs e)
-    {
-        if (_isUpdatingSettingsControls)
-            return;
-
-        _pageFreeMoveEnabled = e.Value;
-        if (!_pageFreeMoveEnabled)
-        {
-            StopTwoFingerInertia();
-        }
-
-        SavePersistedAppSettings();
-        RefreshSettingsUiState();
-    }
-
-    private void OnPageMoveResistanceChanged(object? sender, ValueChangedEventArgs e)
-    {
-        if (_isUpdatingSettingsControls)
-            return;
-
-        _pageMoveResistancePercent = Math.Clamp(e.NewValue, 0d, 100d);
-        SavePersistedAppSettings();
-        PageMoveResistanceValueLabel.Text = $"{_pageMoveResistancePercent:0}%";
     }
 
     private void OnZoomFollowToggled(object? sender, ToggledEventArgs e)
@@ -690,8 +653,6 @@ public partial class MainPage
         _savedEnableSwipe = true;
         _savedEnableLink = true;
 
-        _pageFreeMoveEnabled = true;
-        _pageMoveResistancePercent = 65d;
         _zoomFollowEnabled = true;
         _pageNumberPositionIndex = 0;
         _allowTextSelection = true;

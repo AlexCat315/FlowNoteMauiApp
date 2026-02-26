@@ -125,6 +125,7 @@ public partial class MainPage
                 Opacity = isActive ? 0.94 : 0.80,
                 CommandParameter = tab.NoteId
             };
+            RegisterMicroInteraction(closeButton);
             closeButton.Clicked += OnEditorTabCloseClicked;
             tabGrid.Children.Add(closeButton);
             Grid.SetColumn(closeButton, 2);
