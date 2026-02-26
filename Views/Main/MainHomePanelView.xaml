@@ -20,8 +20,8 @@
 
             <Image Grid.Column="1"
                    Source="icon_file.png"
-                   WidthRequest="18"
-                   HeightRequest="18"
+                   WidthRequest="14"
+                   HeightRequest="14"
                    Opacity="0.8"
                    HorizontalOptions="Center"
                    VerticalOptions="Center" />
@@ -98,18 +98,11 @@
                              Margin="0,0,30,24">
             <ImageButton x:Name="QuickPenButton"
                          Style="{StaticResource FloatingIconButton}"
-                         WidthRequest="48"
-                         HeightRequest="48"
-                         CornerRadius="24"
-                         Padding="12"
                          BackgroundColor="{StaticResource PrimaryBlueLight}"
                          Source="icon_pencil.png"
  />
-            <ImageButton x:Name="HomeImportButton" Style="{StaticResource FloatingIconButton}"
-                         WidthRequest="58"
-                         HeightRequest="58"
-                         CornerRadius="29"
-                         Padding="15"
+            <ImageButton x:Name="HomeImportButton"
+                         Style="{StaticResource FloatingIconButton}"
                          Source="icon_plus.png"
  />
         </VerticalStackLayout>

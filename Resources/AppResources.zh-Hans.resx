@@ -217,4 +217,392 @@
   <data name="SelectPdfFileOnly" xml:space="preserve">
     <value>请仅选择 .pdf 文件</value>
   </data>
+  <data name="UiReady" xml:space="preserve">
+    <value>就绪</value>
+  </data>
+  <data name="UiPdfUrl" xml:space="preserve">
+    <value>PDF网址</value>
+  </data>
+  <data name="UiKeyword" xml:space="preserve">
+    <value>关键词</value>
+  </data>
+  <data name="HomeFilterAll" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="HomeFilterPdf" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="HomeFilterNote" xml:space="preserve">
+    <value>笔记</value>
+  </data>
+  <data name="HomeFilterFolder" xml:space="preserve">
+    <value>文件夹</value>
+  </data>
+  <data name="HomeSort" xml:space="preserve">
+    <value>排序</value>
+  </data>
+  <data name="DrawerAuth" xml:space="preserve">
+    <value>登录/注册</value>
+  </data>
+  <data name="DrawerSyncHint" xml:space="preserve">
+    <value>同步你的学习进度</value>
+  </data>
+  <data name="DrawerAllDocs" xml:space="preserve">
+    <value>所有文档</value>
+  </data>
+  <data name="DrawerRecent" xml:space="preserve">
+    <value>最近使用</value>
+  </data>
+  <data name="DrawerFavorites" xml:space="preserve">
+    <value>我的收藏</value>
+  </data>
+  <data name="DrawerTrash" xml:space="preserve">
+    <value>回收站</value>
+  </data>
+  <data name="DrawerTags" xml:space="preserve">
+    <value>我的标签</value>
+  </data>
+  <data name="DrawerEditTags" xml:space="preserve">
+    <value>编辑标签</value>
+  </data>
+  <data name="DrawerCreateTag" xml:space="preserve">
+    <value>创建新标签</value>
+  </data>
+  <data name="DrawerApps" xml:space="preserve">
+    <value>我的应用</value>
+  </data>
+  <data name="DrawerHelp" xml:space="preserve">
+    <value>帮助中心</value>
+  </data>
+  <data name="DrawerAbout" xml:space="preserve">
+    <value>关于我们</value>
+  </data>
+  <data name="DrawerDiscount" xml:space="preserve">
+    <value>获取折扣</value>
+  </data>
+  <data name="DrawerPromo" xml:space="preserve">
+    <value>注册即领免费试用
+解锁全功能笔记工作流</value>
+  </data>
+  <data name="InputModeTitle" xml:space="preserve">
+    <value>输入方式</value>
+  </data>
+  <data name="InputModeHint" xml:space="preserve">
+    <value>手指/电容笔模式下：单指书写，双指翻页或移动页面</value>
+  </data>
+  <data name="InputModePen" xml:space="preserve">
+    <value>手写笔</value>
+  </data>
+  <data name="InputModeFinger" xml:space="preserve">
+    <value>手指/电容笔（双指移动）</value>
+  </data>
+  <data name="InputModeRead" xml:space="preserve">
+    <value>点读模式</value>
+  </data>
+  <data name="DrawingPenWidth" xml:space="preserve">
+    <value>笔宽</value>
+  </data>
+  <data name="LayerTitle" xml:space="preserve">
+    <value>图层</value>
+  </data>
+  <data name="SettingsHomeHint" xml:space="preserve">
+    <value>页面、显示和语言设置</value>
+  </data>
+  <data name="SettingsPageTitle" xml:space="preserve">
+    <value>页面设置</value>
+  </data>
+  <data name="SettingsDisplayTitle" xml:space="preserve">
+    <value>显示</value>
+  </data>
+  <data name="SettingsLanguageTitle" xml:space="preserve">
+    <value>语言与日期</value>
+  </data>
+  <data name="PageDirection" xml:space="preserve">
+    <value>翻页方向</value>
+  </data>
+  <data name="DirectionVertical" xml:space="preserve">
+    <value>竖向</value>
+  </data>
+  <data name="DirectionHorizontal" xml:space="preserve">
+    <value>横向</value>
+  </data>
+  <data name="PageTurnMode" xml:space="preserve">
+    <value>翻页方式</value>
+  </data>
+  <data name="FitMode" xml:space="preserve">
+    <value>加页方式</value>
+  </data>
+  <data name="PageNumberPosition" xml:space="preserve">
+    <value>页码位置</value>
+  </data>
+  <data name="TextSelection" xml:space="preserve">
+    <value>文字选取与编辑</value>
+  </data>
+  <data name="PageFreeMove" xml:space="preserve">
+    <value>页面自由移动</value>
+  </data>
+  <data name="PageFreeMoveHint" xml:space="preserve">
+    <value>开启后，在双指滑动结束时继续惯性滚动，可通过阻力控制滑动衰减。</value>
+  </data>
+  <data name="Resistance" xml:space="preserve">
+    <value>阻力</value>
+  </data>
+  <data name="ZoomFollow" xml:space="preserve">
+    <value>缩放跟随</value>
+  </data>
+  <data name="ZoomFollowHint" xml:space="preserve">
+    <value>开启后，笔迹粗细会跟随页面缩放变化；关闭后保持屏幕像素粗细。</value>
+  </data>
+  <data name="DisplayModeTitle" xml:space="preserve">
+    <value>显示模式</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>浅色</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>深色</value>
+  </data>
+  <data name="ThemeSystem" xml:space="preserve">
+    <value>跟随</value>
+  </data>
+  <data name="DateFormatTitle" xml:space="preserve">
+    <value>日期格式</value>
+  </data>
+  <data name="KeepScreenOn" xml:space="preserve">
+    <value>保持屏幕常亮</value>
+  </data>
+  <data name="DarkInvert" xml:space="preserve">
+    <value>暗黑模式颜色反转</value>
+  </data>
+  <data name="LangZhHans" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
+  <data name="LangEnUs" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="DateFormatInDisplay" xml:space="preserve">
+    <value>在显示页设置</value>
+  </data>
+  <data name="ResetDefaults" xml:space="preserve">
+    <value>还原初始设置</value>
+  </data>
+  <data name="LoadAction" xml:space="preserve">
+    <value>加载</value>
+  </data>
+  <data name="SampleAction" xml:space="preserve">
+    <value>示例</value>
+  </data>
+  <data name="LocalOpenAction" xml:space="preserve">
+    <value>本地打开</value>
+  </data>
+  <data name="WorkspaceRoot" xml:space="preserve">
+    <value>根目录</value>
+  </data>
+  <data name="WorkspaceUp" xml:space="preserve">
+    <value>上级</value>
+  </data>
+  <data name="WorkspaceOpen" xml:space="preserve">
+    <value>打开</value>
+  </data>
+  <data name="WorkspaceNewFolder" xml:space="preserve">
+    <value>新建文件夹</value>
+  </data>
+  <data name="CreateAction" xml:space="preserve">
+    <value>创建</value>
+  </data>
+  <data name="RefreshAction" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="PickerMode" xml:space="preserve">
+    <value>模式</value>
+  </data>
+  <data name="PickerDirection" xml:space="preserve">
+    <value>方向</value>
+  </data>
+  <data name="PickerFit" xml:space="preserve">
+    <value>适配</value>
+  </data>
+  <data name="HomeFolderCountFormat" xml:space="preserve">
+    <value>{0} 个文件夹</value>
+  </data>
+  <data name="HomeDocCountFormat" xml:space="preserve">
+    <value>{0} 个文档</value>
+  </data>
+  <data name="HomeNoMatchingFolders" xml:space="preserve">
+    <value>没有匹配的文件夹</value>
+  </data>
+  <data name="HomeNoMatchingFoldersHint" xml:space="preserve">
+    <value>试试更换搜索词或返回全部分类</value>
+  </data>
+  <data name="HomeNoMatchingDocs" xml:space="preserve">
+    <value>没有匹配的文档</value>
+  </data>
+  <data name="HomeNoMatchingDocsHint" xml:space="preserve">
+    <value>可切换分类、排序或调整搜索关键词</value>
+  </data>
+  <data name="SortByName" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="SortByCreated" xml:space="preserve">
+    <value>创建时间</value>
+  </data>
+  <data name="SortByRecent" xml:space="preserve">
+    <value>最近</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>降序</value>
+  </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>升序</value>
+  </data>
+  <data name="CurrentSortFormat" xml:space="preserve">
+    <value>当前排序: {0}</value>
+  </data>
+  <data name="ImportPdfFirst" xml:space="preserve">
+    <value>请先导入 PDF 文档</value>
+  </data>
+  <data name="FeatureFavoritesPending" xml:space="preserve">
+    <value>收藏功能正在开发中</value>
+  </data>
+  <data name="FeatureTrashPending" xml:space="preserve">
+    <value>回收站功能正在开发中</value>
+  </data>
+  <data name="FeatureEditTagsPending" xml:space="preserve">
+    <value>标签编辑功能即将支持</value>
+  </data>
+  <data name="FeatureCreateTagPending" xml:space="preserve">
+    <value>创建标签功能即将支持</value>
+  </data>
+  <data name="FeatureHelpPending" xml:space="preserve">
+    <value>帮助中心即将上线</value>
+  </data>
+  <data name="FeatureDiscountPending" xml:space="preserve">
+    <value>折扣活动功能即将支持</value>
+  </data>
+  <data name="SettingsItem" xml:space="preserve">
+    <value>设置项</value>
+  </data>
+  <data name="StatusLanguageEnglish" xml:space="preserve">
+    <value>Language: English</value>
+  </data>
+  <data name="StatusLanguageChinese" xml:space="preserve">
+    <value>语言: 简体中文</value>
+  </data>
+  <data name="StatusDisplaySettingsOpened" xml:space="preserve">
+    <value>显示设置入口已打开（主题切换待接入）</value>
+  </data>
+  <data name="StatusLocalBackupTriggered" xml:space="preserve">
+    <value>本地备份已触发</value>
+  </data>
+  <data name="StatusFeatureRecordedFormat" xml:space="preserve">
+    <value>{0} 功能已记录，后续版本完善</value>
+  </data>
+  <data name="StatusSettingsReset" xml:space="preserve">
+    <value>已还原初始设置</value>
+  </data>
+  <data name="UntitledDocument" xml:space="preserve">
+    <value>未命名文档</value>
+  </data>
+  <data name="StatusTabDocMissingRemoved" xml:space="preserve">
+    <value>标签页文档不存在，已自动移除</value>
+  </data>
+  <data name="HomeNoDocumentsYet" xml:space="preserve">
+    <value>还没有导入文档</value>
+  </data>
+  <data name="HomeNoDocumentsYetHint" xml:space="preserve">
+    <value>点击右下角 + 导入 PDF</value>
+  </data>
+  <data name="HomeNoSubfolders" xml:space="preserve">
+    <value>当前目录没有子文件夹</value>
+  </data>
+  <data name="HomeNoSubfoldersHint" xml:space="preserve">
+    <value>使用设置中的工作区管理创建新文件夹</value>
+  </data>
+  <data name="ImportPdf" xml:space="preserve">
+    <value>导入 PDF</value>
+  </data>
+  <data name="Folder" xml:space="preserve">
+    <value>文件夹</value>
+  </data>
+  <data name="StatusEnteredFolderFormat" xml:space="preserve">
+    <value>已进入文件夹: {0}</value>
+  </data>
+  <data name="PageCountFormat" xml:space="preserve">
+    <value>{0}页</value>
+  </data>
+  <data name="NoRecentNotes" xml:space="preserve">
+    <value>暂无最近文档</value>
+  </data>
+  <data name="FolderLabelFormat" xml:space="preserve">
+    <value>[文件夹] {0}</value>
+  </data>
+  <data name="NoSubfolders" xml:space="preserve">
+    <value>没有子文件夹</value>
+  </data>
+  <data name="NoNotesInFolder" xml:space="preserve">
+    <value>此目录下没有文档</value>
+  </data>
+  <data name="EnterFolderNameFirst" xml:space="preserve">
+    <value>请先输入文件夹名称。</value>
+  </data>
+  <data name="InvalidFolderName" xml:space="preserve">
+    <value>文件夹名称无效。</value>
+  </data>
+  <data name="StatusPenMode" xml:space="preserve">
+    <value>已切换到手写笔模式</value>
+  </data>
+  <data name="StatusFingerMode" xml:space="preserve">
+    <value>手指/电容笔模式：单指书写，双指滚动/缩放；仅单页模式双指可翻页</value>
+  </data>
+  <data name="StatusReadMode" xml:space="preserve">
+    <value>已切换到点读模式</value>
+  </data>
+  <data name="StatusTextToolSoon" xml:space="preserve">
+    <value>文本工具即将支持</value>
+  </data>
+  <data name="StatusImageToolSoon" xml:space="preserve">
+    <value>图片插入即将支持</value>
+  </data>
+  <data name="StatusShapeToolSoon" xml:space="preserve">
+    <value>图形工具即将支持</value>
+  </data>
+  <data name="OpenPdfFirst" xml:space="preserve">
+    <value>请先打开 PDF 文档。</value>
+  </data>
+  <data name="StatusSearchEntryOpened" xml:space="preserve">
+    <value>文档搜索入口已打开（详细搜索面板可在设置中继续完善）</value>
+  </data>
+  <data name="TextSelectionEnabled" xml:space="preserve">
+    <value>允许选字</value>
+  </data>
+  <data name="TextSelectionReadOnly" xml:space="preserve">
+    <value>仅阅读</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="DisplaySinglePage" xml:space="preserve">
+    <value>单页翻页</value>
+  </data>
+  <data name="DisplayContinuous" xml:space="preserve">
+    <value>连续滚动</value>
+  </data>
+  <data name="FitHeight" xml:space="preserve">
+    <value>高度适配</value>
+  </data>
+  <data name="FitWholePage" xml:space="preserve">
+    <value>整页适配</value>
+  </data>
+  <data name="FitAutoAdd" xml:space="preserve">
+    <value>自动加页</value>
+  </data>
+  <data name="ThemeSystemFollow" xml:space="preserve">
+    <value>跟随系统</value>
+  </data>
+  <data name="PageNumberRightBottom" xml:space="preserve">
+    <value>右侧/底部</value>
+  </data>
+  <data name="PageNumberLeftBottom" xml:space="preserve">
+    <value>左侧/底部</value>
+  </data>
 </root>

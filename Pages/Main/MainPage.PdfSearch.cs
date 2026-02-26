@@ -13,7 +13,7 @@ public partial class MainPage
         if (!EnsurePdfLoaded(showHint: true))
             return;
 
-        ShowStatus("文档搜索入口已打开（详细搜索面板可在设置中继续完善）");
+        ShowStatus(T("StatusSearchEntryOpened", "Search entry opened (advanced panel can be configured in settings)."));
     }
 
     private async void OnSearchClicked(object? sender, EventArgs e)

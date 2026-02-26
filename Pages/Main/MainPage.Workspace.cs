@@ -40,7 +40,7 @@ public partial class MainPage
 
     private string NormalizeEditorTabTitle(string title)
     {
-        var text = string.IsNullOrWhiteSpace(title) ? "未命名文档" : title.Trim();
+        var text = string.IsNullOrWhiteSpace(title) ? T("UntitledDocument", "Untitled Document") : title.Trim();
         return text.Length <= 20 ? text : text[..20] + "...";
     }
 
@@ -85,8 +85,8 @@ public partial class MainPage
             tabGrid.Children.Add(new Image
             {
                 Source = "icon_file.png",
-                WidthRequest = 13,
-                HeightRequest = 13,
+                WidthRequest = 14,
+                HeightRequest = 14,
                 VerticalOptions = LayoutOptions.Center,
                 Opacity = 0.86
             });
@@ -107,10 +107,10 @@ public partial class MainPage
             var closeButton = new ImageButton
             {
                 Source = "icon_x.png",
-                WidthRequest = 20,
-                HeightRequest = 20,
-                Padding = 4,
-                CornerRadius = 10,
+                WidthRequest = 24,
+                HeightRequest = 24,
+                Padding = 5,
+                CornerRadius = 12,
                 BackgroundColor = Colors.Transparent,
                 BorderWidth = 0,
                 CommandParameter = tab.NoteId
@@ -145,7 +145,7 @@ public partial class MainPage
         {
             _editorTabs.RemoveAll(t => string.Equals(t.NoteId, noteId, StringComparison.Ordinal));
             RefreshEditorTabsVisual();
-            ShowStatus("标签页文档不存在，已自动移除");
+            ShowStatus(T("StatusTabDocMissingRemoved", "Document in tab not found and removed."));
             return;
         }
 
@@ -290,11 +290,13 @@ public partial class MainPage
     private void RenderHomeNotes(IReadOnlyList<WorkspaceNote> notes)
     {
         HomeNotesList.Children.Clear();
-        HomeCountLabel.Text = $"{notes.Count} 个文档";
+        HomeCountLabel.Text = TF("HomeDocCountFormat", "{0} docs", notes.Count);
 
         if (notes.Count == 0)
         {
-            RenderHomeEmptyState("还没有导入文档", "点击右下角 + 导入 PDF");
+            RenderHomeEmptyState(
+                T("HomeNoDocumentsYet", "No documents imported yet"),
+                T("HomeNoDocumentsYetHint", "Tap + on the bottom-right to import PDF"));
             return;
         }
 
@@ -307,11 +309,13 @@ public partial class MainPage
     private void RenderHomeFolders(IReadOnlyList<string> folders)
     {
         HomeNotesList.Children.Clear();
-        HomeCountLabel.Text = $"{folders.Count} 个文件夹";
+        HomeCountLabel.Text = TF("HomeFolderCountFormat", "{0} folders", folders.Count);
 
         if (folders.Count == 0)
         {
-            RenderHomeEmptyState("当前目录没有子文件夹", "使用设置中的工作区管理创建新文件夹");
+            RenderHomeEmptyState(
+                T("HomeNoSubfolders", "No subfolders in this directory"),
+                T("HomeNoSubfoldersHint", "Create folders in Workspace settings"));
             return;
         }
 
@@ -357,7 +361,7 @@ public partial class MainPage
                     },
                     new Button
                     {
-                        Text = "导入 PDF",
+                        Text = T("ImportPdf", "Import PDF"),
                         FontSize = 13,
                         Padding = new Thickness(12, 8),
                         CornerRadius = 8,
@@ -415,8 +419,8 @@ public partial class MainPage
             Content = new Image
             {
                 Source = "icon_folder.png",
-                WidthRequest = 40,
-                HeightRequest = 40,
+                WidthRequest = 14,
+                HeightRequest = 14,
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center,
                 Opacity = 0.85
@@ -464,7 +468,7 @@ public partial class MainPage
         };
         metaGrid.Children.Add(new Label
         {
-            Text = "文件夹",
+            Text = T("Folder", "Folder"),
             FontSize = 10,
             TextColor = ThemeSecondaryText
         });
@@ -489,7 +493,7 @@ public partial class MainPage
                 _homeFilter = HomeFilterType.All;
                 UpdateHomeFilterButtons();
                 await RefreshWorkspaceViewsAsync();
-                ShowStatus($"已进入文件夹: {folderName}");
+                ShowStatus(TF("StatusEnteredFolderFormat", "Entered folder: {0}", folderName));
             })
         });
 
@@ -540,8 +544,8 @@ public partial class MainPage
             Content = new Image
             {
                 Source = "icon_file.png",
-                WidthRequest = 38,
-                HeightRequest = 38,
+                WidthRequest = 14,
+                HeightRequest = 14,
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center,
                 Opacity = 0.76
@@ -590,7 +594,7 @@ public partial class MainPage
         };
         metaGrid.Children.Add(new Label
         {
-            Text = $"{EstimatePages(note)}页",
+            Text = TF("PageCountFormat", "{0} pages", EstimatePages(note)),
             FontSize = 10,
             TextColor = ThemeSecondaryText
         });
@@ -639,7 +643,7 @@ public partial class MainPage
         RecentNotesList.Children.Clear();
         if (recent.Count == 0)
         {
-            RecentNotesList.Children.Add(new Label { Text = "No recent notes", FontSize = 11, TextColor = ThemeSecondaryText });
+            RecentNotesList.Children.Add(new Label { Text = T("NoRecentNotes", "No recent notes"), FontSize = 11, TextColor = ThemeSecondaryText });
             return;
         }
 
@@ -659,7 +663,7 @@ public partial class MainPage
         {
             var folderName = folder.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? folder;
             WorkspaceFolderList.Children.Add(CreateWorkspaceButton(
-                $"[Folder] {folderName}",
+                TF("FolderLabelFormat", "[Folder] {0}", folderName),
                 async () =>
                 {
                     _workspaceFolder = folder;
@@ -670,7 +674,7 @@ public partial class MainPage
 
         if (browse.SubFolders.Count == 0)
         {
-            WorkspaceFolderList.Children.Add(new Label { Text = "No subfolders", FontSize = 11, TextColor = ThemeSecondaryText });
+            WorkspaceFolderList.Children.Add(new Label { Text = T("NoSubfolders", "No subfolders"), FontSize = 11, TextColor = ThemeSecondaryText });
         }
     }
 
@@ -687,7 +691,7 @@ public partial class MainPage
 
         if (browse.Notes.Count == 0)
         {
-            WorkspaceNoteList.Children.Add(new Label { Text = "No notes in this folder", FontSize = 11, TextColor = ThemeSecondaryText });
+            WorkspaceNoteList.Children.Add(new Label { Text = T("NoNotesInFolder", "No notes in this folder"), FontSize = 11, TextColor = ThemeSecondaryText });
         }
     }
 
@@ -740,14 +744,14 @@ public partial class MainPage
         var name = WorkspaceNewFolderEntry.Text?.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
-            ShowStatus("Enter a folder name first.");
+            ShowStatus(T("EnterFolderNameFirst", "Enter a folder name first."));
             return;
         }
 
         var created = await _workspaceService.CreateFolderAsync(_workspaceFolder, name);
         if (!created)
         {
-            ShowStatus("Invalid folder name.");
+            ShowStatus(T("InvalidFolderName", "Invalid folder name."));
             return;
         }
 

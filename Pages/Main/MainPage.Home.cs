@@ -70,8 +70,10 @@ public partial class MainPage
             if (folders.Count == 0 && (_cachedHomeFolders.Count > 0 || !string.IsNullOrWhiteSpace(_homeSearchKeyword)))
             {
                 HomeNotesList.Children.Clear();
-                HomeCountLabel.Text = "0 个文件夹";
-                RenderHomeEmptyState("没有匹配的文件夹", "试试更换搜索词或返回全部分类");
+                HomeCountLabel.Text = TF("HomeFolderCountFormat", "{0} folders", 0);
+                RenderHomeEmptyState(
+                    T("HomeNoMatchingFolders", "No matching folders"),
+                    T("HomeNoMatchingFoldersHint", "Try a different keyword or switch back to all"));
                 return;
             }
 
@@ -107,8 +109,10 @@ public partial class MainPage
         if (notes.Count == 0 && (_cachedHomeNotes.Count > 0 || !string.IsNullOrWhiteSpace(_homeSearchKeyword)))
         {
             HomeNotesList.Children.Clear();
-            HomeCountLabel.Text = "0 个文档";
-            RenderHomeEmptyState("没有匹配的文档", "可切换分类、排序或调整搜索关键词");
+            HomeCountLabel.Text = TF("HomeDocCountFormat", "{0} docs", 0);
+            RenderHomeEmptyState(
+                T("HomeNoMatchingDocs", "No matching documents"),
+                T("HomeNoMatchingDocsHint", "Try changing filter, sort, or keyword"));
             return;
         }
 
@@ -152,17 +156,17 @@ public partial class MainPage
     {
         var modeText = _homeSort switch
         {
-            HomeSortType.Name => "名称",
-            HomeSortType.Created => "创建时间",
-            _ => "最近"
+            HomeSortType.Name => T("SortByName", "Name"),
+            HomeSortType.Created => T("SortByCreated", "Created"),
+            _ => T("SortByRecent", "Recent")
         };
 
-        return $"{modeText} {(_isHomeSortDescending ? "降序" : "升序")}";
+        return $"{modeText} {(_isHomeSortDescending ? T("SortDescending", "Descending") : T("SortAscending", "Ascending"))}";
     }
 
     private void UpdateHomeSortLabel()
     {
-        HomeSortButton.Text = "排序";
+        HomeSortButton.Text = T("HomeSort", "Sort");
     }
 
     private void OnHomeFilterAllClicked(object? sender, EventArgs e) => SetHomeFilter(HomeFilterType.All);
@@ -183,7 +187,7 @@ public partial class MainPage
             _isHomeSortDescending = !_isHomeSortDescending;
 
         RefreshHomeFeed();
-        ShowStatus($"当前排序: {GetHomeSortDescription()}");
+        ShowStatus(TF("CurrentSortFormat", "Current sort: {0}", GetHomeSortDescription()));
     }
 
     private void OnHomeSearchTextChanged(object? sender, TextChangedEventArgs e)
@@ -199,7 +203,7 @@ public partial class MainPage
 
         if (target is null)
         {
-            ShowStatus("请先导入 PDF 文档");
+            ShowStatus(T("ImportPdfFirst", "Please import a PDF first."));
             return;
         }
 
@@ -256,29 +260,29 @@ public partial class MainPage
 
     private void OnDrawerFavoriteClicked(object? sender, EventArgs e)
     {
-        ShowStatus("收藏功能正在开发中");
+        ShowStatus(T("FeatureFavoritesPending", "Favorites is under development."));
         SetDrawerVisible(false);
     }
 
     private void OnDrawerTrashClicked(object? sender, EventArgs e)
     {
-        ShowStatus("回收站功能正在开发中");
+        ShowStatus(T("FeatureTrashPending", "Trash is under development."));
         SetDrawerVisible(false);
     }
 
     private void OnDrawerEditTagsClicked(object? sender, EventArgs e)
     {
-        ShowStatus("标签编辑功能即将支持");
+        ShowStatus(T("FeatureEditTagsPending", "Tag editing is coming soon."));
     }
 
     private void OnDrawerCreateTagClicked(object? sender, EventArgs e)
     {
-        ShowStatus("创建标签功能即将支持");
+        ShowStatus(T("FeatureCreateTagPending", "Tag creation is coming soon."));
     }
 
     private void OnDrawerHelpClicked(object? sender, EventArgs e)
     {
-        ShowStatus("帮助中心即将上线");
+        ShowStatus(T("FeatureHelpPending", "Help center is coming soon."));
         SetDrawerVisible(false);
     }
 
@@ -290,7 +294,7 @@ public partial class MainPage
 
     private void OnDrawerDiscountClicked(object? sender, EventArgs e)
     {
-        ShowStatus("折扣活动功能即将支持");
+        ShowStatus(T("FeatureDiscountPending", "Discount activity is coming soon."));
         SetDrawerVisible(false);
     }
 
@@ -299,7 +303,7 @@ public partial class MainPage
         if (sender is not Border row)
             return;
 
-        var item = row.AutomationId ?? "设置项";
+        var item = row.AutomationId ?? T("SettingsItem", "Settings Item");
 
         switch (item)
         {
@@ -307,17 +311,17 @@ public partial class MainPage
             {
                 var isZh = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("zh", StringComparison.OrdinalIgnoreCase);
                 LanguageManager.SetCulture(new CultureInfo(isZh ? "en-US" : "zh-CN"));
-                ShowStatus(isZh ? "Language: English" : "语言: 简体中文");
+                ShowStatus(isZh ? T("StatusLanguageEnglish", "Language: English") : T("StatusLanguageChinese", "Language: Simplified Chinese"));
                 break;
             }
             case "显示":
-                ShowStatus("显示设置入口已打开（主题切换待接入）");
+                ShowStatus(T("StatusDisplaySettingsOpened", "Display settings opened (theme integration pending)."));
                 break;
             case "本地备份":
-                ShowStatus("本地备份已触发");
+                ShowStatus(T("StatusLocalBackupTriggered", "Local backup triggered."));
                 break;
             default:
-                ShowStatus($"{item} 功能已记录，后续版本完善");
+                ShowStatus(TF("StatusFeatureRecordedFormat", "{0} feature recorded for future release.", item));
                 break;
         }
     }
@@ -354,6 +358,6 @@ public partial class MainPage
         SavePersistedAppSettings();
         RefreshSettingsUiState();
         SetSettingsVisible(false);
-        ShowStatus("已还原初始设置");
+        ShowStatus(T("StatusSettingsReset", "Settings reset to defaults."));
     }
 }

@@ -9,7 +9,8 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ContentView.Resources>
-    <Grid>
+    <Grid InputTransparent="True"
+          CascadeInputTransparent="False">
 <Border x:Name="TopBarPanel"
         IsVisible="False"
         HorizontalOptions="Fill"
@@ -117,11 +118,13 @@
         WidthRequest="356"
         Style="{StaticResource PanelCard}">
     <VerticalStackLayout Spacing="6">
-        <Label Text="输入方式"
+        <Label x:Name="InputModeTitleLabel"
+               Text="输入方式"
                FontFamily="OpenSansSemibold"
                FontSize="14"
                TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}" />
-        <Label Text="手指/电容笔模式下：单指书写，双指翻页或移动页面"
+        <Label x:Name="InputModeHintLabel"
+               Text="手指/电容笔模式下：单指书写，双指翻页或移动页面"
                FontSize="12"
                TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
@@ -176,7 +179,8 @@
         Style="{StaticResource PanelCard}"
         BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}">
     <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
-        <Label Grid.Column="0"
+        <Label x:Name="DrawingPenWidthLabel"
+               Grid.Column="0"
                VerticalOptions="Center"
                Text="笔宽"
                FontFamily="OpenSansSemibold"
@@ -211,15 +215,11 @@
         <ImageButton x:Name="DrawingToolbarLayerButton"
                      Grid.Column="2"
                      Style="{StaticResource ToolbarIconButton}"
-                     WidthRequest="40"
-                     HeightRequest="40"
                      Source="icon_layers_selected.png"
  />
         <ImageButton x:Name="DrawingToolbarCloseButton"
                      Grid.Column="3"
                      Style="{StaticResource ToolbarIconButton}"
-                     WidthRequest="40"
-                     HeightRequest="40"
                      Source="icon_x.png"
  />
     </Grid>
@@ -235,7 +235,8 @@
         Style="{StaticResource PanelCard}"
         BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}">
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
-        <Label Grid.Row="0"
+        <Label x:Name="LayerTitleLabel"
+               Grid.Row="0"
                Text="图层"
                FontFamily="OpenSansSemibold"
                FontSize="16"
@@ -246,14 +247,10 @@
         <HorizontalStackLayout Grid.Row="2" Spacing="8" HorizontalOptions="Center">
             <ImageButton x:Name="AddLayerButton"
                          Style="{StaticResource ToolbarIconButton}"
-                         WidthRequest="40"
-                         HeightRequest="40"
                          Source="icon_plus.png"
  />
             <ImageButton x:Name="DeleteLayerButton"
                          Style="{StaticResource ToolbarIconButton}"
-                         WidthRequest="40"
-                         HeightRequest="40"
                          Source="icon_minus.png"
  />
         </HorizontalStackLayout>

@@ -4,6 +4,7 @@ using FlowNoteMauiApp.Controls;
 using FlowNoteMauiApp.Resources;
 using FlowNoteMauiApp.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Devices;
 
 namespace FlowNoteMauiApp;
 
@@ -47,6 +48,11 @@ public partial class MainPage : ContentPage
         var services = Application.Current?.Handler?.MauiContext?.Services;
         _workspaceService = services?.GetService<IWorkspaceService>() ?? new WorkspaceService();
         _drawingPersistenceService = services?.GetService<IDrawingPersistenceService>() ?? new DrawingPersistenceService();
+
+        if (ShouldUseFingerModeByDefault())
+        {
+            _drawingInputMode = DrawingInputMode.FingerCapacitive;
+        }
 
         LoadPersistedAppSettings();
         ApplyGlobalSettings();
@@ -154,7 +160,7 @@ public partial class MainPage : ContentPage
             return true;
 
         if (showHint)
-            ShowStatus("Open a PDF first.");
+            ShowStatus(T("OpenPdfFirst", "Open a PDF first."));
         return false;
     }
 
@@ -166,6 +172,15 @@ public partial class MainPage : ContentPage
     }
 
     private bool IsDarkTheme => Application.Current?.RequestedTheme == AppTheme.Dark;
+
+    private static bool ShouldUseFingerModeByDefault()
+    {
+        if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+            return true;
+
+        return DeviceInfo.Platform == DevicePlatform.iOS
+            && DeviceInfo.DeviceType == DeviceType.Virtual;
+    }
 
     private Color ThemeSelectedBackground => IsDarkTheme
         ? Color.FromArgb("#33527A")
@@ -187,10 +202,7 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            var isZh = AppResources.Culture?.TwoLetterISOLanguageName == "zh";
-            
-            StatusLabel.Text = isZh ? "就绪" : "Ready";
-            UrlEntry.Placeholder = isZh ? "PDF网址" : "PDF URL";
+            ApplyLocalizedUiText();
         }
         catch { }
     }

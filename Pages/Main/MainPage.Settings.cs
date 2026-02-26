@@ -156,7 +156,9 @@ public partial class MainPage
             PageModeValueLabel.Text = GetDisplayModeText(_savedDisplayMode);
             FitModeValueLabel.Text = GetFitPolicyText(_savedFitPolicy);
             PageNumberPositionValueLabel.Text = GetPageNumberPositionText();
-            TextSelectionValueLabel.Text = _allowTextSelection ? "允许选字" : "仅阅读";
+            TextSelectionValueLabel.Text = _allowTextSelection
+                ? T("TextSelectionEnabled", "Allow Selection")
+                : T("TextSelectionReadOnly", "Read Only");
             PageMoveResistanceValueLabel.Text = $"{_pageMoveResistancePercent:0}%";
             DateFormatValueLabel.Text = GetDateFormatText(_dateFormatPreference);
             LanguageDateFormatValueLabel.Text = DateFormatValueLabel.Text;
@@ -223,10 +225,10 @@ public partial class MainPage
 
         SettingsTitleLabel.Text = section switch
         {
-            SettingsSection.Page => "页面设置",
-            SettingsSection.Display => "显示",
-            SettingsSection.Language => "语言与日期",
-            _ => "设置"
+            SettingsSection.Page => T("SettingsPageTitle", "Page"),
+            SettingsSection.Display => T("SettingsDisplayTitle", "Display"),
+            SettingsSection.Language => T("SettingsLanguageTitle", "Language & Date"),
+            _ => T("SettingsTitle", "Settings")
         };
     }
 
@@ -507,31 +509,35 @@ public partial class MainPage
 
     private string GetDisplayModeText(PdfDisplayMode displayMode)
     {
-        return displayMode == PdfDisplayMode.SinglePage ? "单页翻页" : "连续滚动";
+        return displayMode == PdfDisplayMode.SinglePage
+            ? T("DisplaySinglePage", "Single Page")
+            : T("DisplayContinuous", "Continuous");
     }
 
-    private static string GetFitPolicyText(FitPolicy fitPolicy)
+    private string GetFitPolicyText(FitPolicy fitPolicy)
     {
         return fitPolicy switch
         {
-            FitPolicy.Height => "高度适配",
-            FitPolicy.Both => "整页适配",
-            _ => "自动加页"
+            FitPolicy.Height => T("FitHeight", "Fit Height"),
+            FitPolicy.Both => T("FitWholePage", "Fit Page"),
+            _ => T("FitAutoAdd", "Fit Width")
         };
     }
 
-    private static string GetOrientationText(PdfScrollOrientation orientation)
+    private string GetOrientationText(PdfScrollOrientation orientation)
     {
-        return orientation == PdfScrollOrientation.Horizontal ? "横向" : "竖向";
+        return orientation == PdfScrollOrientation.Horizontal
+            ? T("DirectionHorizontal", "Horizontal")
+            : T("DirectionVertical", "Vertical");
     }
 
     private string GetThemeText(AppTheme theme)
     {
         return theme switch
         {
-            AppTheme.Light => "浅色",
-            AppTheme.Dark => "深色",
-            _ => "跟随系统"
+            AppTheme.Light => T("ThemeLight", "Light"),
+            AppTheme.Dark => T("ThemeDark", "Dark"),
+            _ => T("ThemeSystemFollow", "Follow System")
         };
     }
 
@@ -548,14 +554,16 @@ public partial class MainPage
 
     private string GetPageNumberPositionText()
     {
-        return _pageNumberPositionIndex == 0 ? "右侧/底部" : "左侧/底部";
+        return _pageNumberPositionIndex == 0
+            ? T("PageNumberRightBottom", "Right / Bottom")
+            : T("PageNumberLeftBottom", "Left / Bottom");
     }
 
-    private static string GetLanguageSummary()
+    private string GetLanguageSummary()
     {
         return LanguageManager.CurrentCulture.TwoLetterISOLanguageName.Equals("zh", StringComparison.OrdinalIgnoreCase)
-            ? "简体中文"
-            : "English";
+            ? T("LangZhHans", "Simplified Chinese")
+            : T("LangEnUs", "English");
     }
 
     private void ResetAppSettingValuesToDefault()

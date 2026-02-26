@@ -217,4 +217,392 @@
   <data name="SelectPdfFileOnly" xml:space="preserve">
     <value>Please select .pdf file only</value>
   </data>
+  <data name="UiReady" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="UiPdfUrl" xml:space="preserve">
+    <value>PDF URL</value>
+  </data>
+  <data name="UiKeyword" xml:space="preserve">
+    <value>Keyword</value>
+  </data>
+  <data name="HomeFilterAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="HomeFilterPdf" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="HomeFilterNote" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="HomeFilterFolder" xml:space="preserve">
+    <value>Folders</value>
+  </data>
+  <data name="HomeSort" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="DrawerAuth" xml:space="preserve">
+    <value>Sign in / Register</value>
+  </data>
+  <data name="DrawerSyncHint" xml:space="preserve">
+    <value>Sync your learning progress</value>
+  </data>
+  <data name="DrawerAllDocs" xml:space="preserve">
+    <value>All Documents</value>
+  </data>
+  <data name="DrawerRecent" xml:space="preserve">
+    <value>Recent</value>
+  </data>
+  <data name="DrawerFavorites" xml:space="preserve">
+    <value>Favorites</value>
+  </data>
+  <data name="DrawerTrash" xml:space="preserve">
+    <value>Trash</value>
+  </data>
+  <data name="DrawerTags" xml:space="preserve">
+    <value>My Tags</value>
+  </data>
+  <data name="DrawerEditTags" xml:space="preserve">
+    <value>Edit Tags</value>
+  </data>
+  <data name="DrawerCreateTag" xml:space="preserve">
+    <value>Create Tag</value>
+  </data>
+  <data name="DrawerApps" xml:space="preserve">
+    <value>My Apps</value>
+  </data>
+  <data name="DrawerHelp" xml:space="preserve">
+    <value>Help Center</value>
+  </data>
+  <data name="DrawerAbout" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="DrawerDiscount" xml:space="preserve">
+    <value>Get Discount</value>
+  </data>
+  <data name="DrawerPromo" xml:space="preserve">
+    <value>Register for free trial
+Unlock full note workflow</value>
+  </data>
+  <data name="InputModeTitle" xml:space="preserve">
+    <value>Input Mode</value>
+  </data>
+  <data name="InputModeHint" xml:space="preserve">
+    <value>In finger/capacitive mode: one finger writes, two fingers move/turn pages</value>
+  </data>
+  <data name="InputModePen" xml:space="preserve">
+    <value>Stylus</value>
+  </data>
+  <data name="InputModeFinger" xml:space="preserve">
+    <value>Finger/Capacitive (2-finger move)</value>
+  </data>
+  <data name="InputModeRead" xml:space="preserve">
+    <value>Read Mode</value>
+  </data>
+  <data name="DrawingPenWidth" xml:space="preserve">
+    <value>Stroke</value>
+  </data>
+  <data name="LayerTitle" xml:space="preserve">
+    <value>Layers</value>
+  </data>
+  <data name="SettingsHomeHint" xml:space="preserve">
+    <value>Page, display and language settings</value>
+  </data>
+  <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="SettingsDisplayTitle" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="SettingsLanguageTitle" xml:space="preserve">
+    <value>Language &amp; Date</value>
+  </data>
+  <data name="PageDirection" xml:space="preserve">
+    <value>Page Direction</value>
+  </data>
+  <data name="DirectionVertical" xml:space="preserve">
+    <value>Vertical</value>
+  </data>
+  <data name="DirectionHorizontal" xml:space="preserve">
+    <value>Horizontal</value>
+  </data>
+  <data name="PageTurnMode" xml:space="preserve">
+    <value>Page Turn Mode</value>
+  </data>
+  <data name="FitMode" xml:space="preserve">
+    <value>Fit Mode</value>
+  </data>
+  <data name="PageNumberPosition" xml:space="preserve">
+    <value>Page Number Position</value>
+  </data>
+  <data name="TextSelection" xml:space="preserve">
+    <value>Text Selection</value>
+  </data>
+  <data name="PageFreeMove" xml:space="preserve">
+    <value>Free Page Movement</value>
+  </data>
+  <data name="PageFreeMoveHint" xml:space="preserve">
+    <value>After two-finger pan ends, inertia continues. Resistance controls deceleration.</value>
+  </data>
+  <data name="Resistance" xml:space="preserve">
+    <value>Resistance</value>
+  </data>
+  <data name="ZoomFollow" xml:space="preserve">
+    <value>Zoom Follow</value>
+  </data>
+  <data name="ZoomFollowHint" xml:space="preserve">
+    <value>When enabled, stroke width scales with zoom; otherwise remains screen-pixel width.</value>
+  </data>
+  <data name="DisplayModeTitle" xml:space="preserve">
+    <value>Display Mode</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="ThemeSystem" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="DateFormatTitle" xml:space="preserve">
+    <value>Date Format</value>
+  </data>
+  <data name="KeepScreenOn" xml:space="preserve">
+    <value>Keep Screen On</value>
+  </data>
+  <data name="DarkInvert" xml:space="preserve">
+    <value>Invert Colors in Dark Mode</value>
+  </data>
+  <data name="LangZhHans" xml:space="preserve">
+    <value>Simplified Chinese</value>
+  </data>
+  <data name="LangEnUs" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="DateFormatInDisplay" xml:space="preserve">
+    <value>Set in Display</value>
+  </data>
+  <data name="ResetDefaults" xml:space="preserve">
+    <value>Reset to Defaults</value>
+  </data>
+  <data name="LoadAction" xml:space="preserve">
+    <value>Load</value>
+  </data>
+  <data name="SampleAction" xml:space="preserve">
+    <value>Sample</value>
+  </data>
+  <data name="LocalOpenAction" xml:space="preserve">
+    <value>Open Local</value>
+  </data>
+  <data name="WorkspaceRoot" xml:space="preserve">
+    <value>Root</value>
+  </data>
+  <data name="WorkspaceUp" xml:space="preserve">
+    <value>Up</value>
+  </data>
+  <data name="WorkspaceOpen" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="WorkspaceNewFolder" xml:space="preserve">
+    <value>New Folder</value>
+  </data>
+  <data name="CreateAction" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="RefreshAction" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="PickerMode" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="PickerDirection" xml:space="preserve">
+    <value>Direction</value>
+  </data>
+  <data name="PickerFit" xml:space="preserve">
+    <value>Fit</value>
+  </data>
+  <data name="HomeFolderCountFormat" xml:space="preserve">
+    <value>{0} folders</value>
+  </data>
+  <data name="HomeDocCountFormat" xml:space="preserve">
+    <value>{0} docs</value>
+  </data>
+  <data name="HomeNoMatchingFolders" xml:space="preserve">
+    <value>No matching folders</value>
+  </data>
+  <data name="HomeNoMatchingFoldersHint" xml:space="preserve">
+    <value>Try a different keyword or switch back to all</value>
+  </data>
+  <data name="HomeNoMatchingDocs" xml:space="preserve">
+    <value>No matching documents</value>
+  </data>
+  <data name="HomeNoMatchingDocsHint" xml:space="preserve">
+    <value>Try changing filter, sort, or keyword</value>
+  </data>
+  <data name="SortByName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="SortByCreated" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="SortByRecent" xml:space="preserve">
+    <value>Recent</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>Descending</value>
+  </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>Ascending</value>
+  </data>
+  <data name="CurrentSortFormat" xml:space="preserve">
+    <value>Current sort: {0}</value>
+  </data>
+  <data name="ImportPdfFirst" xml:space="preserve">
+    <value>Please import a PDF first.</value>
+  </data>
+  <data name="FeatureFavoritesPending" xml:space="preserve">
+    <value>Favorites is under development.</value>
+  </data>
+  <data name="FeatureTrashPending" xml:space="preserve">
+    <value>Trash is under development.</value>
+  </data>
+  <data name="FeatureEditTagsPending" xml:space="preserve">
+    <value>Tag editing is coming soon.</value>
+  </data>
+  <data name="FeatureCreateTagPending" xml:space="preserve">
+    <value>Tag creation is coming soon.</value>
+  </data>
+  <data name="FeatureHelpPending" xml:space="preserve">
+    <value>Help center is coming soon.</value>
+  </data>
+  <data name="FeatureDiscountPending" xml:space="preserve">
+    <value>Discount activity is coming soon.</value>
+  </data>
+  <data name="SettingsItem" xml:space="preserve">
+    <value>Settings Item</value>
+  </data>
+  <data name="StatusLanguageEnglish" xml:space="preserve">
+    <value>Language: English</value>
+  </data>
+  <data name="StatusLanguageChinese" xml:space="preserve">
+    <value>Language: Simplified Chinese</value>
+  </data>
+  <data name="StatusDisplaySettingsOpened" xml:space="preserve">
+    <value>Display settings opened (theme integration pending).</value>
+  </data>
+  <data name="StatusLocalBackupTriggered" xml:space="preserve">
+    <value>Local backup triggered.</value>
+  </data>
+  <data name="StatusFeatureRecordedFormat" xml:space="preserve">
+    <value>{0} feature recorded for future release.</value>
+  </data>
+  <data name="StatusSettingsReset" xml:space="preserve">
+    <value>Settings reset to defaults.</value>
+  </data>
+  <data name="UntitledDocument" xml:space="preserve">
+    <value>Untitled Document</value>
+  </data>
+  <data name="StatusTabDocMissingRemoved" xml:space="preserve">
+    <value>Document in tab not found and removed.</value>
+  </data>
+  <data name="HomeNoDocumentsYet" xml:space="preserve">
+    <value>No documents imported yet</value>
+  </data>
+  <data name="HomeNoDocumentsYetHint" xml:space="preserve">
+    <value>Tap + on the bottom-right to import PDF</value>
+  </data>
+  <data name="HomeNoSubfolders" xml:space="preserve">
+    <value>No subfolders in this directory</value>
+  </data>
+  <data name="HomeNoSubfoldersHint" xml:space="preserve">
+    <value>Create folders in Workspace settings</value>
+  </data>
+  <data name="ImportPdf" xml:space="preserve">
+    <value>Import PDF</value>
+  </data>
+  <data name="Folder" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="StatusEnteredFolderFormat" xml:space="preserve">
+    <value>Entered folder: {0}</value>
+  </data>
+  <data name="PageCountFormat" xml:space="preserve">
+    <value>{0} pages</value>
+  </data>
+  <data name="NoRecentNotes" xml:space="preserve">
+    <value>No recent notes</value>
+  </data>
+  <data name="FolderLabelFormat" xml:space="preserve">
+    <value>[Folder] {0}</value>
+  </data>
+  <data name="NoSubfolders" xml:space="preserve">
+    <value>No subfolders</value>
+  </data>
+  <data name="NoNotesInFolder" xml:space="preserve">
+    <value>No notes in this folder</value>
+  </data>
+  <data name="EnterFolderNameFirst" xml:space="preserve">
+    <value>Enter a folder name first.</value>
+  </data>
+  <data name="InvalidFolderName" xml:space="preserve">
+    <value>Invalid folder name.</value>
+  </data>
+  <data name="StatusPenMode" xml:space="preserve">
+    <value>Switched to stylus mode</value>
+  </data>
+  <data name="StatusFingerMode" xml:space="preserve">
+    <value>Finger mode: one finger writes, two fingers pan/zoom; in single-page mode two-finger swipe flips page</value>
+  </data>
+  <data name="StatusReadMode" xml:space="preserve">
+    <value>Switched to read mode</value>
+  </data>
+  <data name="StatusTextToolSoon" xml:space="preserve">
+    <value>Text tool is coming soon.</value>
+  </data>
+  <data name="StatusImageToolSoon" xml:space="preserve">
+    <value>Image insert is coming soon.</value>
+  </data>
+  <data name="StatusShapeToolSoon" xml:space="preserve">
+    <value>Shape tool is coming soon.</value>
+  </data>
+  <data name="OpenPdfFirst" xml:space="preserve">
+    <value>Open a PDF first.</value>
+  </data>
+  <data name="StatusSearchEntryOpened" xml:space="preserve">
+    <value>Search entry opened (advanced panel can be configured in settings).</value>
+  </data>
+  <data name="TextSelectionEnabled" xml:space="preserve">
+    <value>Allow Selection</value>
+  </data>
+  <data name="TextSelectionReadOnly" xml:space="preserve">
+    <value>Read Only</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="DisplaySinglePage" xml:space="preserve">
+    <value>Single Page</value>
+  </data>
+  <data name="DisplayContinuous" xml:space="preserve">
+    <value>Continuous</value>
+  </data>
+  <data name="FitHeight" xml:space="preserve">
+    <value>Fit Height</value>
+  </data>
+  <data name="FitWholePage" xml:space="preserve">
+    <value>Fit Page</value>
+  </data>
+  <data name="FitAutoAdd" xml:space="preserve">
+    <value>Fit Width</value>
+  </data>
+  <data name="ThemeSystemFollow" xml:space="preserve">
+    <value>Follow System</value>
+  </data>
+  <data name="PageNumberRightBottom" xml:space="preserve">
+    <value>Right / Bottom</value>
+  </data>
+  <data name="PageNumberLeftBottom" xml:space="preserve">
+    <value>Left / Bottom</value>
+  </data>
 </root>

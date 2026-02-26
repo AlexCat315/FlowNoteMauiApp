@@ -26,7 +26,7 @@ public partial class MainPage
             return true;
 
         if (showHint)
-            ShowStatus("Open a PDF first.");
+            ShowStatus(T("OpenPdfFirst", "Open a PDF first."));
         return false;
     }
 
@@ -134,7 +134,7 @@ public partial class MainPage
                 DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
                 UpdateToolSelection("Pen");
                 if (showStatus)
-                    ShowStatus("已切换到手写笔模式");
+                    ShowStatus(T("StatusPenMode", "Switched to stylus mode"));
                 break;
             case DrawingInputMode.FingerCapacitive:
                 DrawingCanvas.IsPenMode = false;
@@ -143,7 +143,7 @@ public partial class MainPage
                 DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
                 UpdateToolSelection("Finger");
                 if (showStatus)
-                    ShowStatus("手指/电容笔模式：单指书写，双指滚动/缩放；仅单页模式双指可翻页");
+                    ShowStatus(T("StatusFingerMode", "Finger mode: one finger writes, two fingers pan/zoom; in single-page mode two-finger swipe flips page"));
                 break;
             case DrawingInputMode.TapRead:
                 DrawingCanvas.EnableDrawing = false;
@@ -154,7 +154,7 @@ public partial class MainPage
                     QueueInkSave();
                 UpdateToolSelection("Read");
                 if (showStatus)
-                    ShowStatus("已切换到点读模式");
+                    ShowStatus(T("StatusReadMode", "Switched to read mode"));
                 break;
         }
 
@@ -388,9 +388,10 @@ public partial class MainPage
             var visibilityIcon = new ImageButton
             {
                 Source = layer.IsVisible ? "icon_eye.png" : "icon_eye_off.png",
-                WidthRequest = 28,
-                HeightRequest = 28,
-                CornerRadius = 14,
+                WidthRequest = 24,
+                HeightRequest = 24,
+                Padding = 5,
+                CornerRadius = 12,
                 BackgroundColor = Colors.Transparent,
                 Command = new Command(() => 
                 {
@@ -440,17 +441,17 @@ public partial class MainPage
 
     private void OnTextToolClicked(object? sender, EventArgs e)
     {
-        ShowStatus("文本工具即将支持");
+        ShowStatus(T("StatusTextToolSoon", "Text tool is coming soon."));
     }
 
     private void OnImageToolClicked(object? sender, EventArgs e)
     {
-        ShowStatus("图片插入即将支持");
+        ShowStatus(T("StatusImageToolSoon", "Image insert is coming soon."));
     }
 
     private void OnShapeToolClicked(object? sender, EventArgs e)
     {
-        ShowStatus("图形工具即将支持");
+        ShowStatus(T("StatusShapeToolSoon", "Shape tool is coming soon."));
     }
 
     private void OnDrawingCanvasTwoFingerSwipe(object? sender, DrawingCanvas.TwoFingerSwipeEventArgs e)

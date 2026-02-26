@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using FlowNoteMauiApp.Models;
+using Microsoft.Maui.Devices;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
@@ -587,7 +588,7 @@ public class DrawingCanvas : SKCanvasView
         }
 
         var isStylus = e.DeviceType == SKTouchDeviceType.Pen;
-        if (IsPenMode && !isStylus)
+        if (IsPenMode && !isStylus && !SupportsNonStylusPenFallback())
         {
             e.Handled = false;
             return;
@@ -628,6 +629,15 @@ public class DrawingCanvas : SKCanvasView
 
         InvalidateSurface();
         e.Handled = true;
+    }
+
+    private static bool SupportsNonStylusPenFallback()
+    {
+        if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+            return true;
+
+        return DeviceInfo.Platform == DevicePlatform.iOS
+            && DeviceInfo.DeviceType == DeviceType.Virtual;
     }
 
     private void TrackTouch(SKTouchEventArgs e)

@@ -11,7 +11,7 @@
     </ContentView.Resources>
 <Grid x:Name="HomeDrawerOverlay"
       IsVisible="False"
-      BackgroundColor="#6A0E1828">
+      BackgroundColor="Transparent">
     <Grid ColumnDefinitions="330,*">
         <Border Grid.Column="0"
                 Margin="10,10,0,10"
@@ -27,14 +27,16 @@
                                 Stroke="{AppThemeBinding Light=#D3DAE8, Dark=#4B607D}"
                                 StrokeThickness="1"
                                 BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2A3A52}">
-                            <Image Source="icon_file.png" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Image Source="icon_file.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center" HorizontalOptions="Center" />
                         </Border>
                         <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
-                            <Label Text="登录/注册"
+                            <Label x:Name="DrawerAuthLabel"
+                                   Text="登录/注册"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="16"
                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-                            <Label Text="同步你的学习进度"
+                            <Label x:Name="DrawerSyncHintLabel"
+                                   Text="同步你的学习进度"
                                    FontSize="12"
                                    TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
                         </VerticalStackLayout>
@@ -56,7 +58,8 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <Label Margin="0,8,0,0"
+                    <Label x:Name="DrawerTagsTitleLabel"
+                           Margin="0,8,0,0"
                            Text="我的标签"
                            FontFamily="OpenSansSemibold"
                            FontSize="14"
@@ -70,7 +73,8 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <Label Margin="0,8,0,0"
+                    <Label x:Name="DrawerAppsTitleLabel"
+                           Margin="0,8,0,0"
                            Text="我的应用"
                            FontFamily="OpenSansSemibold"
                            FontSize="14"
@@ -97,8 +101,9 @@
                             </LinearGradientBrush>
                         </Border.Background>
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                            <Image Source="icon_file.png" WidthRequest="36" HeightRequest="36" Opacity="0.9" />
-                            <Label Grid.Column="1"
+                            <Image Source="icon_file.png" WidthRequest="14" HeightRequest="14" Opacity="0.9" VerticalOptions="Center" />
+                            <Label x:Name="DrawerPromoLabel"
+                                   Grid.Column="1"
                                    Text="注册即领免费试用\n解锁全功能笔记工作流"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="13"
