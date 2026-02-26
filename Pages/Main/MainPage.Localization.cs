@@ -61,6 +61,7 @@ public partial class MainPage
         FindInEditor<Label>("ToolColorTitleLabel").Text = T("Color", "Color");
         FindInEditor<Label>("ThumbnailTitleLabel").Text = T("Thumbnail", "Thumbnails");
         FindInEditor<Label>("ThumbnailHintLabel").Text = T("ThumbnailHint", "Tap an item to jump to page");
+        FindInEditor<Label>("ThumbnailOverlayLabel").Text = T("ThumbnailOverlay", "Show Notes Layer");
         FindInEditor<Label>("LayerTitleLabel").Text = T("LayerTitle", "Layers");
         FindInEditor<Label>("ToolSettingsTitleLabel").Text = T("InkToolGeneric", "Tool");
 

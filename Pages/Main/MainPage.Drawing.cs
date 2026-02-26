@@ -1,5 +1,6 @@
 using SkiaSharp;
 using Flow.PDFView;
+using Flow.PDFView.Abstractions;
 using FlowNoteMauiApp.Controls;
 using FlowNoteMauiApp.Models;
 using System.Diagnostics;
@@ -55,6 +56,13 @@ public partial class MainPage
     private CancellationTokenSource? _thumbnailLoadCts;
     private const int ThumbnailRequestWidth = 220;
     private const int ThumbnailRequestHeight = 320;
+    private bool _thumbnailIncludeInkOverlay = true;
+
+    private sealed class ThumbnailStrokeSnapshot
+    {
+        public required DrawingStroke Stroke { get; init; }
+        public required float LayerOpacity { get; init; }
+    }
     private readonly Dictionary<InkToolKind, InkToolState> _inkToolStates = new()
     {
         [InkToolKind.Ballpoint] = new InkToolState(SKColors.Black, 3f),
@@ -112,11 +120,9 @@ public partial class MainPage
         var collapsedBackground = IsDarkTheme
             ? Color.FromArgb("#EAF1FB")
             : Color.FromArgb("#F5F8FC");
-        TopModePenButton.BackgroundColor = InputModePanel.IsVisible
-            ? palette.ModeButtonExpandedBackground
-            : collapsedBackground;
-        TopModePenButton.BorderColor = palette.ModeButtonExpandedBorder;
-        TopModePenButton.BorderWidth = InputModePanel.IsVisible ? 1 : 0;
+        TopModePenButton.BackgroundColor = collapsedBackground;
+        TopModePenButton.BorderColor = Colors.Transparent;
+        TopModePenButton.BorderWidth = 0;
         TopModePenButton.Source = _drawingInputMode switch
         {
             DrawingInputMode.FingerCapacitive => "icon_hand_mode.png",
@@ -540,6 +546,91 @@ public partial class MainPage
         {
             PositionDrawingToolbarPanelUnderTool(_activeInkTool);
         }
+
+        if (ThumbnailPanel.IsVisible)
+        {
+            PositionThumbnailPanelUnderTopButton();
+        }
+
+        if (LayerPanel.IsVisible)
+        {
+            PositionLayerPanelUnderLayerButton();
+        }
+    }
+
+    private void PositionThumbnailPanelUnderTopButton()
+    {
+        PositionFloatingPanelUnderTopButton(ThumbnailPanel, TopThumbnailButton, 252d);
+    }
+
+    private void PositionLayerPanelUnderLayerButton()
+    {
+        PositionFloatingPanelUnderTopButton(LayerPanel, TopInlineLayerButton, 236d);
+    }
+
+    private void PositionFloatingPanelUnderTopButton(
+        Border panel,
+        VisualElement anchorButton,
+        double fallbackWidth)
+    {
+        if (!panel.IsVisible)
+            return;
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            void ApplyPosition(int attempt)
+            {
+                if (!panel.IsVisible)
+                    return;
+
+                var panelWidth = panel.Width > 1
+                    ? panel.Width
+                    : (panel.WidthRequest > 1 ? panel.WidthRequest : fallbackWidth);
+                var panelHeight = panel.Height > 1 ? panel.Height : 0d;
+
+                var anchorX = GetVisualOffsetX(anchorButton, TopBarPanel) + TopBarPanel.X;
+                var anchorY = GetVisualOffsetY(anchorButton, TopBarPanel) + TopBarPanel.Y;
+                var anchorWidth = anchorButton.Width > 1 ? anchorButton.Width : anchorButton.WidthRequest;
+                var anchorHeight = anchorButton.Height > 1 ? anchorButton.Height : anchorButton.HeightRequest;
+
+                var hasValidLayout = anchorWidth > 1
+                    && anchorHeight > 1
+                    && TopBarPanel.Height > 1
+                    && EditorChromeView.Width > 1;
+                if (!hasValidLayout)
+                {
+                    if (attempt < 14)
+                    {
+                        panel.Dispatcher.DispatchDelayed(
+                            TimeSpan.FromMilliseconds(16),
+                            () => ApplyPosition(attempt + 1));
+                    }
+                    return;
+                }
+
+                var targetX = anchorX + (anchorWidth / 2d) - (panelWidth / 2d);
+                var maxX = Math.Max(8d, EditorChromeView.Width - panelWidth - 8d);
+                targetX = Math.Clamp(targetX, 8d, maxX);
+
+                var targetY = anchorY + anchorHeight + 4d;
+                var minY = Math.Max(TopBarPanel.Height + 2d, 6d);
+                if (panelHeight > 1 && EditorChromeView.Height > 1)
+                {
+                    var maxY = Math.Max(minY, EditorChromeView.Height - panelHeight - 8d);
+                    targetY = Math.Clamp(targetY, minY, maxY);
+                }
+                else
+                {
+                    targetY = Math.Max(targetY, minY);
+                }
+
+                panel.TranslationX = 0;
+                panel.TranslationY = 0;
+                panel.Margin = new Thickness(targetX, targetY, 0, 0);
+            }
+
+            ApplyPosition(0);
+        });
     }
 
     private void PositionDrawingToolbarPanel(VisualElement anchorButton)
@@ -652,7 +743,11 @@ public partial class MainPage
         }
 
         LayerPanel.IsVisible = true;
+        PositionLayerPanelUnderLayerButton();
         AnimatePopupIn(LayerPanel);
+        LayerPanel.Dispatcher.DispatchDelayed(
+            TimeSpan.FromMilliseconds(24),
+            PositionLayerPanelUnderLayerButton);
     }
 
     private void OnThumbnailToggleClicked(object? sender, EventArgs e)
@@ -672,9 +767,32 @@ public partial class MainPage
             return;
         }
 
+        ThumbnailOverlaySwitch.IsToggled = _thumbnailIncludeInkOverlay;
         ThumbnailPanel.IsVisible = true;
+        PositionThumbnailPanelUnderTopButton();
         AnimatePopupIn(ThumbnailPanel);
+        ThumbnailPanel.Dispatcher.DispatchDelayed(
+            TimeSpan.FromMilliseconds(24),
+            PositionThumbnailPanelUnderTopButton);
         RefreshThumbnailList();
+    }
+
+    private void OnThumbnailCloseClicked(object? sender, EventArgs e)
+    {
+        if (!ThumbnailPanel.IsVisible)
+            return;
+
+        AnimatePopupOut(ThumbnailPanel, () => ThumbnailPanel.IsVisible = false);
+    }
+
+    private void OnThumbnailOverlayToggled(object? sender, ToggledEventArgs e)
+    {
+        _thumbnailIncludeInkOverlay = e.Value;
+        InvalidateThumbnailCache();
+        if (ThumbnailPanel.IsVisible)
+        {
+            RefreshThumbnailList();
+        }
     }
 
     private void OnHighlighterClicked(object? sender, EventArgs e)
@@ -1044,6 +1162,9 @@ public partial class MainPage
         _thumbnailLoadCts?.Dispose();
         _thumbnailLoadCts = new CancellationTokenSource();
         var token = _thumbnailLoadCts.Token;
+        var overlaySnapshots = _thumbnailIncludeInkOverlay
+            ? CaptureThumbnailStrokeSnapshots()
+            : null;
 
         const int maxVisibleItems = 80;
         var startIndex = 0;
@@ -1060,12 +1181,13 @@ public partial class MainPage
                 0,
                 false,
                 token,
+                overlaySnapshots,
                 TF("ThumbnailPageHeadFormat", "Page {0} ...", 1)));
         }
 
         for (int i = startIndex; i <= endIndex; i++)
         {
-            ThumbnailList.Children.Add(CreateThumbnailListItem(i, i == _currentPageIndex, token));
+            ThumbnailList.Children.Add(CreateThumbnailListItem(i, i == _currentPageIndex, token, overlaySnapshots));
         }
 
         if (endIndex < _totalPageCount - 1)
@@ -1074,6 +1196,7 @@ public partial class MainPage
                 _totalPageCount - 1,
                 false,
                 token,
+                overlaySnapshots,
                 TF("ThumbnailPageTailFormat", "... Page {0}", _totalPageCount)));
         }
     }
@@ -1081,18 +1204,24 @@ public partial class MainPage
     private string BuildThumbnailCacheKey(int pageIndex)
     {
         var noteId = string.IsNullOrWhiteSpace(_currentNoteId) ? "none" : _currentNoteId!;
-        return $"{noteId}:{pageIndex}:{ThumbnailRequestWidth}x{ThumbnailRequestHeight}";
+        var overlayKey = _thumbnailIncludeInkOverlay ? "overlay" : "pdf";
+        return $"{noteId}:{pageIndex}:{ThumbnailRequestWidth}x{ThumbnailRequestHeight}:{overlayKey}";
     }
 
-    private Border CreateThumbnailListItem(int pageIndex, bool isCurrent, CancellationToken token, string? titleOverride = null)
+    private Border CreateThumbnailListItem(
+        int pageIndex,
+        bool isCurrent,
+        CancellationToken token,
+        IReadOnlyList<ThumbnailStrokeSnapshot>? overlaySnapshots = null,
+        string? titleOverride = null)
     {
         var palette = Palette;
         var previewImage = new Image
         {
             Aspect = Aspect.AspectFit,
             Source = "icon_file.png",
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center
         };
 
         var cacheKey = BuildThumbnailCacheKey(pageIndex);
@@ -1102,7 +1231,7 @@ public partial class MainPage
         }
         else
         {
-            _ = LoadThumbnailForPageAsync(pageIndex, cacheKey, previewImage, token);
+            _ = LoadThumbnailForPageAsync(pageIndex, cacheKey, previewImage, token, overlaySnapshots);
         }
 
         var item = new Border
@@ -1111,25 +1240,28 @@ public partial class MainPage
             Stroke = isCurrent ? palette.LayerSelectedBorder : palette.LayerNormalBorder,
             StrokeThickness = 1,
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
-            Padding = new Thickness(8),
+            Padding = new Thickness(8, 8, 8, 6),
             Content = new VerticalStackLayout
             {
-                Spacing = 6,
+                Spacing = 5,
                 Children =
                 {
                     new Border
                     {
-                        HeightRequest = 72,
+                        WidthRequest = 106,
+                        HeightRequest = 150,
+                        HorizontalOptions = LayoutOptions.Center,
                         Stroke = isCurrent ? palette.ModeButtonExpandedBorder : palette.LayerNormalBorder,
                         StrokeThickness = 1,
                         StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
                         BackgroundColor = isCurrent ? palette.ModeButtonExpandedBackground : palette.ModeButtonCollapsedBackground,
+                        Padding = 2,
                         Content = previewImage
                     },
                     new Label
                     {
                         Text = titleOverride ?? TF("ThumbnailPageFormat", "Page {0}", pageIndex + 1),
-                        FontSize = 12,
+                        FontSize = 11,
                         HorizontalTextAlignment = TextAlignment.Center,
                         TextColor = ThemePrimaryText
                     }
@@ -1153,7 +1285,12 @@ public partial class MainPage
         return item;
     }
 
-    private async Task LoadThumbnailForPageAsync(int pageIndex, string cacheKey, Image target, CancellationToken token)
+    private async Task LoadThumbnailForPageAsync(
+        int pageIndex,
+        string cacheKey,
+        Image target,
+        CancellationToken token,
+        IReadOnlyList<ThumbnailStrokeSnapshot>? overlaySnapshots)
     {
         if (!IsEditorInitialized || token.IsCancellationRequested)
             return;
@@ -1163,28 +1300,52 @@ public partial class MainPage
 
         try
         {
-            var thumbnailStream = await pdfView.GetThumbnailAsync(pageIndex, ThumbnailRequestWidth, ThumbnailRequestHeight);
+            var thumbnailStream = await pdfView
+                .GetThumbnailAsync(pageIndex, ThumbnailRequestWidth, ThumbnailRequestHeight)
+                .ConfigureAwait(false);
             if (thumbnailStream is null || token.IsCancellationRequested)
                 return;
 
+            byte[] bytes;
             using (thumbnailStream)
             using (var memory = new MemoryStream())
             {
-                await thumbnailStream.CopyToAsync(memory, token);
+                await thumbnailStream.CopyToAsync(memory, token).ConfigureAwait(false);
                 if (memory.Length == 0 || token.IsCancellationRequested)
                     return;
 
-                var bytes = memory.ToArray();
-                var source = ImageSource.FromStream(() => new MemoryStream(bytes));
-                _thumbnailSourceCache[cacheKey] = source;
-                await MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    if (!token.IsCancellationRequested)
-                    {
-                        target.Source = source;
-                    }
-                });
+                bytes = memory.ToArray();
             }
+
+            if (_thumbnailIncludeInkOverlay
+                && overlaySnapshots is { Count: > 0 }
+                && !token.IsCancellationRequested)
+            {
+                var pageBounds = await pdfView.GetPageBoundsAsync(pageIndex).ConfigureAwait(false);
+                if (pageBounds is PdfPageBounds bounds)
+                {
+                    var composedBytes = await Task
+                        .Run(() => ComposeThumbnailWithInkOverlay(bytes, bounds, overlaySnapshots, token), token)
+                        .ConfigureAwait(false);
+                    if (composedBytes is { Length: > 0 })
+                    {
+                        bytes = composedBytes;
+                    }
+                }
+            }
+
+            if (token.IsCancellationRequested)
+                return;
+
+            var source = ImageSource.FromStream(() => new MemoryStream(bytes));
+            _thumbnailSourceCache[cacheKey] = source;
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (!token.IsCancellationRequested)
+                {
+                    target.Source = source;
+                }
+            });
         }
         catch (OperationCanceledException)
         {
@@ -1194,6 +1355,169 @@ public partial class MainPage
         }
     }
 
+    private IReadOnlyList<ThumbnailStrokeSnapshot> CaptureThumbnailStrokeSnapshots()
+    {
+        if (!IsEditorInitialized)
+            return Array.Empty<ThumbnailStrokeSnapshot>();
+
+        var snapshots = new List<ThumbnailStrokeSnapshot>();
+        foreach (var layer in DrawingCanvas.Layers)
+        {
+            if (!layer.IsVisible || layer.Opacity <= 0.001f)
+                continue;
+
+            var layerOpacity = Math.Clamp(layer.Opacity, 0f, 1f);
+            foreach (var stroke in layer.Strokes)
+            {
+                if (stroke.Points.Count < 2)
+                    continue;
+
+                snapshots.Add(new ThumbnailStrokeSnapshot
+                {
+                    Stroke = CloneStrokeForThumbnail(stroke),
+                    LayerOpacity = layerOpacity
+                });
+            }
+        }
+
+        return snapshots;
+    }
+
+    private static DrawingStroke CloneStrokeForThumbnail(DrawingStroke stroke)
+    {
+        return new DrawingStroke
+        {
+            Id = stroke.Id,
+            Color = stroke.Color,
+            StrokeWidth = stroke.StrokeWidth,
+            Opacity = stroke.Opacity,
+            IsEraser = stroke.IsEraser,
+            BrushType = stroke.BrushType,
+            Options = new StrokeOptions
+            {
+                PressureEnabled = stroke.Options.PressureEnabled,
+                SmoothingEnabled = stroke.Options.SmoothingEnabled,
+                SmoothingFactor = stroke.Options.SmoothingFactor,
+                MinPressure = stroke.Options.MinPressure,
+                MaxPressure = stroke.Options.MaxPressure,
+                TaperEnabled = stroke.Options.TaperEnabled,
+                TaperStart = stroke.Options.TaperStart,
+                TaperEnd = stroke.Options.TaperEnd,
+                Streamline = stroke.Options.Streamline
+            },
+            Points = stroke.Points
+                .Select(point => new DrawingPoint(point.X, point.Y, point.Pressure, point.Timestamp))
+                .ToList()
+        };
+    }
+
+    private static byte[]? ComposeThumbnailWithInkOverlay(
+        byte[] baseThumbnailBytes,
+        PdfPageBounds pageBounds,
+        IReadOnlyList<ThumbnailStrokeSnapshot> snapshots,
+        CancellationToken token)
+    {
+        using var baseBitmap = SKBitmap.Decode(baseThumbnailBytes);
+        if (baseBitmap is null || baseBitmap.Width <= 0 || baseBitmap.Height <= 0)
+            return null;
+
+        var imageInfo = new SKImageInfo(baseBitmap.Width, baseBitmap.Height, SKColorType.Rgba8888, SKAlphaType.Premul);
+        using var surface = SKSurface.Create(imageInfo);
+        if (surface is null)
+            return null;
+
+        var canvas = surface.Canvas;
+        canvas.Clear(SKColors.Transparent);
+        canvas.DrawBitmap(baseBitmap, 0, 0);
+        using var overlaySurface = SKSurface.Create(imageInfo);
+        if (overlaySurface is null)
+            return null;
+
+        var overlayCanvas = overlaySurface.Canvas;
+        overlayCanvas.Clear(SKColors.Transparent);
+
+        var safePageWidth = Math.Max(1d, pageBounds.Width);
+        var safePageHeight = Math.Max(1d, pageBounds.Height);
+        var scaleX = (float)(imageInfo.Width / safePageWidth);
+        var scaleY = (float)(imageInfo.Height / safePageHeight);
+        var translateX = (float)(-pageBounds.X * scaleX);
+        var translateY = (float)(-pageBounds.Y * scaleY);
+        var strokeScale = Math.Max(0.12f, (Math.Abs(scaleX) + Math.Abs(scaleY)) * 0.5f);
+        var transform = SKMatrix.CreateScaleTranslation(scaleX, scaleY, translateX, translateY);
+
+        using var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            IsAntialias = true,
+            StrokeCap = SKStrokeCap.Round,
+            StrokeJoin = SKStrokeJoin.Round
+        };
+
+        foreach (var snapshot in snapshots)
+        {
+            token.ThrowIfCancellationRequested();
+
+            var stroke = snapshot.Stroke;
+            if (stroke.Points.Count < 2 || !DoesStrokeIntersectPage(stroke, pageBounds))
+                continue;
+
+            using var path = new SKPath(stroke.CreatePath());
+            path.Transform(transform);
+
+            var alpha = stroke.IsEraser
+                ? (byte)0
+                : (byte)Math.Clamp((int)Math.Round(stroke.Color.Alpha * snapshot.LayerOpacity * stroke.Opacity), 0, 255);
+            paint.Color = stroke.IsEraser ? SKColors.Transparent : stroke.Color.WithAlpha(alpha);
+            paint.StrokeWidth = Math.Max(0.4f, stroke.StrokeWidth * strokeScale);
+            paint.BlendMode = GetThumbnailStrokeBlendMode(stroke);
+
+            overlayCanvas.DrawPath(path, paint);
+        }
+
+        overlayCanvas.Flush();
+        using var overlayImage = overlaySurface.Snapshot();
+        canvas.DrawImage(overlayImage, 0, 0);
+        canvas.Flush();
+        using var composedImage = surface.Snapshot();
+        using var encoded = composedImage.Encode(SKEncodedImageFormat.Png, 96);
+        return encoded?.ToArray();
+    }
+
+    private static SKBlendMode GetThumbnailStrokeBlendMode(DrawingStroke stroke)
+    {
+        if (stroke.IsEraser)
+            return SKBlendMode.Clear;
+
+        return SKBlendMode.SrcOver;
+    }
+
+    private static bool DoesStrokeIntersectPage(DrawingStroke stroke, PdfPageBounds pageBounds)
+    {
+        if (stroke.Points.Count == 0)
+            return false;
+
+        var minX = float.MaxValue;
+        var minY = float.MaxValue;
+        var maxX = float.MinValue;
+        var maxY = float.MinValue;
+        foreach (var point in stroke.Points)
+        {
+            minX = Math.Min(minX, point.X);
+            minY = Math.Min(minY, point.Y);
+            maxX = Math.Max(maxX, point.X);
+            maxY = Math.Max(maxY, point.Y);
+        }
+
+        var pageLeft = pageBounds.X;
+        var pageTop = pageBounds.Y;
+        var pageRight = pageBounds.X + pageBounds.Width;
+        var pageBottom = pageBounds.Y + pageBounds.Height;
+        return maxX >= pageLeft
+            && minX <= pageRight
+            && maxY >= pageTop
+            && minY <= pageBottom;
+    }
+
     private void OnAddLayerClicked(object? sender, EventArgs e)
     {
         if (!EnsureDrawingReady())
@@ -1201,6 +1525,11 @@ public partial class MainPage
 
         DrawingCanvas.AddLayer();
         RefreshLayerList();
+        InvalidateThumbnailCache();
+        if (ThumbnailPanel.IsVisible)
+        {
+            RefreshThumbnailList();
+        }
         QueueInkSave();
     }
 
@@ -1213,6 +1542,11 @@ public partial class MainPage
         {
             DrawingCanvas.RemoveLayer(DrawingCanvas.CurrentLayerIndex);
             RefreshLayerList();
+            InvalidateThumbnailCache();
+            if (ThumbnailPanel.IsVisible)
+            {
+                RefreshThumbnailList();
+            }
             QueueInkSave();
         }
     }
@@ -1253,16 +1587,21 @@ public partial class MainPage
             var visibilityIcon = new ImageButton
             {
                 Source = layer.IsVisible ? "icon_eye.png" : "icon_eye_off.png",
-                WidthRequest = 24,
-                HeightRequest = 24,
-                Padding = 5,
-                CornerRadius = 12,
+                WidthRequest = 18,
+                HeightRequest = 18,
+                Padding = 2,
+                CornerRadius = 9,
                 BackgroundColor = Colors.Transparent,
                 Command = new Command(() =>
                 {
                     layer.IsVisible = !layer.IsVisible;
                     DrawingCanvas.InvalidateSurface();
                     RefreshLayerList();
+                    InvalidateThumbnailCache();
+                    if (ThumbnailPanel.IsVisible)
+                    {
+                        RefreshThumbnailList();
+                    }
                     QueueInkSave();
                 })
             };
@@ -1403,6 +1742,11 @@ public partial class MainPage
 
     private void OnDrawingStrokeCommitted(object? sender, EventArgs e)
     {
+        InvalidateThumbnailCache();
+        if (ThumbnailPanel.IsVisible)
+        {
+            RefreshThumbnailList();
+        }
         QueueInkSave();
     }
 

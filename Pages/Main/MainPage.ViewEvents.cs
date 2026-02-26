@@ -90,6 +90,8 @@ public partial class MainPage
         LassoEraserModeButton.Clicked += OnLassoEraserModeClicked;
         FindInEditor<ImageButton>("AddLayerButton").Clicked += OnAddLayerClicked;
         FindInEditor<ImageButton>("DeleteLayerButton").Clicked += OnDeleteLayerClicked;
+        ThumbnailCloseButton.Clicked += OnThumbnailCloseClicked;
+        ThumbnailOverlaySwitch.Toggled += OnThumbnailOverlayToggled;
 
         EditorChromeView.SizeChanged += OnEditorChromeLayoutChanged;
         TopBarPanel.SizeChanged += OnEditorChromeLayoutChanged;

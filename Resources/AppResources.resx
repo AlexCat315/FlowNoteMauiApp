@@ -519,6 +519,9 @@ Unlock full note workflow</value>
   <data name="ThumbnailPageTailFormat" xml:space="preserve">
     <value>... Page {0}</value>
   </data>
+  <data name="ThumbnailOverlay" xml:space="preserve">
+    <value>Show Notes Layer</value>
+  </data>
   <data name="ImportPdfFirst" xml:space="preserve">
     <value>Please import a PDF first.</value>
   </data>

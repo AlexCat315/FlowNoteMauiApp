@@ -155,42 +155,6 @@
         </HorizontalStackLayout>
     </Grid>
 
-    <Border
-            x:Name="HomeSortPanel"
-            Grid.RowSpan="3"
-            IsVisible="False"
-            InputTransparent="False"
-            VerticalOptions="Start"
-            HorizontalOptions="Start"
-            Margin="0"
-            WidthRequest="176"
-            Padding="8"
-            Style="{StaticResource PanelCard}"
-        >
-        <VerticalStackLayout Spacing="4">
-            <Button
-                    x:Name="HomeSortTimeAscButton"
-                    Style="{StaticResource InputModeItemButton}"
-                    Text="按时间升序"
-                />
-            <Button
-                    x:Name="HomeSortTimeDescButton"
-                    Style="{StaticResource InputModeItemButton}"
-                    Text="按时间降序"
-                />
-            <Button
-                    x:Name="HomeSortNameAscButton"
-                    Style="{StaticResource InputModeItemButton}"
-                    Text="按名称升序"
-                />
-            <Button
-                    x:Name="HomeSortNameDescButton"
-                    Style="{StaticResource InputModeItemButton}"
-                    Text="按名称降序"
-                />
-        </VerticalStackLayout>
-    </Border>
-
     <Grid Grid.Row="2">
         <ScrollView>
             <VerticalStackLayout Spacing="8" Padding="44,4,44,120">
@@ -228,5 +192,42 @@
         <Label x:Name="HomeCountLabel" IsVisible="False" Text="0 个文档" />
         <Entry x:Name="HomeUrlEntry" IsVisible="False" />
     </Grid>
+
+    <Border
+            x:Name="HomeSortPanel"
+            Grid.RowSpan="3"
+            ZIndex="60"
+            IsVisible="False"
+            InputTransparent="False"
+            VerticalOptions="Start"
+            HorizontalOptions="Start"
+            Margin="0"
+            WidthRequest="176"
+            Padding="8"
+            Style="{StaticResource PanelCard}"
+        >
+        <VerticalStackLayout Spacing="4">
+            <Button
+                    x:Name="HomeSortTimeAscButton"
+                    Style="{StaticResource InputModeItemButton}"
+                    Text="按时间升序"
+                />
+            <Button
+                    x:Name="HomeSortTimeDescButton"
+                    Style="{StaticResource InputModeItemButton}"
+                    Text="按时间降序"
+                />
+            <Button
+                    x:Name="HomeSortNameAscButton"
+                    Style="{StaticResource InputModeItemButton}"
+                    Text="按名称升序"
+                />
+            <Button
+                    x:Name="HomeSortNameDescButton"
+                    Style="{StaticResource InputModeItemButton}"
+                    Text="按名称降序"
+                />
+        </VerticalStackLayout>
+    </Border>
 </Grid>
 </ContentView>

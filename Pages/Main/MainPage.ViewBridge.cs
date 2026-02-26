@@ -48,6 +48,8 @@ public partial class MainPage
     private HorizontalStackLayout EditorTabsHost => FindInEditor<HorizontalStackLayout>(nameof(EditorTabsHost));
     private HorizontalStackLayout InkToolsHost => FindInEditor<HorizontalStackLayout>(nameof(InkToolsHost));
     private ImageButton TopModePenButton => FindInEditor<ImageButton>(nameof(TopModePenButton));
+    private ImageButton TopThumbnailButton => FindInEditor<ImageButton>(nameof(TopThumbnailButton));
+    private ImageButton TopInlineLayerButton => FindInEditor<ImageButton>(nameof(TopInlineLayerButton));
     private ImageButton UndoButton => FindInEditor<ImageButton>(nameof(UndoButton));
     private ImageButton RedoButton => FindInEditor<ImageButton>(nameof(RedoButton));
     private ImageButton PenModeButton => FindInEditor<ImageButton>(nameof(PenModeButton));
@@ -86,6 +88,9 @@ public partial class MainPage
     private Label DrawingPenWidthLabel => FindInEditor<Label>(nameof(DrawingPenWidthLabel));
     private Label StrokeWidthLabel => FindInEditor<Label>(nameof(StrokeWidthLabel));
     private Border ThumbnailPanel => FindInEditor<Border>(nameof(ThumbnailPanel));
+    private ImageButton ThumbnailCloseButton => FindInEditor<ImageButton>(nameof(ThumbnailCloseButton));
+    private Switch ThumbnailOverlaySwitch => FindInEditor<Switch>(nameof(ThumbnailOverlaySwitch));
+    private Label ThumbnailOverlayLabel => FindInEditor<Label>(nameof(ThumbnailOverlayLabel));
     private VerticalStackLayout ThumbnailList => FindInEditor<VerticalStackLayout>(nameof(ThumbnailList));
     private Border LayerPanel => FindInEditor<Border>(nameof(LayerPanel));
     private VerticalStackLayout LayerList => FindInEditor<VerticalStackLayout>(nameof(LayerList));

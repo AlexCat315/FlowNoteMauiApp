@@ -80,6 +80,7 @@
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="3"
+                            TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
                             Source="icon_plus.png"
                         />
                         <ImageButton
@@ -90,6 +91,7 @@
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="3"
+                            TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
                             Source="icon_search.png"
                         />
                         <ImageButton
@@ -100,6 +102,7 @@
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="3"
+                            TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
                             Source="icon_stylus_mode.png"
                         />
                         <ImageButton
@@ -110,6 +113,7 @@
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="3"
+                            TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
                             Source="icon_settings.png"
                         />
                         <ImageButton
@@ -120,6 +124,7 @@
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="3"
+                            TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
                             Source="icon_thumbnail.png"
                         />
                     </HorizontalStackLayout>
@@ -283,6 +288,7 @@
         <Border
             x:Name="DrawingToolbarPanel"
             IsVisible="False"
+            ZIndex="36"
             InputTransparent="False"
             VerticalOptions="Start"
             HorizontalOptions="Start"
@@ -445,31 +451,70 @@
         <Border
             x:Name="ThumbnailPanel"
             IsVisible="False"
+            ZIndex="37"
             InputTransparent="False"
-            VerticalOptions="Fill"
-            HorizontalOptions="End"
-            WidthRequest="220"
-            Margin="0,72,14,100"
-            Padding="12"
+            VerticalOptions="Start"
+            HorizontalOptions="Start"
+            WidthRequest="252"
+            MaximumWidthRequest="268"
+            Margin="0"
+            Padding="10"
             Style="{StaticResource PanelCard}"
-            BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}"
+            BackgroundColor="{AppThemeBinding Light=#F7F9FC, Dark=#1E2E44}"
         >
-            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
-                <Label
-                    x:Name="ThumbnailTitleLabel"
-                    Grid.Row="0"
-                    Text="缩略图"
-                    FontFamily="OpenSansSemibold"
-                    FontSize="16"
-                />
-                <ScrollView Grid.Row="1">
-                    <VerticalStackLayout x:Name="ThumbnailList" Spacing="8" />
-                </ScrollView>
+            <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                    <Label
+                        x:Name="ThumbnailTitleLabel"
+                        Text="缩略图"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="15"
+                        VerticalOptions="Center"
+                    />
+                    <ImageButton
+                        x:Name="ThumbnailCloseButton"
+                        Grid.Column="1"
+                        Style="{StaticResource ToolbarToolIconButton}"
+                        Source="icon_x.png"
+                    />
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Switch
+                        x:Name="ThumbnailOverlaySwitch"
+                        IsToggled="True"
+                        Scale="0.82"
+                        VerticalOptions="Center"
+                    />
+                    <Label
+                        x:Name="ThumbnailOverlayLabel"
+                        Grid.Column="1"
+                        Text="显示笔记层"
+                        FontSize="12"
+                        VerticalOptions="Center"
+                        TextColor="{AppThemeBinding Light=#475569, Dark=#A8B4C8}"
+                    />
+                </Grid>
+                <Border
+                    Grid.Row="2"
+                    Padding="6"
+                    Stroke="{AppThemeBinding Light=#E4E9F2, Dark=#31465F}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 12"
+                    BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#22344B}"
+                >
+                    <ScrollView>
+                        <VerticalStackLayout
+                            x:Name="ThumbnailList"
+                            Spacing="6"
+                        />
+                    </ScrollView>
+                </Border>
                 <Label
                     x:Name="ThumbnailHintLabel"
-                    Grid.Row="2"
+                    Grid.Row="3"
                     Text="点击缩略项快速跳页"
-                    FontSize="12"
+                    FontSize="11"
+                    HorizontalTextAlignment="Center"
                     TextColor="{AppThemeBinding Light=#7C8492, Dark=#A2B2C8}"
                 />
             </Grid>
@@ -478,6 +523,7 @@
         <Border
             x:Name="InputModePanel"
             IsVisible="False"
+            ZIndex="38"
             InputTransparent="False"
             VerticalOptions="Start"
             HorizontalOptions="Start"
@@ -566,11 +612,13 @@
         <Border
             x:Name="LayerPanel"
             IsVisible="False"
+            ZIndex="37"
             InputTransparent="False"
-            VerticalOptions="Fill"
-            HorizontalOptions="End"
-            WidthRequest="252"
-            Margin="0,72,14,100"
+            VerticalOptions="Start"
+            HorizontalOptions="Start"
+            WidthRequest="236"
+            MaximumWidthRequest="252"
+            Margin="0"
             Padding="12"
             Style="{StaticResource PanelCard}"
             BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}"

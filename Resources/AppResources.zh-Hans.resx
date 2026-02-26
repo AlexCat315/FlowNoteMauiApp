@@ -517,6 +517,9 @@
   <data name="ThumbnailPageTailFormat" xml:space="preserve">
     <value>... 第 {0} 页</value>
   </data>
+  <data name="ThumbnailOverlay" xml:space="preserve">
+    <value>显示笔记层</value>
+  </data>
   <data name="ImportPdfFirst" xml:space="preserve">
     <value>请先导入 PDF 文档</value>
   </data>

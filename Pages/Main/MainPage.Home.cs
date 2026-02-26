@@ -219,18 +219,41 @@ public partial class MainPage
 
     private void PositionHomeSortPanelUnderSortButton()
     {
-        var panelWidth = HomeSortPanel.Width > 1
-            ? HomeSortPanel.Width
-            : (HomeSortPanel.WidthRequest > 1 ? HomeSortPanel.WidthRequest : 176d);
-        var anchorX = GetVisualOffsetX(HomeSortMenuButton, HomePanelView);
-        var anchorY = GetVisualOffsetY(HomeSortMenuButton, HomePanelView);
-        var anchorWidth = HomeSortMenuButton.Width > 1 ? HomeSortMenuButton.Width : HomeSortMenuButton.WidthRequest;
-        var anchorHeight = HomeSortMenuButton.Height > 1 ? HomeSortMenuButton.Height : HomeSortMenuButton.HeightRequest;
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            void ApplyPosition(int attempt)
+            {
+                var panelWidth = HomeSortPanel.Width > 1
+                    ? HomeSortPanel.Width
+                    : (HomeSortPanel.WidthRequest > 1 ? HomeSortPanel.WidthRequest : 176d);
+                var anchorX = GetVisualOffsetX(HomeSortMenuButton, HomePanelView);
+                var anchorY = GetVisualOffsetY(HomeSortMenuButton, HomePanelView);
+                var anchorWidth = HomeSortMenuButton.Width > 1 ? HomeSortMenuButton.Width : HomeSortMenuButton.WidthRequest;
+                var anchorHeight = HomeSortMenuButton.Height > 1 ? HomeSortMenuButton.Height : HomeSortMenuButton.HeightRequest;
 
-        var targetX = anchorX + anchorWidth - panelWidth;
-        targetX = Math.Clamp(targetX, 10d, Math.Max(10d, HomePanelView.Width - panelWidth - 10d));
-        var targetY = anchorY + anchorHeight + 6d;
-        HomeSortPanel.Margin = new Thickness(targetX, targetY, 0, 0);
+                var hasValidLayout = panelWidth > 0
+                    && anchorWidth > 1
+                    && anchorHeight > 1
+                    && HomePanelView.Width > 1;
+                if (!hasValidLayout)
+                {
+                    if (attempt < 12)
+                    {
+                        HomeSortPanel.Dispatcher.DispatchDelayed(
+                            TimeSpan.FromMilliseconds(16),
+                            () => ApplyPosition(attempt + 1));
+                    }
+                    return;
+                }
+
+                var targetX = anchorX + anchorWidth - panelWidth;
+                targetX = Math.Clamp(targetX, 10d, Math.Max(10d, HomePanelView.Width - panelWidth - 10d));
+                var targetY = anchorY + anchorHeight + 5d;
+                HomeSortPanel.Margin = new Thickness(targetX, targetY, 0, 0);
+            }
+
+            ApplyPosition(0);
+        });
     }
 
     private void OnHomeFilterAllClicked(object? sender, EventArgs e) => SetHomeFilter(HomeFilterType.All);
