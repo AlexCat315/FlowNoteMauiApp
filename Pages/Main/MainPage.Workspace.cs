@@ -58,17 +58,18 @@ public partial class MainPage
 
             var tabBorder = new Border
             {
-                Padding = new Thickness(10, 6),
-                Margin = new Thickness(0, 0, 2, 0),
+                Padding = new Thickness(9, 3),
+                Margin = new Thickness(0, 2, 2, 0),
                 BackgroundColor = isActive
-                    ? (IsDarkTheme ? Color.FromArgb("#2D4361") : Color.FromArgb("#EEF4FF"))
-                    : (IsDarkTheme ? Color.FromArgb("#1D2B3E") : Color.FromArgb("#F4F6FA")),
+                    ? (IsDarkTheme ? Color.FromArgb("#2A3B53") : Color.FromArgb("#FFFFFF"))
+                    : (IsDarkTheme ? Color.FromArgb("#1E2D42") : Color.FromArgb("#DEE5F1")),
                 Stroke = isActive
-                    ? Color.FromArgb("#4A90E2")
-                    : (IsDarkTheme ? Color.FromArgb("#4C6484") : Color.FromArgb("#D7DEE9")),
+                    ? (IsDarkTheme ? Color.FromArgb("#5E83AF") : Color.FromArgb("#C4CFDF"))
+                    : (IsDarkTheme ? Color.FromArgb("#2F425B") : Color.FromArgb("#CBD5E4")),
                 StrokeThickness = 1,
-                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 12 },
-                MinimumWidthRequest = 180
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(10, 10, 4, 4) },
+                MinimumWidthRequest = 108,
+                HeightRequest = 30
             };
 
             var tabGrid = new Grid
@@ -79,24 +80,24 @@ public partial class MainPage
                     new ColumnDefinition { Width = GridLength.Star },
                     new ColumnDefinition { Width = GridLength.Auto }
                 },
-                ColumnSpacing = 8
+                ColumnSpacing = 5
             };
 
             tabGrid.Children.Add(new Image
             {
                 Source = "icon_file.png",
-                WidthRequest = 14,
-                HeightRequest = 14,
+                WidthRequest = 11,
+                HeightRequest = 11,
                 VerticalOptions = LayoutOptions.Center,
-                Opacity = 0.86
+                Opacity = isActive ? 0.88 : 0.72
             });
 
             var titleLabel = new Label
             {
                 Text = NormalizeEditorTabTitle(tab.Name),
                 VerticalOptions = LayoutOptions.Center,
-                FontFamily = "OpenSansSemibold",
-                FontSize = 13,
+                FontFamily = isActive ? "OpenSansSemibold" : "OpenSansRegular",
+                FontSize = 11.5,
                 MaxLines = 1,
                 LineBreakMode = LineBreakMode.TailTruncation,
                 TextColor = ThemePrimaryText
@@ -107,12 +108,13 @@ public partial class MainPage
             var closeButton = new ImageButton
             {
                 Source = "icon_x.png",
-                WidthRequest = 24,
-                HeightRequest = 24,
-                Padding = 5,
-                CornerRadius = 12,
+                WidthRequest = 18,
+                HeightRequest = 18,
+                Padding = 3,
+                CornerRadius = 9,
                 BackgroundColor = Colors.Transparent,
                 BorderWidth = 0,
+                Opacity = isActive ? 0.88 : 0.72,
                 CommandParameter = tab.NoteId
             };
             closeButton.Clicked += OnEditorTabCloseClicked;

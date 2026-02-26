@@ -591,8 +591,10 @@ public class DrawingCanvas : SKCanvasView
             return;
         }
 
-        // Stylus mode on iOS/iPad: finger drag pans the PDF while stylus writes.
-        if (IsPenMode && !isStylus && e.DeviceType == SKTouchDeviceType.Touch)
+        // Stylus mode on Apple platforms: any non-stylus pointer drags/pans the PDF.
+        // This also covers simulator/driver paths that report Unknown instead of Touch/Mouse.
+        var isApplePlatform = DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst;
+        if (IsPenMode && isApplePlatform && !isStylus)
         {
             HandlePenModeTouchPan(e);
             return;

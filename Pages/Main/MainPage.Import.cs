@@ -12,6 +12,9 @@ public partial class MainPage
         { DevicePlatform.Android, new[] { "application/pdf" } },
         { DevicePlatform.WinUI, new[] { ".pdf" } }
     });
+    private static readonly TimeSpan PickerReentryCooldown = TimeSpan.FromMilliseconds(1600);
+    private bool _isPickingPdf;
+    private DateTime _pickerCooldownUntilUtc = DateTime.MinValue;
 
     private async void OnLoadUrlClicked(object? sender, EventArgs e)
     {
@@ -74,46 +77,41 @@ public partial class MainPage
 
     private async void OnPickFileClicked(object? sender, EventArgs e)
     {
+        SetSettingsVisible(false);
+        SetDrawerVisible(false);
         await PickAndImportPdfAsync(openAfterImport: true);
     }
 
     private async Task PickAndImportPdfAsync(bool openAfterImport)
     {
+        if (_isPickingPdf)
+            return;
+
+        var now = DateTime.UtcNow;
+        if (now < _pickerCooldownUntilUtc)
+            return;
+
+        _isPickingPdf = true;
+        _pickerCooldownUntilUtc = now.Add(PickerReentryCooldown);
+        SetImportButtonsEnabled(false);
         try
         {
             var options = new PickOptions
             {
-                PickerTitle = AppResources.SelectPdfFile,
-                FileTypes = PdfPickerFileType
+                PickerTitle = AppResources.SelectPdfFile
             };
 
-            // Some iOS/MacCatalyst environments return null from PickAsync; retry with PickMultipleAsync.
-            var result = await MainThread.InvokeOnMainThreadAsync(() => FilePicker.Default.PickAsync(options));
-            var isApplePlatform = DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst;
-            if (result is null && isApplePlatform)
+            var isApple = DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst;
+            if (!isApple)
             {
-                var fallback = await MainThread.InvokeOnMainThreadAsync(() => FilePicker.Default.PickMultipleAsync(options));
-                result = fallback?.FirstOrDefault();
+                options.FileTypes = PdfPickerFileType;
             }
 
-            if (result is null && isApplePlatform)
-            {
-                var anyTypeOptions = new PickOptions
-                {
-                    PickerTitle = AppResources.SelectPdfFile
-                };
-                result = await MainThread.InvokeOnMainThreadAsync(() => FilePicker.Default.PickAsync(anyTypeOptions));
-            }
+            var result = await FilePicker.Default.PickAsync(options);
 
             if (result is null)
             {
                 ShowStatus(AppResources.FileSelectionCancelled);
-                return;
-            }
-
-            if (!string.Equals(Path.GetExtension(result.FileName), ".pdf", StringComparison.OrdinalIgnoreCase))
-            {
-                ShowStatus(AppResources.SelectPdfFileOnly);
                 return;
             }
 
@@ -127,8 +125,28 @@ public partial class MainPage
                 return;
             }
 
+            var extension = Path.GetExtension(result.FileName);
+            var isPdfByName = string.Equals(extension, ".pdf", StringComparison.OrdinalIgnoreCase);
+            var isPdfByMime = !string.IsNullOrWhiteSpace(result.ContentType)
+                && result.ContentType.Contains("pdf", StringComparison.OrdinalIgnoreCase);
+            var isPdfByHeader = data.Length >= 4
+                && data[0] == 0x25 && data[1] == 0x50 && data[2] == 0x44 && data[3] == 0x46;
+            if (!isPdfByName && !isPdfByMime && !isPdfByHeader)
+            {
+                ShowStatus(AppResources.SelectPdfFileOnly);
+                return;
+            }
+
+            var importedName = string.IsNullOrWhiteSpace(result.FileName)
+                ? $"Imported-{DateTime.UtcNow:yyyyMMddHHmmss}.pdf"
+                : result.FileName;
+            if (!importedName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                importedName += ".pdf";
+            }
+
             await SaveCurrentDrawingStateAsync();
-            var note = await _workspaceService.ImportPdfAsync(result.FileName, data, _workspaceFolder);
+            var note = await _workspaceService.ImportPdfAsync(importedName, data, _workspaceFolder);
             await RefreshWorkspaceViewsAsync();
 
             if (openAfterImport)
@@ -141,9 +159,46 @@ public partial class MainPage
                 ShowHomeScreen();
             }
         }
+        catch (OperationCanceledException)
+        {
+            ShowStatus(AppResources.FileSelectionCancelled);
+        }
         catch (Exception ex)
         {
             ShowStatus($"{AppResources.SelectFileFailed}: {ex.Message}");
+        }
+        finally
+        {
+            _isPickingPdf = false;
+            _pickerCooldownUntilUtc = DateTime.UtcNow.Add(PickerReentryCooldown);
+            SetImportButtonsEnabled(true);
+        }
+    }
+
+    private void SetImportButtonsEnabled(bool enabled)
+    {
+        try
+        {
+            FindInHome<ImageButton>("HomeImportButton").IsEnabled = enabled;
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            FindInEditor<ImageButton>("TopImportButton").IsEnabled = enabled;
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            LocalFileButton.IsEnabled = enabled;
+        }
+        catch
+        {
         }
     }
 
