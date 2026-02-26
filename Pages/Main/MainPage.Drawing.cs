@@ -521,12 +521,14 @@ public partial class MainPage
 
         if (e.Phase == DrawingCanvas.TwoFingerPanPhase.End)
         {
+            var releaseVelocityX = _panVelocityX;
+            var releaseVelocityY = _panVelocityY;
             if (allowInertia)
             {
                 StartTwoFingerInertiaIfNeeded();
             }
 
-            LogInputGesture($"pan-end wheel={e.IsWheelInput} velocity=({_panVelocityX:0.0},{_panVelocityY:0.0})");
+            LogInputGesture($"pan-end wheel={e.IsWheelInput} velocity=({releaseVelocityX:0.0},{releaseVelocityY:0.0})");
             return;
         }
 
@@ -585,7 +587,9 @@ public partial class MainPage
             return;
         }
 
-        var speed = Math.Sqrt((_panVelocityX * _panVelocityX) + (_panVelocityY * _panVelocityY));
+        var initialVelocityX = _panVelocityX;
+        var initialVelocityY = _panVelocityY;
+        var speed = Math.Sqrt((initialVelocityX * initialVelocityX) + (initialVelocityY * initialVelocityY));
         if (speed < PanInertiaStartSpeedThreshold)
         {
             _panVelocityX = 0d;
@@ -593,13 +597,13 @@ public partial class MainPage
             return;
         }
 
-        StopTwoFingerInertia();
+        StopTwoFingerInertia(resetVelocity: false);
         _panInertiaCts = new CancellationTokenSource();
         var token = _panInertiaCts.Token;
         var resistance = Math.Clamp(_pageMoveResistancePercent / 100d, 0d, 1d);
         var damping = Math.Clamp(0.93d - (resistance * 0.2d), 0.68d, 0.93d);
-        var velocityX = _panVelocityX;
-        var velocityY = _panVelocityY;
+        var velocityX = initialVelocityX;
+        var velocityY = initialVelocityY;
 
         _ = Task.Run(async () =>
         {
@@ -625,6 +629,8 @@ public partial class MainPage
 
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
+                        _panVelocityX = velocityX;
+                        _panVelocityY = velocityY;
                         if (HasLoadedDocument)
                         {
                             PdfViewer.PanBy(deltaX, deltaY);
@@ -648,13 +654,16 @@ public partial class MainPage
         LogInputGesture($"inertia-start speed={speed:0.0} resistance={resistance:0.00} damping={damping:0.00}");
     }
 
-    private void StopTwoFingerInertia()
+    private void StopTwoFingerInertia(bool resetVelocity = true)
     {
         _panInertiaCts?.Cancel();
         _panInertiaCts?.Dispose();
         _panInertiaCts = null;
-        _panVelocityX = 0d;
-        _panVelocityY = 0d;
+        if (resetVelocity)
+        {
+            _panVelocityX = 0d;
+            _panVelocityY = 0d;
+        }
     }
 
     [Conditional("DEBUG")]
