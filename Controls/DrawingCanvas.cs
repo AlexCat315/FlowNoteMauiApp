@@ -47,7 +47,8 @@ public class DrawingCanvas : SKCanvasView
             float scaleFactor,
             float centerX,
             float centerY,
-            TwoFingerPanPhase phase)
+            TwoFingerPanPhase phase,
+            bool isWheelInput = false)
         {
             DeltaX = deltaX;
             DeltaY = deltaY;
@@ -55,6 +56,7 @@ public class DrawingCanvas : SKCanvasView
             CenterX = centerX;
             CenterY = centerY;
             Phase = phase;
+            IsWheelInput = isWheelInput;
 
             HasPan = Math.Abs(deltaX) > float.Epsilon || Math.Abs(deltaY) > float.Epsilon;
             HasZoom = Math.Abs(scaleFactor - 1f) > float.Epsilon;
@@ -68,6 +70,7 @@ public class DrawingCanvas : SKCanvasView
         public TwoFingerPanPhase Phase { get; }
         public bool HasPan { get; }
         public bool HasZoom { get; }
+        public bool IsWheelInput { get; }
     }
 
     public static readonly BindableProperty LayersProperty =
@@ -140,6 +143,7 @@ public class DrawingCanvas : SKCanvasView
     private const float TwoFingerScaleSwitchDistanceDelta = 9f;
     private const float TwoFingerPanSwitchDelta = 10f;
     private const float TwoFingerZoomDominanceRatio = 1.25f;
+    private const float MouseWheelPanStep = 16f;
     private TwoFingerGestureIntent _twoFingerGestureIntent = TwoFingerGestureIntent.None;
 
     public event EventHandler? StrokeCommitted;
@@ -564,6 +568,25 @@ public class DrawingCanvas : SKCanvasView
             return;
         }
 
+        if (e.ActionType == SKTouchAction.WheelChanged)
+        {
+            var panDeltaY = -e.WheelDelta * MouseWheelPanStep;
+            if (Math.Abs(panDeltaY) > float.Epsilon)
+            {
+                TwoFingerPan?.Invoke(this, new TwoFingerPanEventArgs(
+                    0f,
+                    panDeltaY,
+                    1f,
+                    e.Location.X,
+                    e.Location.Y,
+                    TwoFingerPanPhase.Update,
+                    isWheelInput: true));
+            }
+
+            e.Handled = true;
+            return;
+        }
+
         TrackTouch(e);
         if (_suspendDrawingUntilTouchesReleased && _activeTouchIds.Count == 0)
         {
@@ -636,8 +659,7 @@ public class DrawingCanvas : SKCanvasView
         if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
             return true;
 
-        return DeviceInfo.Platform == DevicePlatform.iOS
-            && DeviceInfo.DeviceType == DeviceType.Virtual;
+        return DeviceInfo.Platform == DevicePlatform.iOS;
     }
 
     private void TrackTouch(SKTouchEventArgs e)

@@ -321,7 +321,7 @@ public partial class MainPage
     {
         var selectedBorderColor = Color.FromArgb("#4A90E2");
         var normalBorderColor = IsDarkTheme ? Color.FromArgb("#526883") : Colors.Transparent;
-        
+
         ColorBlack.BorderColor = selectedColor == "Black" ? selectedBorderColor : normalBorderColor;
         ColorRed.BorderColor = selectedColor == "Red" ? selectedBorderColor : normalBorderColor;
         ColorBlue.BorderColor = selectedColor == "Blue" ? selectedBorderColor : normalBorderColor;
@@ -364,11 +364,11 @@ public partial class MainPage
             var layer = DrawingCanvas.Layers[i];
             var isSelected = i == DrawingCanvas.CurrentLayerIndex;
             var layerIndex = i;
-            
+
             var bgColor = isSelected
                 ? (IsDarkTheme ? Color.FromArgb("#33527A") : Color.FromArgb("#E8F4FD"))
                 : Colors.Transparent;
-            
+
             var layerItem = new Border
             {
                 BackgroundColor = bgColor,
@@ -379,12 +379,12 @@ public partial class MainPage
                 StrokeThickness = 1,
                 StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 }
             };
-            
+
             var stack = new HorizontalStackLayout
             {
                 Spacing = 8
             };
-            
+
             var visibilityIcon = new ImageButton
             {
                 Source = layer.IsVisible ? "icon_eye.png" : "icon_eye_off.png",
@@ -393,7 +393,7 @@ public partial class MainPage
                 Padding = 5,
                 CornerRadius = 12,
                 BackgroundColor = Colors.Transparent,
-                Command = new Command(() => 
+                Command = new Command(() =>
                 {
                     layer.IsVisible = !layer.IsVisible;
                     DrawingCanvas.InvalidateSurface();
@@ -401,7 +401,7 @@ public partial class MainPage
                     QueueInkSave();
                 })
             };
-            
+
             var label = new Label
             {
                 Text = layer.Name,
@@ -410,20 +410,20 @@ public partial class MainPage
                 FontSize = 13,
                 TextColor = ThemePrimaryText
             };
-            
+
             stack.Children.Add(visibilityIcon);
             stack.Children.Add(label);
-            
+
             layerItem.Content = stack;
-            layerItem.GestureRecognizers.Add(new TapGestureRecognizer 
+            layerItem.GestureRecognizers.Add(new TapGestureRecognizer
             {
-                Command = new Command(() => 
+                Command = new Command(() =>
                 {
                     DrawingCanvas.CurrentLayerIndex = layerIndex;
                     RefreshLayerList();
                 })
             });
-            
+
             LayerList.Children.Add(layerItem);
         }
     }
@@ -485,8 +485,20 @@ public partial class MainPage
         if (PdfViewer.DisplayMode == Flow.PDFView.Abstractions.PdfDisplayMode.SinglePage)
             return;
 
-        if (_drawingInputMode != DrawingInputMode.FingerCapacitive)
+        if (_drawingInputMode != DrawingInputMode.FingerCapacitive && !e.IsWheelInput)
             return;
+
+        if (e.IsWheelInput)
+        {
+            if (e.HasPan)
+            {
+                var adjustedX = ApplyPanResistance(e.DeltaX);
+                var adjustedY = ApplyPanResistance(e.DeltaY);
+                PdfViewer.PanBy(adjustedX, adjustedY);
+            }
+
+            return;
+        }
 
         switch (e.Phase)
         {

@@ -1,258 +1,423 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="FlowNoteMauiApp.Views.Main.MainEditorChromeView">
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="FlowNoteMauiApp.Views.Main.MainEditorChromeView"
+>
     <ContentView.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Resources/Styles/MainPageStyles.xaml" />
+                <ResourceDictionary
+                    Source="/Resources/Styles/MainPageStyles.xaml"
+                />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ContentView.Resources>
-    <Grid InputTransparent="True"
-          CascadeInputTransparent="False">
-<Border x:Name="TopBarPanel"
-        IsVisible="False"
-        HorizontalOptions="Fill"
-        VerticalOptions="Start"
-        Margin="12,8,12,0"
-        Padding="10,8"
-        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#223247}"
-        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
-        StrokeThickness="1"
-        StrokeShape="RoundRectangle 20"
-        Opacity="0.98">
-    <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-            <ImageButton x:Name="TopHomeButton"
-                         Grid.Column="0"
-                         Style="{StaticResource ToolbarIconButton}"
-                         Source="icon_arrow_left.png"
- />
+    <Grid InputTransparent="True" CascadeInputTransparent="False">
+<Border
+            x:Name="TopBarPanel"
+            IsVisible="False"
+            HorizontalOptions="Fill"
+            VerticalOptions="Start"
+            Margin="14,10,14,0"
+            Padding="10,6"
+            BackgroundColor="{AppThemeBinding Light=#F7F8FB, Dark=#223247}"
+            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+            StrokeThickness="1"
+            StrokeShape="RoundRectangle 18"
+            Opacity="0.98"
+        >
+    <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+            <ImageButton
+                        x:Name="TopHomeButton"
+                        Grid.Column="0"
+                        Style="{StaticResource ToolbarIconButton}"
+                        Source="icon_arrow_left.png"
+                    />
 
-            <ScrollView Grid.Column="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+            <ScrollView
+                        Grid.Column="1"
+                        Orientation="Horizontal"
+                        HorizontalScrollBarVisibility="Never"
+                    >
                 <HorizontalStackLayout x:Name="EditorTabsHost" Spacing="8" />
             </ScrollView>
 
-            <HorizontalStackLayout Grid.Column="2" Spacing="6" VerticalOptions="Center">
-                <ImageButton x:Name="TopImportButton"
-                             Style="{StaticResource ToolbarIconButton}"
-                             Source="icon_plus.png"
- />
-                <ImageButton x:Name="TopSettingsButton"
-                             Style="{StaticResource ToolbarIconButton}"
-                             Source="icon_settings.png"
- />
-                <ImageButton x:Name="TopSearchButton"
-                             Style="{StaticResource ToolbarIconButton}"
-                             Source="icon_search.png"
- />
-                <ImageButton x:Name="TopLayerButton"
-                             Style="{StaticResource ToolbarIconButton}"
-                             Source="icon_layers_selected.png"
- />
+            <HorizontalStackLayout
+                        Grid.Column="2"
+                        Spacing="8"
+                        VerticalOptions="Center"
+                    >
+                <ImageButton
+                            x:Name="TopImportButton"
+                            Style="{StaticResource ToolbarIconButton}"
+                            Source="icon_plus.png"
+                        />
+                <ImageButton
+                            x:Name="TopSettingsButton"
+                            Style="{StaticResource ToolbarIconButton}"
+                            Source="icon_settings.png"
+                        />
+                <ImageButton
+                            x:Name="TopSearchButton"
+                            Style="{StaticResource ToolbarIconButton}"
+                            Source="icon_search.png"
+                        />
+                <ImageButton
+                            x:Name="TopLayerButton"
+                            Style="{StaticResource ToolbarIconButton}"
+                            Source="icon_layers_selected.png"
+                        />
             </HorizontalStackLayout>
         </Grid>
 
-        <Border Grid.Row="1"
-                Padding="6,4"
-                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1E2D43}"
-                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
-                StrokeThickness="1"
-                StrokeShape="RoundRectangle 12">
-            <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                <HorizontalStackLayout Spacing="4">
-                    <ImageButton x:Name="UndoButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_arrow_back_up.png" />
-                    <ImageButton x:Name="RedoButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_arrow_forward_up.png" />
-                    <BoxView WidthRequest="1" HeightRequest="18" VerticalOptions="Center" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" Margin="1,0" />
+        <Border
+                    Grid.Row="1"
+                    Padding="4,2"
+                    BackgroundColor="{AppThemeBinding Light=#FBFCFE, Dark=#1E2D43}"
+                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 11"
+                >
+            <ScrollView
+                        Orientation="Horizontal"
+                        HorizontalScrollBarVisibility="Never"
+                    >
+                <HorizontalStackLayout Spacing="3">
+                    <ImageButton
+                                x:Name="UndoButton"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_arrow_back_up.png"
+                            />
+                    <ImageButton
+                                x:Name="RedoButton"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_arrow_forward_up.png"
+                            />
+                    <BoxView
+                                WidthRequest="1"
+                                HeightRequest="18"
+                                VerticalOptions="Center"
+                                Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                                Margin="1,0"
+                            />
 
-                    <ImageButton x:Name="PenModeButton" Style="{StaticResource ToolbarToolIconButtonSelected}" Source="icon_pencil.png" />
-                    <ImageButton x:Name="HighlighterButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_brush.png" />
-                    <ImageButton x:Name="EraserButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_eraser.png" />
-                    <ImageButton x:Name="ClearButton2" Style="{StaticResource ToolbarToolIconButton}" Source="icon_trash.png" />
-                    <ImageButton x:Name="DrawingToggleButton" Style="{StaticResource ToolbarToolIconButtonSelected}" Source="icon_pencil.png" />
-                    <ImageButton x:Name="TopInlineLayerButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_layers_selected.png" />
-                    <BoxView WidthRequest="1" HeightRequest="18" VerticalOptions="Center" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" Margin="1,0" />
+                    <ImageButton
+                                x:Name="PenModeButton"
+                                Style="{StaticResource ToolbarToolIconButtonSelected}"
+                                Source="icon_pencil.png"
+                            />
+                    <ImageButton
+                                x:Name="HighlighterButton"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_brush.png"
+                            />
+                    <ImageButton
+                                x:Name="EraserButton"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_eraser.png"
+                            />
+                    <ImageButton
+                                x:Name="ClearButton2"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_trash.png"
+                            />
+                    <ImageButton
+                                x:Name="DrawingToggleButton"
+                                Style="{StaticResource ToolbarToolIconButtonSelected}"
+                                Source="icon_pencil.png"
+                            />
+                    <ImageButton
+                                x:Name="TopInlineLayerButton"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_layers_selected.png"
+                            />
+                    <BoxView
+                                WidthRequest="1"
+                                HeightRequest="18"
+                                VerticalOptions="Center"
+                                Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                                Margin="1,0"
+                            />
 
-                    <ImageButton x:Name="TextToolButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_text.png" />
-                    <ImageButton x:Name="ImageToolButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_image.png" />
-                    <ImageButton x:Name="ShapeToolButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_shape.png" />
-                    <BoxView WidthRequest="1" HeightRequest="18" VerticalOptions="Center" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" Margin="1,0" />
+                    <ImageButton
+                                x:Name="TextToolButton"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_text.png"
+                            />
+                    <ImageButton
+                                x:Name="ImageToolButton"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_image.png"
+                            />
+                    <ImageButton
+                                x:Name="ShapeToolButton"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_shape.png"
+                            />
+                    <BoxView
+                                WidthRequest="1"
+                                HeightRequest="18"
+                                VerticalOptions="Center"
+                                Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                                Margin="1,0"
+                            />
 
-                    <ImageButton x:Name="PrevPageButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_arrow_left.png" />
-                    <Border Padding="8,0"
-                            HeightRequest="28"
-                            VerticalOptions="Center"
-                            BackgroundColor="{AppThemeBinding Light=#F7F8FA, Dark=#2A3C55}"
-                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
-                            StrokeThickness="1"
-                            StrokeShape="RoundRectangle 9">
-                        <Label x:Name="PageInfoLabel"
-                               Text="Page: 1/1"
-                               VerticalOptions="Center"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="12"
-                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                    <ImageButton
+                                x:Name="PrevPageButton"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_arrow_left.png"
+                            />
+                    <Border
+                                Padding="8,0"
+                                HeightRequest="30"
+                                VerticalOptions="Center"
+                                BackgroundColor="{AppThemeBinding Light=#F7F8FA, Dark=#2A3C55}"
+                                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 9"
+                            >
+                        <Label
+                                    x:Name="PageInfoLabel"
+                                    Text="Page: 1/1"
+                                    VerticalOptions="Center"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="12"
+                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                />
                     </Border>
-                    <ImageButton x:Name="NextPageButton" Style="{StaticResource ToolbarToolIconButton}" Source="icon_arrow_right.png" />
-                    <BoxView WidthRequest="1" HeightRequest="18" VerticalOptions="Center" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" Margin="1,0" />
+                    <ImageButton
+                                x:Name="NextPageButton"
+                                Style="{StaticResource ToolbarToolIconButton}"
+                                Source="icon_arrow_right.png"
+                            />
+                    <BoxView
+                                WidthRequest="1"
+                                HeightRequest="18"
+                                VerticalOptions="Center"
+                                Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                                Margin="1,0"
+                            />
 
-                    <Button x:Name="ColorBlack" Style="{StaticResource ColorButton}" BackgroundColor="#111111" />
-                    <Button x:Name="ColorBlue" Style="{StaticResource ColorButton}" BackgroundColor="#2F74D0" />
-                    <Button x:Name="ColorRed" Style="{StaticResource ColorButton}" BackgroundColor="#E23B30" />
-                    <Button x:Name="ColorGreen" Style="{StaticResource ColorButton}" BackgroundColor="#2CC66D" />
-                    <Button x:Name="ColorOrange" Style="{StaticResource ColorButton}" BackgroundColor="#F4B100" />
-                    <Button x:Name="ColorWhite" Style="{StaticResource ColorButton}" BackgroundColor="#FFFFFF" BorderColor="#CBD5E1" BorderWidth="1" />
+                    <Button
+                                x:Name="ColorBlack"
+                                Style="{StaticResource ColorButton}"
+                                BackgroundColor="#111111"
+                            />
+                    <Button
+                                x:Name="ColorBlue"
+                                Style="{StaticResource ColorButton}"
+                                BackgroundColor="#2F74D0"
+                            />
+                    <Button
+                                x:Name="ColorRed"
+                                Style="{StaticResource ColorButton}"
+                                BackgroundColor="#E23B30"
+                            />
+                    <Button
+                                x:Name="ColorGreen"
+                                Style="{StaticResource ColorButton}"
+                                BackgroundColor="#2CC66D"
+                            />
+                    <Button
+                                x:Name="ColorOrange"
+                                Style="{StaticResource ColorButton}"
+                                BackgroundColor="#F4B100"
+                            />
+                    <Button
+                                x:Name="ColorWhite"
+                                Style="{StaticResource ColorButton}"
+                                BackgroundColor="#FFFFFF"
+                                BorderColor="#CBD5E1"
+                                BorderWidth="1"
+                            />
                 </HorizontalStackLayout>
             </ScrollView>
         </Border>
     </Grid>
 </Border>
 
-<Border x:Name="InputModePanel"
-        IsVisible="False"
-        VerticalOptions="Start"
-        HorizontalOptions="Start"
-        Margin="18,112,0,0"
-        Padding="12"
-        WidthRequest="356"
-        Style="{StaticResource PanelCard}">
+<Border
+            x:Name="InputModePanel"
+            IsVisible="False"
+            VerticalOptions="Start"
+            HorizontalOptions="Start"
+            Margin="18,112,0,0"
+            Padding="12"
+            WidthRequest="356"
+            Style="{StaticResource PanelCard}"
+        >
     <VerticalStackLayout Spacing="6">
-        <Label x:Name="InputModeTitleLabel"
-               Text="输入方式"
-               FontFamily="OpenSansSemibold"
-               FontSize="14"
-               TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}" />
-        <Label x:Name="InputModeHintLabel"
-               Text="手指/电容笔模式下：单指书写，双指翻页或移动页面"
-               FontSize="12"
-               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+        <Label
+                    x:Name="InputModeTitleLabel"
+                    Text="输入方式"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="14"
+                    TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}"
+                />
+        <Label
+                    x:Name="InputModeHintLabel"
+                    Text="手指/电容笔模式下：单指书写，双指翻页或移动页面"
+                    FontSize="12"
+                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
+                />
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-            <Button x:Name="InputModePenButton"
-                    Grid.Column="0"
-                    Style="{StaticResource InputModeItemButton}"
-                    Text="手写笔"
- />
-            <Label x:Name="InputModePenCheck"
-                   Grid.Column="1"
-                   VerticalOptions="Center"
-                   Text="✓"
-                   FontSize="24"
-                   TextColor="{StaticResource PrimaryBlue}" />
+            <Button
+                        x:Name="InputModePenButton"
+                        Grid.Column="0"
+                        Style="{StaticResource InputModeItemButton}"
+                        Text="手写笔"
+                    />
+            <Label
+                        x:Name="InputModePenCheck"
+                        Grid.Column="1"
+                        VerticalOptions="Center"
+                        Text="✓"
+                        FontSize="24"
+                        TextColor="{StaticResource PrimaryBlue}"
+                    />
         </Grid>
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-            <Button x:Name="InputModeFingerButton"
-                    Grid.Column="0"
-                    Style="{StaticResource InputModeItemButton}"
-                    Text="手指/电容笔（双指移动）"
- />
-            <Label x:Name="InputModeFingerCheck"
-                   Grid.Column="1"
-                   VerticalOptions="Center"
-                   Text="✓"
-                   FontSize="24"
-                   TextColor="{StaticResource PrimaryBlue}"
-                   IsVisible="False" />
+            <Button
+                        x:Name="InputModeFingerButton"
+                        Grid.Column="0"
+                        Style="{StaticResource InputModeItemButton}"
+                        Text="手指/电容笔（双指移动）"
+                    />
+            <Label
+                        x:Name="InputModeFingerCheck"
+                        Grid.Column="1"
+                        VerticalOptions="Center"
+                        Text="✓"
+                        FontSize="24"
+                        TextColor="{StaticResource PrimaryBlue}"
+                        IsVisible="False"
+                    />
         </Grid>
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-            <Button x:Name="InputModeReadButton"
-                    Grid.Column="0"
-                    Style="{StaticResource InputModeItemButton}"
-                    Text="点读模式"
- />
-            <Label x:Name="InputModeReadCheck"
-                   Grid.Column="1"
-                   VerticalOptions="Center"
-                   Text="✓"
-                   FontSize="24"
-                   TextColor="{StaticResource PrimaryBlue}"
-                   IsVisible="False" />
+            <Button
+                        x:Name="InputModeReadButton"
+                        Grid.Column="0"
+                        Style="{StaticResource InputModeItemButton}"
+                        Text="点读模式"
+                    />
+            <Label
+                        x:Name="InputModeReadCheck"
+                        Grid.Column="1"
+                        VerticalOptions="Center"
+                        Text="✓"
+                        FontSize="24"
+                        TextColor="{StaticResource PrimaryBlue}"
+                        IsVisible="False"
+                    />
         </Grid>
     </VerticalStackLayout>
 </Border>
 
-<Border x:Name="DrawingToolbarPanel"
-        IsVisible="False"
-        VerticalOptions="Start"
-        Margin="18,122,18,0"
-        Padding="12,10"
-        Style="{StaticResource PanelCard}"
-        BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}">
+<Border
+            x:Name="DrawingToolbarPanel"
+            IsVisible="False"
+            VerticalOptions="Start"
+            Margin="18,104,18,0"
+            Padding="12,10"
+            Style="{StaticResource PanelCard}"
+            BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}"
+        >
     <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
-        <Label x:Name="DrawingPenWidthLabel"
-               Grid.Column="0"
-               VerticalOptions="Center"
-               Text="笔宽"
-               FontFamily="OpenSansSemibold"
-               FontSize="13"
-               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+        <Label
+                    x:Name="DrawingPenWidthLabel"
+                    Grid.Column="0"
+                    VerticalOptions="Center"
+                    Text="笔宽"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="13"
+                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                />
 
-        <Border Grid.Column="1"
-                Padding="10,2"
-                VerticalOptions="Center"
-                BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundSecondary}, Dark={StaticResource Gray800}}"
-                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
-                StrokeThickness="1"
-                StrokeShape="RoundRectangle 14">
+        <Border
+                    Grid.Column="1"
+                    Padding="10,2"
+                    VerticalOptions="Center"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundSecondary}, Dark={StaticResource Gray800}}"
+                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                >
             <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                <Slider x:Name="StrokeWidthSlider"
-                        WidthRequest="160"
-                        Minimum="1"
-                        Maximum="20"
-                        Value="3"
-
-                        VerticalOptions="Center" />
-                <Label x:Name="StrokeWidthLabel"
-                       Text="3"
-                       WidthRequest="26"
-                       FontFamily="OpenSansSemibold"
-                       FontSize="12"
-                       VerticalOptions="Center"
-                       TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                <Slider
+                            x:Name="StrokeWidthSlider"
+                            WidthRequest="160"
+                            Minimum="1"
+                            Maximum="20"
+                            Value="3"
+                            VerticalOptions="Center"
+                        />
+                <Label
+                            x:Name="StrokeWidthLabel"
+                            Text="3"
+                            WidthRequest="26"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="12"
+                            VerticalOptions="Center"
+                            TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                        />
             </HorizontalStackLayout>
         </Border>
 
-        <ImageButton x:Name="DrawingToolbarLayerButton"
-                     Grid.Column="2"
-                     Style="{StaticResource ToolbarIconButton}"
-                     Source="icon_layers_selected.png"
- />
-        <ImageButton x:Name="DrawingToolbarCloseButton"
-                     Grid.Column="3"
-                     Style="{StaticResource ToolbarIconButton}"
-                     Source="icon_x.png"
- />
+        <ImageButton
+                    x:Name="DrawingToolbarLayerButton"
+                    Grid.Column="2"
+                    Style="{StaticResource ToolbarIconButton}"
+                    Source="icon_layers_selected.png"
+                />
+        <ImageButton
+                    x:Name="DrawingToolbarCloseButton"
+                    Grid.Column="3"
+                    Style="{StaticResource ToolbarIconButton}"
+                    Source="icon_x.png"
+                />
     </Grid>
 </Border>
 
-<Border x:Name="LayerPanel"
-        IsVisible="False"
-        VerticalOptions="Fill"
-        HorizontalOptions="End"
-        WidthRequest="252"
-        Margin="0,72,14,100"
-        Padding="12"
-        Style="{StaticResource PanelCard}"
-        BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}">
+<Border
+            x:Name="LayerPanel"
+            IsVisible="False"
+            VerticalOptions="Fill"
+            HorizontalOptions="End"
+            WidthRequest="252"
+            Margin="0,72,14,100"
+            Padding="12"
+            Style="{StaticResource PanelCard}"
+            BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}"
+        >
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
-        <Label x:Name="LayerTitleLabel"
-               Grid.Row="0"
-               Text="图层"
-               FontFamily="OpenSansSemibold"
-               FontSize="16"
-               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+        <Label
+                    x:Name="LayerTitleLabel"
+                    Grid.Row="0"
+                    Text="图层"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="16"
+                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                />
         <ScrollView Grid.Row="1">
             <VerticalStackLayout x:Name="LayerList" Spacing="6" />
         </ScrollView>
-        <HorizontalStackLayout Grid.Row="2" Spacing="8" HorizontalOptions="Center">
-            <ImageButton x:Name="AddLayerButton"
-                         Style="{StaticResource ToolbarIconButton}"
-                         Source="icon_plus.png"
- />
-            <ImageButton x:Name="DeleteLayerButton"
-                         Style="{StaticResource ToolbarIconButton}"
-                         Source="icon_minus.png"
- />
+        <HorizontalStackLayout
+                    Grid.Row="2"
+                    Spacing="8"
+                    HorizontalOptions="Center"
+                >
+            <ImageButton
+                        x:Name="AddLayerButton"
+                        Style="{StaticResource ToolbarIconButton}"
+                        Source="icon_plus.png"
+                    />
+            <ImageButton
+                        x:Name="DeleteLayerButton"
+                        Style="{StaticResource ToolbarIconButton}"
+                        Source="icon_minus.png"
+                    />
         </HorizontalStackLayout>
     </Grid>
 </Border>

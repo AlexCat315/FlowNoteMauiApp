@@ -178,8 +178,7 @@ public partial class MainPage : ContentPage
         if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
             return true;
 
-        return DeviceInfo.Platform == DevicePlatform.iOS
-            && DeviceInfo.DeviceType == DeviceType.Virtual;
+        return DeviceInfo.Platform == DevicePlatform.iOS;
     }
 
     private Color ThemeSelectedBackground => IsDarkTheme
@@ -233,7 +232,7 @@ public partial class MainPage : ContentPage
         EnableSwipeSwitch.IsToggled = _savedEnableSwipe;
         EnableLinkSwitch.IsToggled = _savedEnableLink;
         ApplyViewerSettingsFromUi();
-        
+
         UpdatePageIndicators();
         RefreshLayerList();
         UpdateColorSelection("Black");
