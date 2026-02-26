@@ -249,7 +249,10 @@ public partial class MainPage
         DrawingCanvas.SetViewport(DrawingCanvas.ScrollX, DrawingCanvas.ScrollY, zoom);
         SyncZoomUiFromViewer(zoom);
         UpdatePageIndicators();
-        RefreshThumbnailList();
+        if (ThumbnailPanel.IsVisible)
+        {
+            RefreshThumbnailList();
+        }
         ShowStatus(AppResources.DocumentLoadedFormat.Replace("{0}", _totalPageCount.ToString()));
     }
 

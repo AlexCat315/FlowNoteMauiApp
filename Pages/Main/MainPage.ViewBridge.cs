@@ -42,8 +42,6 @@ public partial class MainPage
     private Border TopBarPanel => FindInEditor<Border>(nameof(TopBarPanel));
     private HorizontalStackLayout EditorTabsHost => FindInEditor<HorizontalStackLayout>(nameof(EditorTabsHost));
     private ImageButton TopModePenButton => FindInEditor<ImageButton>(nameof(TopModePenButton));
-    private ImageButton TopModeFingerButton => FindInEditor<ImageButton>(nameof(TopModeFingerButton));
-    private ImageButton TopModeReadButton => FindInEditor<ImageButton>(nameof(TopModeReadButton));
     private ImageButton UndoButton => FindInEditor<ImageButton>(nameof(UndoButton));
     private ImageButton RedoButton => FindInEditor<ImageButton>(nameof(RedoButton));
     private ImageButton PenModeButton => FindInEditor<ImageButton>(nameof(PenModeButton));

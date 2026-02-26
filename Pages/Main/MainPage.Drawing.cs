@@ -1,4 +1,5 @@
 using SkiaSharp;
+using Flow.PDFView;
 using FlowNoteMauiApp.Controls;
 using FlowNoteMauiApp.Models;
 using System.Diagnostics;
@@ -49,6 +50,11 @@ public partial class MainPage
     private EraserToolMode _eraserMode = EraserToolMode.Pixel;
     private bool _isUpdatingToolUi;
     private readonly Dictionary<string, ImageSource> _toolIconSourceCache = new();
+    private CancellationTokenSource? _toolTintUpdateCts;
+    private readonly Dictionary<string, ImageSource> _thumbnailSourceCache = new(StringComparer.Ordinal);
+    private CancellationTokenSource? _thumbnailLoadCts;
+    private const int ThumbnailRequestWidth = 220;
+    private const int ThumbnailRequestHeight = 320;
     private readonly Dictionary<InkToolKind, InkToolState> _inkToolStates = new()
     {
         [InkToolKind.Ballpoint] = new InkToolState(SKColors.Black, 3f),
@@ -101,21 +107,20 @@ public partial class MainPage
 
     private void ApplyTopModeButtonVisual()
     {
-        ApplyTopModeButtonVisual(TopModePenButton, _drawingInputMode == DrawingInputMode.PenStylus);
-        ApplyTopModeButtonVisual(TopModeFingerButton, _drawingInputMode == DrawingInputMode.FingerCapacitive);
-        ApplyTopModeButtonVisual(TopModeReadButton, _drawingInputMode == DrawingInputMode.TapRead);
-    }
-
-    private void ApplyTopModeButtonVisual(ImageButton button, bool selected)
-    {
         var palette = Palette;
-        button.BackgroundColor = selected
+        TopModePenButton.BackgroundColor = InputModePanel.IsVisible
             ? palette.ModeButtonExpandedBackground
             : palette.ModeButtonCollapsedBackground;
-        button.BorderColor = selected
+        TopModePenButton.BorderColor = InputModePanel.IsVisible
             ? palette.ModeButtonExpandedBorder
             : palette.ModeButtonCollapsedBorder;
-        button.BorderWidth = 1;
+        TopModePenButton.BorderWidth = 1;
+        TopModePenButton.Source = _drawingInputMode switch
+        {
+            DrawingInputMode.FingerCapacitive => "icon_hand.png",
+            DrawingInputMode.TapRead => "icon_read_mode.png",
+            _ => "icon_pencil.png"
+        };
     }
 
     private void SetFingerDrawSwitchState(bool isFingerMode)
@@ -232,7 +237,6 @@ public partial class MainPage
         if (_activeInkTool == InkToolKind.None)
         {
             UpdateToolSelection(_activeInkTool);
-            UpdateToolButtonTintColors();
             UpdateToolSettingsPanelState();
             return;
         }
@@ -253,7 +257,6 @@ public partial class MainPage
         }
 
         UpdateToolSelection(_activeInkTool);
-        UpdateToolButtonTintColors();
         UpdateToolSettingsPanelState();
     }
 
@@ -272,6 +275,10 @@ public partial class MainPage
             DrawingCanvas.EnableDrawing = true;
         }
         DrawingToolbarPanel.IsVisible = _drawingInputMode != DrawingInputMode.TapRead;
+        if (DrawingToolbarPanel.IsVisible)
+        {
+            PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+        }
 
         if (showStatus)
         {
@@ -334,6 +341,10 @@ public partial class MainPage
                 DrawingCanvas.EnableDrawing = targetDrawingEnabled;
                 DrawingCanvas.IsVisible = true;
                 DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
+                if (DrawingToolbarPanel.IsVisible)
+                {
+                    PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+                }
                 if (showStatus)
                 {
                     ShowStatus(forceNativeInputPassthrough
@@ -348,6 +359,10 @@ public partial class MainPage
                 DrawingCanvas.EnableDrawing = targetDrawingEnabled;
                 DrawingCanvas.IsVisible = true;
                 DrawingToolbarPanel.IsVisible = targetDrawingEnabled;
+                if (DrawingToolbarPanel.IsVisible)
+                {
+                    PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+                }
                 if (showStatus)
                 {
                     ShowStatus(forceNativeInputPassthrough
@@ -392,22 +407,96 @@ public partial class MainPage
         SetInputModePanelVisible(false);
     }
 
-    private void OnTopModePenClicked(object? sender, EventArgs e)
+    private void OnTopModeToggleClicked(object? sender, EventArgs e)
     {
-        ApplyInputMode(DrawingInputMode.PenStylus, showStatus: true);
-        SetInputModePanelVisible(false);
+        SetInputModePanelVisible(!InputModePanel.IsVisible);
     }
 
-    private void OnTopModeFingerClicked(object? sender, EventArgs e)
+    private void PositionDrawingToolbarPanelUnderTool(InkToolKind tool)
     {
-        ApplyInputMode(DrawingInputMode.FingerCapacitive, showStatus: true);
-        SetInputModePanelVisible(false);
+        var anchorButton = tool switch
+        {
+            InkToolKind.Fountain => HighlighterButton,
+            InkToolKind.Pencil => PencilButton,
+            InkToolKind.Marker => MarkerButton,
+            InkToolKind.Eraser => EraserButton,
+            _ => PenModeButton
+        };
+
+        PositionDrawingToolbarPanel(anchorButton);
     }
 
-    private void OnTopModeReadClicked(object? sender, EventArgs e)
+    private void PositionDrawingToolbarPanel(VisualElement anchorButton)
     {
-        ApplyInputMode(DrawingInputMode.TapRead, showStatus: true);
-        SetInputModePanelVisible(false);
+        if (!DrawingToolbarPanel.IsVisible)
+            return;
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            void ApplyPosition()
+            {
+                var panelWidth = DrawingToolbarPanel.Width > 1
+                    ? DrawingToolbarPanel.Width
+                    : (DrawingToolbarPanel.WidthRequest > 1 ? DrawingToolbarPanel.WidthRequest : 320d);
+                var panelHeight = DrawingToolbarPanel.Height > 1 ? DrawingToolbarPanel.Height : 0d;
+
+                var anchorX = GetVisualOffsetX(anchorButton, TopBarPanel) + TopBarPanel.X;
+                var anchorY = GetVisualOffsetY(anchorButton, TopBarPanel) + TopBarPanel.Y;
+                var anchorWidth = anchorButton.Width > 1 ? anchorButton.Width : anchorButton.WidthRequest;
+                var anchorHeight = anchorButton.Height > 1 ? anchorButton.Height : anchorButton.HeightRequest;
+
+                var targetX = anchorX + (anchorWidth / 2d) - (panelWidth / 2d);
+                var maxX = Math.Max(8d, EditorChromeView.Width - panelWidth - 8d);
+                targetX = Math.Clamp(targetX, 8d, maxX);
+
+                var targetY = anchorY + anchorHeight + 10d;
+                if (panelHeight > 1 && EditorChromeView.Height > 1)
+                {
+                    var maxY = Math.Max(8d, EditorChromeView.Height - panelHeight - 8d);
+                    targetY = Math.Clamp(targetY, 8d, maxY);
+                }
+
+                DrawingToolbarPanel.TranslationX = targetX;
+                DrawingToolbarPanel.TranslationY = targetY;
+            }
+
+            ApplyPosition();
+            DrawingToolbarPanel.Dispatcher.Dispatch(ApplyPosition);
+        });
+    }
+
+    private static double GetVisualOffsetX(VisualElement element, VisualElement ancestor)
+    {
+        var x = 0d;
+        Element? current = element;
+        while (current is VisualElement visual && current != ancestor)
+        {
+            x += visual.X + visual.TranslationX;
+            if (visual is ScrollView scrollView)
+            {
+                x -= scrollView.ScrollX;
+            }
+            current = visual.Parent;
+        }
+
+        return x;
+    }
+
+    private static double GetVisualOffsetY(VisualElement element, VisualElement ancestor)
+    {
+        var y = 0d;
+        Element? current = element;
+        while (current is VisualElement visual && current != ancestor)
+        {
+            y += visual.Y + visual.TranslationY;
+            if (visual is ScrollView scrollView)
+            {
+                y -= scrollView.ScrollY;
+            }
+            current = visual.Parent;
+        }
+
+        return y;
     }
 
     private void OnLayerToggleClicked(object? sender, EventArgs e)
@@ -590,14 +679,42 @@ public partial class MainPage
 
     private void UpdateToolButtonTintColors()
     {
-        PenModeButton.Source = CreateTintedToolIconSource("icon_pen.png", EnsureInkState(InkToolKind.Ballpoint).Color);
-        HighlighterButton.Source = CreateTintedToolIconSource("icon_gelpen.png", EnsureInkState(InkToolKind.Fountain).Color);
-        PencilButton.Source = CreateTintedToolIconSource("icon_pencil.png", EnsureInkState(InkToolKind.Pencil).Color);
-        MarkerButton.Source = CreateTintedToolIconSource("icon_brush.png", EnsureInkState(InkToolKind.Marker).Color);
-        EraserButton.Source = ImageSource.FromFile("icon_eraser.png");
+        _toolTintUpdateCts?.Cancel();
+        _toolTintUpdateCts?.Dispose();
+        _toolTintUpdateCts = new CancellationTokenSource();
+        var token = _toolTintUpdateCts.Token;
+        _ = UpdateToolButtonTintColorsAsync(token);
     }
 
-    private ImageSource CreateTintedToolIconSource(string iconFile, SKColor tintColor)
+    private async Task UpdateToolButtonTintColorsAsync(CancellationToken token)
+    {
+        try
+        {
+            var penSource = await CreateTintedToolIconSourceAsync("icon_pen.png", EnsureInkState(InkToolKind.Ballpoint).Color, token);
+            var highlighterSource = await CreateTintedToolIconSourceAsync("icon_gelpen.png", EnsureInkState(InkToolKind.Fountain).Color, token);
+            var pencilSource = await CreateTintedToolIconSourceAsync("icon_pencil.png", EnsureInkState(InkToolKind.Pencil).Color, token);
+            var markerSource = await CreateTintedToolIconSourceAsync("icon_brush.png", EnsureInkState(InkToolKind.Marker).Color, token);
+            if (token.IsCancellationRequested)
+                return;
+
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (token.IsCancellationRequested)
+                    return;
+
+                PenModeButton.Source = penSource;
+                HighlighterButton.Source = highlighterSource;
+                PencilButton.Source = pencilSource;
+                MarkerButton.Source = markerSource;
+                EraserButton.Source = ImageSource.FromFile("icon_eraser.png");
+            });
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task<ImageSource> CreateTintedToolIconSourceAsync(string iconFile, SKColor tintColor, CancellationToken token)
     {
         var cacheKey = $"{iconFile}:{tintColor.Alpha:X2}{tintColor.Red:X2}{tintColor.Green:X2}{tintColor.Blue:X2}";
         if (_toolIconSourceCache.TryGetValue(cacheKey, out var cachedSource))
@@ -605,9 +722,8 @@ public partial class MainPage
 
         try
         {
-            using var rawStream = FileSystem.OpenAppPackageFileAsync(iconFile).GetAwaiter().GetResult();
-            using var skData = SKData.Create(rawStream);
-            using var baseBitmap = SKBitmap.Decode(skData);
+            await using var rawStream = await FileSystem.OpenAppPackageFileAsync(iconFile);
+            using var baseBitmap = SKBitmap.Decode(rawStream);
             if (baseBitmap is null)
                 return ImageSource.FromFile(iconFile);
 
@@ -624,6 +740,7 @@ public partial class MainPage
                 canvas.Flush();
             }
 
+            token.ThrowIfCancellationRequested();
             using var outputImage = SKImage.FromBitmap(tintedBitmap);
             using var outputData = outputImage.Encode(SKEncodedImageFormat.Png, 100);
             var bytes = outputData.ToArray();
@@ -666,6 +783,10 @@ public partial class MainPage
         ToolColorPanel.IsVisible = _activeInkTool != InkToolKind.Eraser;
         UpdateEraserModeSelectionVisual();
         UpdateColorSelection(_activeInkTool == InkToolKind.Eraser ? null : GetColorKey(state.Color));
+        if (DrawingToolbarPanel.IsVisible)
+        {
+            PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+        }
     }
 
     private void OnPixelEraserModeClicked(object? sender, EventArgs e)
@@ -716,62 +837,163 @@ public partial class MainPage
         ColorWhite.BorderColor = selectedColor == "White" ? selectedBorderColor : palette.ColorSwatchWhiteBorder;
     }
 
+    private void InvalidateThumbnailCache()
+    {
+        _thumbnailLoadCts?.Cancel();
+        _thumbnailLoadCts?.Dispose();
+        _thumbnailLoadCts = null;
+        _thumbnailSourceCache.Clear();
+    }
+
     private void RefreshThumbnailList()
     {
         ThumbnailList.Children.Clear();
         if (!IsEditorInitialized || _totalPageCount <= 0)
             return;
 
-        for (int i = 0; i < _totalPageCount; i++)
-        {
-            var pageIndex = i;
-            var isCurrent = pageIndex == _currentPageIndex;
-            var palette = Palette;
+        _thumbnailLoadCts?.Cancel();
+        _thumbnailLoadCts?.Dispose();
+        _thumbnailLoadCts = new CancellationTokenSource();
+        var token = _thumbnailLoadCts.Token;
 
-            var item = new Border
+        const int maxVisibleItems = 80;
+        var startIndex = 0;
+        var endIndex = _totalPageCount - 1;
+        if (_totalPageCount > maxVisibleItems)
+        {
+            startIndex = Math.Clamp(_currentPageIndex - (maxVisibleItems / 2), 0, _totalPageCount - maxVisibleItems);
+            endIndex = startIndex + maxVisibleItems - 1;
+        }
+
+        if (startIndex > 0)
+        {
+            ThumbnailList.Children.Add(CreateThumbnailListItem(0, false, token, "Page 1 ···"));
+        }
+
+        for (int i = startIndex; i <= endIndex; i++)
+        {
+            ThumbnailList.Children.Add(CreateThumbnailListItem(i, i == _currentPageIndex, token));
+        }
+
+        if (endIndex < _totalPageCount - 1)
+        {
+            ThumbnailList.Children.Add(CreateThumbnailListItem(_totalPageCount - 1, false, token, $"··· Page {_totalPageCount}"));
+        }
+    }
+
+    private string BuildThumbnailCacheKey(int pageIndex)
+    {
+        var noteId = string.IsNullOrWhiteSpace(_currentNoteId) ? "none" : _currentNoteId!;
+        return $"{noteId}:{pageIndex}:{ThumbnailRequestWidth}x{ThumbnailRequestHeight}";
+    }
+
+    private Border CreateThumbnailListItem(int pageIndex, bool isCurrent, CancellationToken token, string? titleOverride = null)
+    {
+        var palette = Palette;
+        var previewImage = new Image
+        {
+            Aspect = Aspect.AspectFit,
+            Source = "icon_file.png",
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill
+        };
+
+        var cacheKey = BuildThumbnailCacheKey(pageIndex);
+        if (_thumbnailSourceCache.TryGetValue(cacheKey, out var cachedSource))
+        {
+            previewImage.Source = cachedSource;
+        }
+        else
+        {
+            _ = LoadThumbnailForPageAsync(pageIndex, cacheKey, previewImage, token);
+        }
+
+        var item = new Border
+        {
+            BackgroundColor = isCurrent ? palette.LayerSelectedBackground : Colors.Transparent,
+            Stroke = isCurrent ? palette.LayerSelectedBorder : palette.LayerNormalBorder,
+            StrokeThickness = 1,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+            Padding = new Thickness(8),
+            Content = new VerticalStackLayout
             {
-                BackgroundColor = isCurrent ? palette.LayerSelectedBackground : Colors.Transparent,
-                Stroke = isCurrent ? palette.LayerSelectedBorder : palette.LayerNormalBorder,
-                StrokeThickness = 1,
-                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
-                Padding = new Thickness(8),
-                Content = new VerticalStackLayout
+                Spacing = 6,
+                Children =
                 {
-                    Spacing = 6,
-                    Children =
+                    new Border
                     {
-                        new Border
-                        {
-                            HeightRequest = 72,
-                            Stroke = isCurrent ? palette.ModeButtonExpandedBorder : palette.LayerNormalBorder,
-                            StrokeThickness = 1,
-                            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
-                            BackgroundColor = isCurrent ? palette.ModeButtonExpandedBackground : palette.ModeButtonCollapsedBackground
-                        },
-                        new Label
-                        {
-                            Text = $"Page {pageIndex + 1}",
-                            FontSize = 12,
-                            HorizontalTextAlignment = TextAlignment.Center,
-                            TextColor = ThemePrimaryText
-                        }
+                        HeightRequest = 72,
+                        Stroke = isCurrent ? palette.ModeButtonExpandedBorder : palette.LayerNormalBorder,
+                        StrokeThickness = 1,
+                        StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+                        BackgroundColor = isCurrent ? palette.ModeButtonExpandedBackground : palette.ModeButtonCollapsedBackground,
+                        Content = previewImage
+                    },
+                    new Label
+                    {
+                        Text = titleOverride ?? $"Page {pageIndex + 1}",
+                        FontSize = 12,
+                        HorizontalTextAlignment = TextAlignment.Center,
+                        TextColor = ThemePrimaryText
                     }
                 }
-            };
+            }
+        };
 
-            item.GestureRecognizers.Add(new TapGestureRecognizer
+        item.GestureRecognizers.Add(new TapGestureRecognizer
+        {
+            Command = new Command(() =>
             {
-                Command = new Command(() =>
-                {
-                    if (!EnsurePdfLoaded())
-                        return;
+                if (!EnsurePdfLoaded())
+                    return;
 
-                    PdfViewer.GoToPage(pageIndex);
-                    _currentPageIndex = pageIndex;
-                    RefreshThumbnailList();
-                })
-            });
-            ThumbnailList.Children.Add(item);
+                PdfViewer.GoToPage(pageIndex);
+                _currentPageIndex = pageIndex;
+                RefreshThumbnailList();
+            })
+        });
+
+        return item;
+    }
+
+    private async Task LoadThumbnailForPageAsync(int pageIndex, string cacheKey, Image target, CancellationToken token)
+    {
+        if (!IsEditorInitialized || token.IsCancellationRequested)
+            return;
+
+        if (PdfViewer is not IPdfViewThumbnails thumbnailProvider)
+            return;
+
+        try
+        {
+            var thumbnailStream = await thumbnailProvider.GetThumbnailAsync(pageIndex, ThumbnailRequestWidth, ThumbnailRequestHeight);
+            if (thumbnailStream is null || token.IsCancellationRequested)
+                return;
+
+            using (thumbnailStream)
+            using (var memory = new MemoryStream())
+            {
+                await thumbnailStream.CopyToAsync(memory, token);
+                if (memory.Length == 0 || token.IsCancellationRequested)
+                    return;
+
+                var bytes = memory.ToArray();
+                var source = ImageSource.FromStream(() => new MemoryStream(bytes));
+                _thumbnailSourceCache[cacheKey] = source;
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    if (!token.IsCancellationRequested)
+                    {
+                        target.Source = source;
+                    }
+                });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch
+        {
         }
     }
 

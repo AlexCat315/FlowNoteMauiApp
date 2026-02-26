@@ -416,8 +416,11 @@ public partial class MainPage
 
     private void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e)
     {
-        RefreshSettingsUiState();
-        RefreshEditorTabsVisual();
+        if (_isUiBootstrapped)
+        {
+            RefreshSettingsUiState();
+            RefreshEditorTabsVisual();
+        }
         RefreshHomeFeed();
         if (IsEditorInitialized)
         {

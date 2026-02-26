@@ -15,17 +15,21 @@ public partial class MainPage
         return string.Format(CultureInfo.CurrentCulture, T(key, fallback), args);
     }
 
-    private void ApplyLocalizedUiText()
+    private void ApplyHomeLocalizedUiText()
     {
-        StatusLabel.Text = T("UiReady", "Ready");
-        UrlEntry.Placeholder = T("UiPdfUrl", "PDF URL");
         HomeSearchEntry.Placeholder = T("UiKeyword", "Keyword");
-
         FilterAllButton.Text = T("HomeFilterAll", "All");
         FilterPdfButton.Text = T("HomeFilterPdf", "PDF");
         FilterNoteButton.Text = T("HomeFilterNote", "Notes");
         FilterFolderButton.Text = T("HomeFilterFolder", "Folders");
         HomeSortButton.Text = T("HomeSort", "Sort");
+    }
+
+    private void ApplyLocalizedUiText()
+    {
+        ApplyHomeLocalizedUiText();
+        StatusLabel.Text = T("UiReady", "Ready");
+        UrlEntry.Placeholder = T("UiPdfUrl", "PDF URL");
 
         FindInDrawer<Label>("DrawerAuthLabel").Text = T("DrawerAuth", "Sign in / Register");
         FindInDrawer<Label>("DrawerSyncHintLabel").Text = T("DrawerSyncHint", "Sync your learning progress");

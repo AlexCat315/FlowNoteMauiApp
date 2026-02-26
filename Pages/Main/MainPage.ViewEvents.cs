@@ -2,15 +2,13 @@ namespace FlowNoteMauiApp;
 
 public partial class MainPage
 {
-    private bool _viewEventsWired;
+    private bool _homePanelEventsWired;
+    private bool _editorChromeEventsWired;
+    private bool _drawerEventsWired;
+    private bool _settingsEventsWired;
 
     private void WireComposedViewEvents()
     {
-        if (_viewEventsWired)
-            return;
-
-        _viewEventsWired = true;
-
         WireHomePanelEvents();
         WireEditorChromeEvents();
         WireDrawerEvents();
@@ -20,6 +18,11 @@ public partial class MainPage
 
     private void WireHomePanelEvents()
     {
+        if (_homePanelEventsWired)
+            return;
+
+        _homePanelEventsWired = true;
+
         FindInHome<ImageButton>("HomeMenuButton").Clicked += OnMenuClicked;
         FindInHome<ImageButton>("HomeDrawerRecentButton").Clicked += OnDrawerRecentClicked;
         FindInHome<ImageButton>("HomeDrawerAllDocsButton").Clicked += OnDrawerAllDocsClicked;
@@ -40,13 +43,16 @@ public partial class MainPage
 
     private void WireEditorChromeEvents()
     {
+        if (_editorChromeEventsWired)
+            return;
+
+        _editorChromeEventsWired = true;
+
         FindInEditor<ImageButton>("TopHomeButton").Clicked += OnHomeClicked;
         FindInEditor<ImageButton>("TopImportButton").Clicked += OnHomeImportLocalClicked;
         FindInEditor<ImageButton>("TopSettingsButton").Clicked += OnOpenSettingsClicked;
         FindInEditor<ImageButton>("TopSearchButton").Clicked += OnEditorSearchClicked;
-        FindInEditor<ImageButton>("TopModePenButton").Clicked += OnTopModePenClicked;
-        FindInEditor<ImageButton>("TopModeFingerButton").Clicked += OnTopModeFingerClicked;
-        FindInEditor<ImageButton>("TopModeReadButton").Clicked += OnTopModeReadClicked;
+        FindInEditor<ImageButton>("TopModePenButton").Clicked += OnTopModeToggleClicked;
         FindInEditor<ImageButton>("TopThumbnailButton").Clicked += OnThumbnailToggleClicked;
 
         UndoButton.Clicked += OnUndoClicked;
@@ -86,6 +92,11 @@ public partial class MainPage
 
     private void WireDrawerEvents()
     {
+        if (_drawerEventsWired)
+            return;
+
+        _drawerEventsWired = true;
+
         FindInDrawer<ImageButton>("DrawerHeaderCloseButton").Clicked += OnMenuClicked;
         FindInDrawer<Button>("DrawerAllDocsButton").Clicked += OnDrawerAllDocsClicked;
         FindInDrawer<Button>("DrawerRecentButton").Clicked += OnDrawerRecentClicked;
@@ -101,6 +112,11 @@ public partial class MainPage
 
     private void WireSettingsEvents()
     {
+        if (_settingsEventsWired)
+            return;
+
+        _settingsEventsWired = true;
+
         FindInSettings<TapGestureRecognizer>("SettingsOverlayTapGesture").Tapped += OnSettingsOverlayTapped;
         SettingsBackButton.Clicked += OnSettingsBackClicked;
         FindInSettings<ImageButton>("SettingsCloseButton").Clicked += OnSettingsCloseClicked;

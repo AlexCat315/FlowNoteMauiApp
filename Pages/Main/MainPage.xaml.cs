@@ -30,6 +30,8 @@ public partial class MainPage : ContentPage
     private DrawingInputMode _drawingInputMode = DrawingInputMode.PenStylus;
     private bool _isUpdatingFingerDrawSwitch;
     private bool _isSyncingZoomFromViewer;
+    private bool _isUiBootstrapped;
+    private bool _isBootstrappingUi;
 
     public MainPage()
     {
@@ -44,7 +46,7 @@ public partial class MainPage : ContentPage
         SettingsOverlayView.InputTransparent = true;
         StatusToastView.InputTransparent = true;
 
-        WireComposedViewEvents();
+        WireHomePanelEvents();
         var services = Application.Current?.Handler?.MauiContext?.Services;
         _workspaceService = services?.GetService<IWorkspaceService>() ?? new WorkspaceService();
         _drawingPersistenceService = services?.GetService<IDrawingPersistenceService>() ?? new DrawingPersistenceService();
@@ -56,9 +58,9 @@ public partial class MainPage : ContentPage
 
         LoadPersistedAppSettings();
         ApplyGlobalSettings();
-        InitializeControls();
-        RefreshSettingsUiState();
         UpdateLocalizedStrings();
+        UpdateHomeSortLabel();
+        UpdateHomeFilterButtons();
         Loaded += OnPageLoaded;
         LanguageManager.LanguageChanged += OnLanguageChanged;
         if (Application.Current != null)
@@ -128,6 +130,7 @@ public partial class MainPage : ContentPage
         _drawingCanvas.ViewportZoom = _pdfViewer.Zoom <= 0f ? 1f : _pdfViewer.Zoom;
         ApplyInputMode(_drawingInputMode, activateDrawing: false);
         RefreshLayerList();
+        UpdateToolButtonTintColors();
     }
 
     private void UpdateTwoFingerNavigationPolicy()
@@ -175,7 +178,10 @@ public partial class MainPage : ContentPage
     private void OnLanguageChanged()
     {
         UpdateLocalizedStrings();
-        RefreshSettingsUiState();
+        if (_isUiBootstrapped)
+        {
+            RefreshSettingsUiState();
+        }
         RefreshHomeFeed();
     }
 
@@ -215,7 +221,14 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            ApplyLocalizedUiText();
+            if (_isUiBootstrapped)
+            {
+                ApplyLocalizedUiText();
+            }
+            else
+            {
+                ApplyHomeLocalizedUiText();
+            }
         }
         catch { }
     }
@@ -262,7 +275,7 @@ public partial class MainPage : ContentPage
         UpdateHomeFilterButtons();
     }
 
-    private async void OnPageLoaded(object? sender, EventArgs e)
+    private void OnPageLoaded(object? sender, EventArgs e)
     {
         if (_isInitialLoadDone)
             return;
@@ -270,6 +283,36 @@ public partial class MainPage : ContentPage
         _isInitialLoadDone = true;
         ShowHomeScreen();
         _ = RefreshWorkspaceViewsAfterStartupAsync();
+        _ = BootstrapUiAfterFirstFrameAsync();
+    }
+
+    private async Task BootstrapUiAfterFirstFrameAsync()
+    {
+        if (_isUiBootstrapped || _isBootstrappingUi)
+            return;
+
+        await Task.Delay(120);
+        await MainThread.InvokeOnMainThreadAsync(EnsureUiBootstrapped);
+    }
+
+    private void EnsureUiBootstrapped()
+    {
+        if (_isUiBootstrapped || _isBootstrappingUi)
+            return;
+
+        try
+        {
+            _isBootstrappingUi = true;
+            WireComposedViewEvents();
+            InitializeControls();
+            RefreshSettingsUiState();
+            _isUiBootstrapped = true;
+            UpdateLocalizedStrings();
+        }
+        finally
+        {
+            _isBootstrappingUi = false;
+        }
     }
 
     private async Task RefreshWorkspaceViewsAfterStartupAsync()
@@ -287,6 +330,7 @@ public partial class MainPage : ContentPage
     protected override async void OnDisappearing()
     {
         base.OnDisappearing();
+        CancelHomeFeedRender();
         StopTwoFingerInertia();
         await SaveCurrentDrawingStateAsync();
     }

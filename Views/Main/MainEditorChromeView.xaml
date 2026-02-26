@@ -103,26 +103,6 @@
                             Source="icon_pencil.png"
                         />
                         <ImageButton
-                            x:Name="TopModeFingerButton"
-                            Style="{StaticResource FlatTopIconButton}"
-                            WidthRequest="24"
-                            HeightRequest="24"
-                            MinimumWidthRequest="24"
-                            MinimumHeightRequest="24"
-                            Padding="3"
-                            Source="icon_hand.png"
-                        />
-                        <ImageButton
-                            x:Name="TopModeReadButton"
-                            Style="{StaticResource FlatTopIconButton}"
-                            WidthRequest="24"
-                            HeightRequest="24"
-                            MinimumWidthRequest="24"
-                            MinimumHeightRequest="24"
-                            Padding="3"
-                            Source="icon_read_mode.png"
-                        />
-                        <ImageButton
                             x:Name="TopSettingsButton"
                             Style="{StaticResource FlatTopIconButton}"
                             WidthRequest="24"
@@ -302,9 +282,10 @@
             IsVisible="False"
             InputTransparent="False"
             VerticalOptions="Start"
-            HorizontalOptions="Center"
-            Margin="0,88,0,0"
-            WidthRequest="420"
+            HorizontalOptions="Start"
+            Margin="0"
+            WidthRequest="320"
+            MaximumWidthRequest="340"
             Padding="0"
             Style="{StaticResource PanelCard}"
         >

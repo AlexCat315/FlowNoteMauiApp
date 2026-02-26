@@ -60,7 +60,6 @@ public partial class MainPage
 
             await SaveCurrentDrawingStateAsync();
             var note = await _workspaceService.ImportPdfAsync(suggestedName, bytes, _workspaceFolder);
-            await RefreshWorkspaceViewsAsync();
 
             if (openAfterImport)
             {
@@ -68,6 +67,7 @@ public partial class MainPage
             }
             else
             {
+                await RefreshWorkspaceViewsAsync();
                 ShowStatus($"Imported: {note.Name}");
                 ShowHomeScreen();
             }
@@ -159,7 +159,6 @@ public partial class MainPage
 
             await SaveCurrentDrawingStateAsync();
             var note = await _workspaceService.ImportPdfAsync(importedName, data, _workspaceFolder);
-            await RefreshWorkspaceViewsAsync();
 
             if (openAfterImport)
             {
@@ -167,6 +166,7 @@ public partial class MainPage
             }
             else
             {
+                await RefreshWorkspaceViewsAsync();
                 ShowStatus($"Imported: {note.Name}");
                 ShowHomeScreen();
             }

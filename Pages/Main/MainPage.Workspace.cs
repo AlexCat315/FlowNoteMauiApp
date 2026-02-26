@@ -17,7 +17,9 @@ public partial class MainPage
     private const int MaxEditorTabCount = 12;
     private const double EditorTopInsetFallback = 74d;
     private const double AndroidEditorTopInsetFallback = 86d;
+    private const int HomeFeedRenderBatchSize = 12;
     private bool _isTopBarInsetWired;
+    private CancellationTokenSource? _homeFeedRenderCts;
 
     private void UpsertEditorTab(WorkspaceNote note)
     {
@@ -218,6 +220,7 @@ public partial class MainPage
 
     private async Task OpenWorkspaceNoteAsync(WorkspaceNote note)
     {
+        EnsureUiBootstrapped();
         await SaveCurrentDrawingStateAsync();
         var bytes = await _workspaceService.GetPdfBytesAsync(note.Id);
         if (bytes is null || bytes.Length == 0)
@@ -233,25 +236,28 @@ public partial class MainPage
         await _workspaceService.MarkOpenedAsync(note.Id);
 
         EnsureEditorInitialized();
+        InvalidateThumbnailCache();
         ClearArmedInkTool(hideDrawingToolbar: true);
         PdfViewer.Source = new BytesPdfSource(bytes);
         ShowEditorScreen();
         RefreshEditorTabsVisual();
         await LoadDrawingForCurrentNoteAsync();
-        await RefreshWorkspaceViewsAsync();
         ShowStatus($"Opened: {note.Name}");
     }
 
     private async Task RefreshWorkspaceViewsAsync()
     {
-        WorkspaceFolderEntry.Text = _workspaceFolder;
         var homeNotes = await _workspaceService.GetRecentNotesAsync(120);
         var recent = homeNotes.Take(6).ToList();
         var browse = await _workspaceService.BrowseAsync(_workspaceFolder);
 
-        RenderRecentNotes(recent);
-        RenderFolderItems(browse);
-        RenderNoteItems(browse);
+        if (_isUiBootstrapped)
+        {
+            WorkspaceFolderEntry.Text = _workspaceFolder;
+            RenderRecentNotes(recent);
+            RenderFolderItems(browse);
+            RenderNoteItems(browse);
+        }
 
         _cachedHomeNotes = homeNotes;
         _cachedHomeFolders = browse.SubFolders;
@@ -266,25 +272,40 @@ public partial class MainPage
         EditorChromeView.InputTransparent = true;
 
         HomePanel.IsVisible = true;
-        TopBarPanel.IsVisible = false;
-        UpdateEditorViewportInset();
-        SetDrawerVisible(false);
-        SetSettingsVisible(false);
-        DrawingToolbarPanel.IsVisible = false;
-        InputModePanel.IsVisible = false;
-        ThumbnailPanel.IsVisible = false;
-        LayerPanel.IsVisible = false;
+        if (_isUiBootstrapped)
+        {
+            TopBarPanel.IsVisible = false;
+            UpdateEditorViewportInset();
+            SetDrawerVisible(false);
+            SetSettingsVisible(false);
+            DrawingToolbarPanel.IsVisible = false;
+            InputModePanel.IsVisible = false;
+            ThumbnailPanel.IsVisible = false;
+            LayerPanel.IsVisible = false;
+        }
+        else
+        {
+            DrawerOverlayView.IsVisible = false;
+            DrawerOverlayView.InputTransparent = true;
+            SettingsOverlayView.IsVisible = false;
+            SettingsOverlayView.InputTransparent = true;
+            EditorHost.Margin = Thickness.Zero;
+        }
 
         if (IsEditorInitialized)
         {
             PdfViewer.IsVisible = false;
-            ClearArmedInkTool(hideDrawingToolbar: true);
+            if (_isUiBootstrapped)
+            {
+                ClearArmedInkTool(hideDrawingToolbar: true);
+            }
             DrawingCanvas.IsVisible = false;
         }
     }
 
     private void ShowEditorScreen()
     {
+        EnsureUiBootstrapped();
         EnsureEditorInitialized();
         EnsureTopBarInsetHooked();
         HomePanelView.IsVisible = false;
@@ -336,6 +357,7 @@ public partial class MainPage
 
     private void RenderHomeNotes(IReadOnlyList<WorkspaceNote> notes)
     {
+        CancelHomeFeedRender();
         HomeNotesList.Children.Clear();
         HomeCountLabel.Text = TF("HomeDocCountFormat", "{0} docs", notes.Count);
 
@@ -347,14 +369,12 @@ public partial class MainPage
             return;
         }
 
-        foreach (var note in notes)
-        {
-            HomeNotesList.Children.Add(CreateHomeNoteCard(note));
-        }
+        RenderHomeFeedInBatches(notes, CreateHomeNoteCard);
     }
 
     private void RenderHomeFolders(IReadOnlyList<string> folders)
     {
+        CancelHomeFeedRender();
         HomeNotesList.Children.Clear();
         HomeCountLabel.Text = TF("HomeFolderCountFormat", "{0} folders", folders.Count);
 
@@ -366,10 +386,7 @@ public partial class MainPage
             return;
         }
 
-        foreach (var folderPath in folders)
-        {
-            HomeNotesList.Children.Add(CreateHomeFolderCard(folderPath));
-        }
+        RenderHomeFeedInBatches(folders, CreateHomeFolderCard);
     }
 
     private Color HomePreviewBackground => IsDarkTheme ? Color.FromArgb("#2A3B55") : Color.FromArgb("#E7EEF7");
@@ -378,6 +395,7 @@ public partial class MainPage
 
     private void RenderHomeEmptyState(string title, string description)
     {
+        CancelHomeFeedRender();
         HomeNotesList.Children.Add(new Border
         {
             WidthRequest = 280,
@@ -420,6 +438,44 @@ public partial class MainPage
                 }
             }
         });
+    }
+
+    private void CancelHomeFeedRender()
+    {
+        _homeFeedRenderCts?.Cancel();
+        _homeFeedRenderCts?.Dispose();
+        _homeFeedRenderCts = null;
+    }
+
+    private void RenderHomeFeedInBatches<T>(IReadOnlyList<T> items, Func<T, View> itemFactory)
+    {
+        if (items.Count == 0)
+            return;
+
+        var cts = new CancellationTokenSource();
+        _homeFeedRenderCts = cts;
+        var token = cts.Token;
+        var index = 0;
+
+        void AppendBatch()
+        {
+            if (token.IsCancellationRequested)
+                return;
+
+            var end = Math.Min(index + HomeFeedRenderBatchSize, items.Count);
+            while (index < end)
+            {
+                HomeNotesList.Children.Add(itemFactory(items[index]));
+                index++;
+            }
+
+            if (index < items.Count)
+            {
+                Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(12), AppendBatch);
+            }
+        }
+
+        AppendBatch();
     }
 
     private View CreateHomeFolderCard(string folderPath)

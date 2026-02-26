@@ -39,8 +39,6 @@ public partial class MainPage
         RegisterMicroInteraction(FindInEditor<ImageButton>("TopSettingsButton"));
         RegisterMicroInteraction(FindInEditor<ImageButton>("TopSearchButton"));
         RegisterMicroInteraction(TopModePenButton);
-        RegisterMicroInteraction(TopModeFingerButton);
-        RegisterMicroInteraction(TopModeReadButton);
         RegisterMicroInteraction(FindInEditor<ImageButton>("TopThumbnailButton"));
         RegisterMicroInteraction(UndoButton);
         RegisterMicroInteraction(RedoButton);

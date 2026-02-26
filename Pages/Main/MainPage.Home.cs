@@ -29,18 +29,34 @@ public partial class MainPage
 
     private void SetDrawerVisible(bool visible)
     {
+        if (visible)
+        {
+            EnsureUiBootstrapped();
+        }
+
         DrawerOverlayView.IsVisible = visible;
         DrawerOverlayView.InputTransparent = !visible;
-        HomeDrawerOverlay.IsVisible = visible;
+        if (visible || _isUiBootstrapped)
+        {
+            HomeDrawerOverlay.IsVisible = visible;
+        }
     }
 
     private void SetSettingsVisible(bool visible)
     {
+        if (visible)
+        {
+            EnsureUiBootstrapped();
+        }
+
         SettingsOverlayView.IsVisible = visible;
         SettingsOverlayView.InputTransparent = !visible;
-        SettingsOverlay.IsVisible = visible;
-        SettingsPanel.IsVisible = visible;
-        if (visible)
+        if (visible || _isUiBootstrapped)
+        {
+            SettingsOverlay.IsVisible = visible;
+            SettingsPanel.IsVisible = visible;
+        }
+        if (visible && _isUiBootstrapped)
         {
             SetSettingsSection(SettingsSection.Home);
             RefreshSettingsUiState();
@@ -224,6 +240,7 @@ public partial class MainPage
 
     private void OnOpenSettingsClicked(object? sender, EventArgs e)
     {
+        EnsureUiBootstrapped();
         SetDrawerVisible(false);
         SetInputModePanelVisible(false);
         DrawingToolbarPanel.IsVisible = false;
@@ -311,12 +328,12 @@ public partial class MainPage
         switch (item)
         {
             case "语言":
-            {
-                var isZh = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("zh", StringComparison.OrdinalIgnoreCase);
-                LanguageManager.SetCulture(new CultureInfo(isZh ? "en-US" : "zh-CN"));
-                ShowStatus(isZh ? T("StatusLanguageEnglish", "Language: English") : T("StatusLanguageChinese", "Language: Simplified Chinese"));
-                break;
-            }
+                {
+                    var isZh = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("zh", StringComparison.OrdinalIgnoreCase);
+                    LanguageManager.SetCulture(new CultureInfo(isZh ? "en-US" : "zh-CN"));
+                    ShowStatus(isZh ? T("StatusLanguageEnglish", "Language: English") : T("StatusLanguageChinese", "Language: Simplified Chinese"));
+                    break;
+                }
             case "显示":
                 ShowStatus(T("StatusDisplaySettingsOpened", "Display settings opened (theme integration pending)."));
                 break;
