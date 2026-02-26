@@ -102,24 +102,17 @@ public partial class MainPage
                 PickerTitle = AppResources.SelectPdfFile
             };
 
-            var isIos = DeviceInfo.Platform == DevicePlatform.iOS;
-            if (!isIos)
+            var platform = DeviceInfo.Platform;
+            var isIos = platform == DevicePlatform.iOS;
+            var isMacCatalyst = platform == DevicePlatform.MacCatalyst;
+            var useFileTypeFilter = !isIos && !isMacCatalyst;
+            if (useFileTypeFilter)
             {
                 options.FileTypes = PdfPickerFileType;
             }
 
-            LogPicker($"pick-start platform={DeviceInfo.Platform} isIos={isIos}");
-            var result = await FilePicker.Default.PickAsync(options);
-
-            if (result is null && DeviceInfo.Platform == DevicePlatform.MacCatalyst)
-            {
-                // Some MacCatalyst builds return null with strict UTType filters; retry once without filters.
-                LogPicker("pick-result null on maccatalyst, retrying without file type filter");
-                result = await FilePicker.Default.PickAsync(new PickOptions
-                {
-                    PickerTitle = AppResources.SelectPdfFile
-                });
-            }
+            LogPicker($"pick-start platform={platform} isIos={isIos} useFilter={useFileTypeFilter}");
+            var result = await PickSingleFileAsync(options, useMacCatalystPickerWorkaround: isMacCatalyst);
 
             if (result is null)
             {
@@ -190,6 +183,18 @@ public partial class MainPage
             _pickerCooldownUntilUtc = DateTime.UtcNow.Add(PickerReentryCooldown);
             SetImportButtonsEnabled(true);
         }
+    }
+
+    private async Task<FileResult?> PickSingleFileAsync(PickOptions options, bool useMacCatalystPickerWorkaround)
+    {
+        if (!useMacCatalystPickerWorkaround)
+        {
+            return await FilePicker.Default.PickAsync(options);
+        }
+
+        var results = (await FilePicker.Default.PickMultipleAsync(options)).ToList();
+        LogPicker($"pick-result-count={results.Count} on maccatalyst");
+        return results.FirstOrDefault();
     }
 
     [Conditional("DEBUG")]

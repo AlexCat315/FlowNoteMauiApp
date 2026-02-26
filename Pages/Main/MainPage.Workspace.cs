@@ -1,5 +1,6 @@
 using Flow.PDFView.Abstractions;
 using FlowNoteMauiApp.Models;
+using Microsoft.Maui.Devices;
 
 namespace FlowNoteMauiApp;
 
@@ -14,6 +15,9 @@ public partial class MainPage
 
     private readonly List<EditorTabInfo> _editorTabs = new();
     private const int MaxEditorTabCount = 12;
+    private const double EditorTopInsetFallback = 74d;
+    private const double AndroidEditorTopInsetFallback = 86d;
+    private bool _isTopBarInsetWired;
 
     private void UpsertEditorTab(WorkspaceNote note)
     {
@@ -257,6 +261,7 @@ public partial class MainPage
 
         HomePanel.IsVisible = true;
         TopBarPanel.IsVisible = false;
+        UpdateEditorViewportInset();
         SetDrawerVisible(false);
         SetSettingsVisible(false);
         DrawingToolbarPanel.IsVisible = false;
@@ -274,6 +279,7 @@ public partial class MainPage
     private void ShowEditorScreen()
     {
         EnsureEditorInitialized();
+        EnsureTopBarInsetHooked();
         HomePanelView.IsVisible = false;
         HomePanelView.InputTransparent = true;
         EditorChromeView.IsVisible = true;
@@ -281,10 +287,44 @@ public partial class MainPage
 
         HomePanel.IsVisible = false;
         TopBarPanel.IsVisible = true;
+        UpdateEditorViewportInset();
         SetDrawerVisible(false);
         SetSettingsVisible(false);
         PdfViewer.IsVisible = true;
         ApplyInputMode(_drawingInputMode, activateDrawing: true);
+    }
+
+    private void EnsureTopBarInsetHooked()
+    {
+        if (_isTopBarInsetWired)
+            return;
+
+        TopBarPanel.SizeChanged += OnTopBarPanelSizeChanged;
+        _isTopBarInsetWired = true;
+    }
+
+    private void OnTopBarPanelSizeChanged(object? sender, EventArgs e)
+    {
+        UpdateEditorViewportInset();
+    }
+
+    private void UpdateEditorViewportInset()
+    {
+        if (!EditorChromeView.IsVisible || !TopBarPanel.IsVisible)
+        {
+            EditorHost.Margin = Thickness.Zero;
+            return;
+        }
+
+        var topInset = TopBarPanel.Height;
+        if (topInset <= 0)
+        {
+            topInset = DeviceInfo.Platform == DevicePlatform.Android
+                ? AndroidEditorTopInsetFallback
+                : EditorTopInsetFallback;
+        }
+
+        EditorHost.Margin = new Thickness(0, Math.Ceiling(topInset), 0, 0);
     }
 
     private void RenderHomeNotes(IReadOnlyList<WorkspaceNote> notes)

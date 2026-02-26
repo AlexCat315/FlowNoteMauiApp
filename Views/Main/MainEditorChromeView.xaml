@@ -386,6 +386,8 @@
                         x:Name="InputModePenButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
+                        ImageSource="icon_pencil.png"
+                        ContentLayout="Left,8"
                         Text="手写模式"
                     />
             <Label
@@ -402,6 +404,8 @@
                         x:Name="InputModeFingerButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
+                        ImageSource="icon_hand.png"
+                        ContentLayout="Left,8"
                         Text="触控模式"
                     />
             <Label
@@ -419,6 +423,8 @@
                         x:Name="InputModeReadButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
+                        ImageSource="icon_eye.png"
+                        ContentLayout="Left,8"
                         Text="阅读模式"
                     />
             <Label

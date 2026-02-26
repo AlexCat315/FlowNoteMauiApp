@@ -624,7 +624,9 @@ public class DrawingCanvas : SKCanvasView
 
     private void UpdateInputTransparency()
     {
-        InputTransparent = ForceInputTransparent || !EnableDrawing;
+        var shouldPassThrough = ForceInputTransparent || !EnableDrawing;
+        InputTransparent = shouldPassThrough;
+        EnableTouchEvents = !shouldPassThrough;
     }
 
     private void OnCanvasTouch(object? sender, SKTouchEventArgs e)

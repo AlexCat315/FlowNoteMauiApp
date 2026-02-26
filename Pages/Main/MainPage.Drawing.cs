@@ -16,6 +16,9 @@ public partial class MainPage
 
     private const double PanInertiaFrameIntervalMs = 16d;
     private const double PanInertiaVelocityStopThreshold = 8d;
+    private const string PenInputModeIcon = "icon_pencil.png";
+    private const string FingerInputModeIcon = "icon_hand.png";
+    private const string ReadInputModeIcon = "icon_eye.png";
     private CancellationTokenSource? _panInertiaCts;
     private DateTime _lastPanSampleUtc = DateTime.UtcNow;
     private double _panVelocityX;
@@ -104,6 +107,12 @@ public partial class MainPage
         InputModePenCheck.IsVisible = _drawingInputMode == DrawingInputMode.PenStylus;
         InputModeFingerCheck.IsVisible = _drawingInputMode == DrawingInputMode.FingerCapacitive;
         InputModeReadCheck.IsVisible = _drawingInputMode == DrawingInputMode.TapRead;
+        DrawingToggleButton.Source = _drawingInputMode switch
+        {
+            DrawingInputMode.FingerCapacitive => FingerInputModeIcon,
+            DrawingInputMode.TapRead => ReadInputModeIcon,
+            _ => PenInputModeIcon
+        };
     }
 
     private void ApplyInputMode(DrawingInputMode mode, bool showStatus = false, bool activateDrawing = true)

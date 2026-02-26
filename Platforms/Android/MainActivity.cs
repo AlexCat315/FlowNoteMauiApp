@@ -25,9 +25,8 @@ public class MainActivity : MauiAppCompatActivity
             return;
         }
 
-        // 关键步骤：启用 Edge-to-edge，让应用内容延伸到系统栏（状态栏、导航栏）后面
-        // 这是现代 Android 应用的标准做法，也是 Android 15 的默认行为
-        WindowCompat.SetDecorFitsSystemWindows(window, false);
+        // 为编辑页保留系统栏安全区域，避免顶部内容被状态栏覆盖。
+        WindowCompat.SetDecorFitsSystemWindows(window, true);
 
         // 步骤 1: 确保系统为状态栏绘制背景（对于 Android 5.0+）
         // 注意：在 Android 15+ 上，此标志仍被设置，但 `SetStatusBarColor` 将失效。
