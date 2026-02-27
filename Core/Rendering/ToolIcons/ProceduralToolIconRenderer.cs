@@ -59,45 +59,45 @@ public static class ProceduralToolIconRenderer
         switch (toolKind)
         {
             case ToolIconKind.Ballpoint:
-            {
-                var bodyRect = DrawTubeBody(canvas, centerX, bodyTop, size * 0.28f, bodyBottom - bodyTop, size * 0.10f, unit);
-                DrawGripBand(canvas, bodyRect, 0.58f, SKColor.Parse("101010"), unit);
-                DrawAccentWindow(canvas,
-                    new SKRect(centerX - (size * 0.055f), bodyRect.Top + (size * 0.14f), centerX + (size * 0.055f), bodyRect.Top + (size * 0.42f)),
-                    accentColor,
-                    unit);
-                DrawMetalNib(canvas, centerX, nibTop, bodyTop, unit);
-                break;
-            }
+                {
+                    var bodyRect = DrawTubeBody(canvas, centerX, bodyTop, size * 0.28f, bodyBottom - bodyTop, size * 0.10f, unit);
+                    DrawGripBand(canvas, bodyRect, 0.58f, SKColor.Parse("101010"), unit);
+                    DrawAccentWindow(canvas,
+                        new SKRect(centerX - (size * 0.055f), bodyRect.Top + (size * 0.14f), centerX + (size * 0.055f), bodyRect.Top + (size * 0.42f)),
+                        accentColor,
+                        unit);
+                    DrawMetalNib(canvas, centerX, nibTop, bodyTop, unit);
+                    break;
+                }
             case ToolIconKind.Fountain:
-            {
-                var bodyRect = DrawTubeBody(canvas, centerX, bodyTop - (size * 0.01f), size * 0.27f, bodyBottom - bodyTop + (size * 0.01f), size * 0.10f, unit);
-                DrawGripBand(canvas, bodyRect, 0.60f, SKColor.Parse("101010"), unit);
-                DrawAccentBand(canvas, bodyRect, 0.16f, accentColor, unit);
-                DrawInkTip(canvas, centerX, nibTop, bodyTop, unit);
-                break;
-            }
+                {
+                    var bodyRect = DrawTubeBody(canvas, centerX, bodyTop - (size * 0.01f), size * 0.27f, bodyBottom - bodyTop + (size * 0.01f), size * 0.10f, unit);
+                    DrawGripBand(canvas, bodyRect, 0.60f, SKColor.Parse("101010"), unit);
+                    DrawAccentBand(canvas, bodyRect, 0.16f, accentColor, unit);
+                    DrawInkTip(canvas, centerX, nibTop, bodyTop, unit);
+                    break;
+                }
             case ToolIconKind.Pencil:
-            {
-                var bodyRect = DrawTubeBody(canvas, centerX, bodyTop, size * 0.27f, bodyBottom - bodyTop, size * 0.10f, unit);
-                DrawGripBand(canvas, bodyRect, 0.57f, SKColor.Parse("141414"), unit);
-                DrawAccentBand(canvas, bodyRect, 0.20f, accentColor, unit);
-                DrawPencilTip(canvas, centerX, nibTop, bodyTop, unit);
-                break;
-            }
+                {
+                    var bodyRect = DrawTubeBody(canvas, centerX, bodyTop, size * 0.27f, bodyBottom - bodyTop, size * 0.10f, unit);
+                    DrawGripBand(canvas, bodyRect, 0.57f, SKColor.Parse("141414"), unit);
+                    DrawAccentBand(canvas, bodyRect, 0.20f, accentColor, unit);
+                    DrawPencilTip(canvas, centerX, nibTop, bodyTop, unit);
+                    break;
+                }
             case ToolIconKind.Marker:
-            {
-                var bodyRect = DrawTubeBody(canvas, centerX, size * 0.32f, size * 0.32f, size * 0.54f, size * 0.11f, unit);
-                DrawAccentCap(canvas, new SKRect(bodyRect.Left, size * 0.15f, bodyRect.Right, size * 0.32f), accentColor, unit);
-                DrawGripBand(canvas, bodyRect, 0.49f, Darken(accentColor, 0.1f), unit);
-                DrawChiselTip(canvas, centerX, size * 0.15f, size * 0.32f, accentColor, unit);
-                break;
-            }
+                {
+                    var bodyRect = DrawTubeBody(canvas, centerX, size * 0.32f, size * 0.32f, size * 0.54f, size * 0.11f, unit);
+                    DrawAccentCap(canvas, new SKRect(bodyRect.Left, size * 0.15f, bodyRect.Right, size * 0.32f), accentColor, unit);
+                    DrawGripBand(canvas, bodyRect, 0.49f, Darken(accentColor, 0.1f), unit);
+                    DrawChiselTip(canvas, centerX, size * 0.15f, size * 0.32f, accentColor, unit);
+                    break;
+                }
             case ToolIconKind.Eraser:
-            {
-                DrawEraser(canvas, centerX, accentColor, size, unit);
-                break;
-            }
+                {
+                    DrawEraser(canvas, centerX, accentColor, size, unit);
+                    break;
+                }
         }
     }
 

@@ -172,10 +172,10 @@
         TargetType="ImageButton"
         BasedOn="{StaticResource ToolbarToolIconButton}"
     >
-        <Setter Property="WidthRequest" Value="30" />
-        <Setter Property="HeightRequest" Value="30" />
-        <Setter Property="MinimumWidthRequest" Value="30" />
-        <Setter Property="MinimumHeightRequest" Value="30" />
+        <Setter Property="WidthRequest" Value="35" />
+        <Setter Property="HeightRequest" Value="35" />
+        <Setter Property="MinimumWidthRequest" Value="35" />
+        <Setter Property="MinimumHeightRequest" Value="35" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="1" />
         <Setter Property="BackgroundColor" Value="Transparent" />

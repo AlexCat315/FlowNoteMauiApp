@@ -160,9 +160,10 @@ public partial class MainPage
         try
         {
             visual.AbortAnimation("flow-micro-click");
-            var baseScale = visual.Scale <= 0d ? 1d : visual.Scale;
-            await visual.ScaleToAsync(baseScale * 1.03, 75, Easing.CubicOut);
-            await visual.ScaleToAsync(baseScale, 110, Easing.CubicIn);
+            var baseScaleX = visual.ScaleX <= 0d ? 1d : visual.ScaleX;
+            var baseScaleY = visual.ScaleY <= 0d ? 1d : visual.ScaleY;
+            await AnimateScaleAsync(visual, baseScaleX * 1.03d, baseScaleY * 1.03d, 75, Easing.CubicOut);
+            await AnimateScaleAsync(visual, baseScaleX, baseScaleY, 110, Easing.CubicIn);
         }
         catch
         {
@@ -176,14 +177,15 @@ public partial class MainPage
             visual.AbortAnimation("flow-micro-press");
             if (pressed)
             {
-                var pressedScale = Math.Max(0.01d, state.BaseScale * 0.95d);
+                var pressedScaleX = Math.Max(0.01d, state.BaseScaleX * 0.95d);
+                var pressedScaleY = Math.Max(0.01d, state.BaseScaleY * 0.95d);
                 return Task.WhenAll(
-                    visual.ScaleToAsync(pressedScale, 80, Easing.CubicOut),
+                    AnimateScaleAsync(visual, pressedScaleX, pressedScaleY, 80, Easing.CubicOut),
                     visual.TranslateToAsync(state.BaseTranslationX, state.BaseTranslationY + 1.5d, 80, Easing.CubicOut));
             }
 
             return Task.WhenAll(
-                visual.ScaleToAsync(state.BaseScale, 130, Easing.SpringOut),
+                AnimateScaleAsync(visual, state.BaseScaleX, state.BaseScaleY, 130, Easing.SpringOut),
                 visual.TranslateToAsync(state.BaseTranslationX, state.BaseTranslationY, 130, Easing.SpringOut));
         }
         catch
@@ -197,7 +199,8 @@ public partial class MainPage
         var state = MicroInteractionStateMap.GetOrCreateValue(visual);
         if (!state.HasBaseValues)
         {
-            state.BaseScale = visual.Scale;
+            state.BaseScaleX = visual.ScaleX;
+            state.BaseScaleY = visual.ScaleY;
             state.BaseTranslationX = visual.TranslationX;
             state.BaseTranslationY = visual.TranslationY;
             state.HasBaseValues = true;
@@ -208,15 +211,46 @@ public partial class MainPage
 
     private static void CaptureInteractionBase(VisualElement visual, MicroInteractionState state)
     {
-        state.BaseScale = visual.Scale;
+        state.BaseScaleX = visual.ScaleX;
+        state.BaseScaleY = visual.ScaleY;
         state.BaseTranslationX = visual.TranslationX;
         state.BaseTranslationY = visual.TranslationY;
         state.HasBaseValues = true;
     }
 
+    private static Task AnimateScaleAsync(VisualElement visual, double scaleX, double scaleY, uint duration, Easing easing)
+    {
+        var targetScaleX = Math.Max(0.01d, scaleX);
+        var targetScaleY = Math.Max(0.01d, scaleY);
+        var startScaleX = visual.ScaleX;
+        var startScaleY = visual.ScaleY;
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        try
+        {
+            visual.AbortAnimation("flow-micro-scale");
+            var animation = new Animation();
+            animation.Add(0d, 1d, new Animation(v => visual.ScaleX = v, startScaleX, targetScaleX, easing));
+            animation.Add(0d, 1d, new Animation(v => visual.ScaleY = v, startScaleY, targetScaleY, easing));
+            animation.Commit(
+                visual,
+                "flow-micro-scale",
+                rate: 16,
+                length: duration,
+                easing: Easing.Linear,
+                finished: (_, _) => completion.TrySetResult(true));
+        }
+        catch
+        {
+            completion.TrySetResult(true);
+        }
+
+        return completion.Task;
+    }
+
     private sealed class MicroInteractionState
     {
-        public double BaseScale { get; set; } = 1d;
+        public double BaseScaleX { get; set; } = 1d;
+        public double BaseScaleY { get; set; } = 1d;
         public double BaseTranslationX { get; set; }
         public double BaseTranslationY { get; set; }
         public bool HasBaseValues { get; set; }
