@@ -98,6 +98,10 @@ public partial class MainPage
 
         EditorChromeView.SizeChanged += OnEditorChromeLayoutChanged;
         TopBarPanel.SizeChanged += OnEditorChromeLayoutChanged;
+        TopTabsScrollView.SizeChanged += OnEditorChromeLayoutChanged;
+        TopToolsScrollView.SizeChanged += OnEditorChromeLayoutChanged;
+        TopTabsScrollView.Scrolled += OnTopBarScrolled;
+        TopToolsScrollView.Scrolled += OnTopBarScrolled;
         WireInkToolReorderGestures();
     }
 

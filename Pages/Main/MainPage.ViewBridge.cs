@@ -45,8 +45,14 @@ public partial class MainPage
     private Entry HomeUrlEntry => FindInHome<Entry>(nameof(HomeUrlEntry));
 
     private Border TopBarPanel => FindInEditor<Border>(nameof(TopBarPanel));
+    private ScrollView TopTabsScrollView => FindInEditor<ScrollView>(nameof(TopTabsScrollView));
+    private ScrollView TopToolsScrollView => FindInEditor<ScrollView>(nameof(TopToolsScrollView));
     private HorizontalStackLayout EditorTabsHost => FindInEditor<HorizontalStackLayout>(nameof(EditorTabsHost));
     private HorizontalStackLayout InkToolsHost => FindInEditor<HorizontalStackLayout>(nameof(InkToolsHost));
+    private ImageButton TopHomeButton => FindInEditor<ImageButton>(nameof(TopHomeButton));
+    private ImageButton TopImportButton => FindInEditor<ImageButton>(nameof(TopImportButton));
+    private ImageButton TopSearchButton => FindInEditor<ImageButton>(nameof(TopSearchButton));
+    private ImageButton TopSettingsButton => FindInEditor<ImageButton>(nameof(TopSettingsButton));
     private ImageButton TopModePenButton => FindInEditor<ImageButton>(nameof(TopModePenButton));
     private ImageButton TopThumbnailButton => FindInEditor<ImageButton>(nameof(TopThumbnailButton));
     private ImageButton TopInlineLayerButton => FindInEditor<ImageButton>(nameof(TopInlineLayerButton));
@@ -98,6 +104,8 @@ public partial class MainPage
     private VerticalStackLayout ThumbnailList => FindInEditor<VerticalStackLayout>(nameof(ThumbnailList));
     private Border LayerPanel => FindInEditor<Border>(nameof(LayerPanel));
     private VerticalStackLayout LayerList => FindInEditor<VerticalStackLayout>(nameof(LayerList));
+    private ImageButton AddLayerButton => FindInEditor<ImageButton>(nameof(AddLayerButton));
+    private ImageButton DeleteLayerButton => FindInEditor<ImageButton>(nameof(DeleteLayerButton));
 
     private Grid HomeDrawerOverlay => FindInDrawer<Grid>(nameof(HomeDrawerOverlay));
 

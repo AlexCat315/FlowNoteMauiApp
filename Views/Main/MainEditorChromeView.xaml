@@ -56,6 +56,7 @@
                     </Border>
 
                     <ScrollView
+                        x:Name="TopTabsScrollView"
                         Grid.Column="1"
                         Orientation="Horizontal"
                         HorizontalScrollBarVisibility="Never"
@@ -126,6 +127,7 @@
                 </Grid>
 
                 <ScrollView
+                    x:Name="TopToolsScrollView"
                     Grid.Row="1"
                     Orientation="Horizontal"
                     HorizontalScrollBarVisibility="Never"

@@ -32,6 +32,8 @@ public partial class MainPage : ContentPage
     private bool _isSyncingZoomFromViewer;
     private bool _isUiBootstrapped;
     private bool _isBootstrappingUi;
+    private bool _isDisplayInfoEventsWired;
+    private CancellationTokenSource? _floatingPanelRepositionCts;
 
     public MainPage()
     {
@@ -67,6 +69,8 @@ public partial class MainPage : ContentPage
         {
             Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
         }
+
+        EnsureDisplayInfoEventsWired();
     }
 
     private bool IsEditorInitialized => _pdfViewer is not null && _drawingCanvas is not null;
@@ -276,6 +280,7 @@ public partial class MainPage : ContentPage
         RefreshEditorTabsVisual();
         UpdateHomeSortLabel();
         UpdateHomeFilterButtons();
+        ApplyImageButtonIconSizing();
     }
 
     private void OnPageLoaded(object? sender, EventArgs e)
@@ -287,6 +292,13 @@ public partial class MainPage : ContentPage
         ShowHomeScreen();
         _ = RefreshWorkspaceViewsAfterStartupAsync();
         _ = BootstrapUiAfterFirstFrameAsync();
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        EnsureDisplayInfoEventsWired();
+        ScheduleFloatingPanelReposition();
     }
 
     private async Task BootstrapUiAfterFirstFrameAsync()
@@ -333,8 +345,57 @@ public partial class MainPage : ContentPage
     protected override async void OnDisappearing()
     {
         base.OnDisappearing();
+        UnwireDisplayInfoEvents();
+        _floatingPanelRepositionCts?.Cancel();
+        _floatingPanelRepositionCts?.Dispose();
+        _floatingPanelRepositionCts = null;
         CancelHomeFeedRender();
         StopTwoFingerInertia();
         await SaveCurrentDrawingStateAsync();
+    }
+
+    private void EnsureDisplayInfoEventsWired()
+    {
+        if (_isDisplayInfoEventsWired)
+            return;
+
+        DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+        _isDisplayInfoEventsWired = true;
+    }
+
+    private void UnwireDisplayInfoEvents()
+    {
+        if (!_isDisplayInfoEventsWired)
+            return;
+
+        DeviceDisplay.Current.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+        _isDisplayInfoEventsWired = false;
+    }
+
+    private void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+    {
+        ScheduleFloatingPanelReposition();
+    }
+
+    private void ScheduleFloatingPanelReposition()
+    {
+        _floatingPanelRepositionCts?.Cancel();
+        _floatingPanelRepositionCts?.Dispose();
+        _floatingPanelRepositionCts = new CancellationTokenSource();
+        var token = _floatingPanelRepositionCts.Token;
+
+        void Reposition()
+        {
+            if (token.IsCancellationRequested)
+                return;
+
+            OnEditorChromeLayoutChanged(this, EventArgs.Empty);
+            OnHomeLayoutChanged(this, EventArgs.Empty);
+        }
+
+        MainThread.BeginInvokeOnMainThread(Reposition);
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(24), Reposition);
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(72), Reposition);
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(156), Reposition);
     }
 }

@@ -2,6 +2,7 @@ using SkiaSharp;
 using Flow.PDFView;
 using Flow.PDFView.Abstractions;
 using FlowNoteMauiApp.Controls;
+using FlowNoteMauiApp.Helpers;
 using FlowNoteMauiApp.Models;
 using System.Diagnostics;
 using System.Collections.Concurrent;
@@ -51,7 +52,6 @@ public partial class MainPage
     private InkToolKind _activeInkTool = InkToolKind.Ballpoint;
     private EraserToolMode _eraserMode = EraserToolMode.Pixel;
     private bool _isUpdatingToolUi;
-    private readonly Dictionary<string, ImageSource> _toolIconSourceCache = new();
     private CancellationTokenSource? _toolTintUpdateCts;
     private readonly Dictionary<string, ImageSource> _thumbnailSourceCache = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _thumbnailRenderSemaphore = new(2, 2);
@@ -141,12 +141,45 @@ public partial class MainPage
         TopModePenButton.BackgroundColor = collapsedBackground;
         TopModePenButton.BorderColor = Colors.Transparent;
         TopModePenButton.BorderWidth = 0;
-        TopModePenButton.Source = _drawingInputMode switch
+        var modeIcon = _drawingInputMode switch
         {
             DrawingInputMode.FingerCapacitive => "icon_hand_mode.png",
             DrawingInputMode.TapRead => "icon_read_mode.png",
             _ => "icon_stylus_mode.png"
         };
+        TopModePenButton.Source = modeIcon;
+
+        var iconTint = IsDarkTheme ? Colors.White : Colors.Black;
+        _ = TopModePenButton.SetIconAsync(modeIcon, iconTint, IconTintMode.Monochrome);
+    }
+
+    private void ApplyImageButtonIconSizing()
+    {
+        HomeSortMenuButton.SetIconDrawSize(13);
+        TopHomeButton.SetIconDrawSize(14);
+        TopImportButton.SetIconDrawSize(14);
+        TopSearchButton.SetIconDrawSize(14);
+        TopModePenButton.SetIconDrawSize(14);
+        TopSettingsButton.SetIconDrawSize(14);
+        TopThumbnailButton.SetIconDrawSize(14);
+
+        UndoButton.SetIconDrawSize(15);
+        RedoButton.SetIconDrawSize(15);
+        PenModeButton.SetIconDrawSize(16);
+        HighlighterButton.SetIconDrawSize(16);
+        PencilButton.SetIconDrawSize(16);
+        MarkerButton.SetIconDrawSize(16);
+        EraserButton.SetIconDrawSize(16);
+        ClearButton2.SetIconDrawSize(15);
+        TopInlineLayerButton.SetIconDrawSize(15);
+        TextToolButton.SetIconDrawSize(15);
+        ImageToolButton.SetIconDrawSize(15);
+        ShapeToolButton.SetIconDrawSize(15);
+        PrevPageButton.SetIconDrawSize(14);
+        NextPageButton.SetIconDrawSize(14);
+        AddLayerButton.SetIconDrawSize(15);
+        DeleteLayerButton.SetIconDrawSize(15);
+        ThumbnailCloseButton.SetIconDrawSize(14);
     }
 
     private void SetFingerDrawSwitchState(bool isFingerMode)
@@ -576,6 +609,19 @@ public partial class MainPage
         {
             PositionLayerPanelUnderLayerButton();
         }
+    }
+
+    private void OnTopBarScrolled(object? sender, ScrolledEventArgs e)
+    {
+        if (!InputModePanel.IsVisible
+            && !DrawingToolbarPanel.IsVisible
+            && !ThumbnailPanel.IsVisible
+            && !LayerPanel.IsVisible)
+        {
+            return;
+        }
+
+        ScheduleFloatingPanelReposition();
     }
 
     private void PositionThumbnailPanelUnderTopButton()
@@ -1038,84 +1084,9 @@ public partial class MainPage
 
     private async Task<ImageSource> CreateTintedToolIconSourceAsync(string iconFile, SKColor tintColor, CancellationToken token)
     {
-        var cacheKey = $"{iconFile}:{tintColor.Alpha:X2}{tintColor.Red:X2}{tintColor.Green:X2}{tintColor.Blue:X2}";
-        if (_toolIconSourceCache.TryGetValue(cacheKey, out var cachedSource))
-            return cachedSource;
-
-        var fallbackFile = Path.GetFileName(iconFile);
-        try
-        {
-            await using var rawStream = await OpenToolIconTemplateStreamAsync(iconFile);
-            if (rawStream is null)
-                return ImageSource.FromFile(fallbackFile);
-
-            using var baseBitmap = SKBitmap.Decode(rawStream);
-            if (baseBitmap is null)
-                return ImageSource.FromFile(fallbackFile);
-
-            using var tintedBitmap = new SKBitmap(baseBitmap.Width, baseBitmap.Height, baseBitmap.ColorType, baseBitmap.AlphaType);
-            using (var canvas = new SKCanvas(tintedBitmap))
-            using (var paint = new SKPaint
-            {
-                IsAntialias = true,
-                ColorFilter = SKColorFilter.CreateBlendMode(tintColor, SKBlendMode.SrcIn)
-            })
-            {
-                canvas.Clear(SKColors.Transparent);
-                canvas.DrawBitmap(baseBitmap, 0, 0, paint);
-                canvas.Flush();
-            }
-
-            token.ThrowIfCancellationRequested();
-            using var outputImage = SKImage.FromBitmap(tintedBitmap);
-            using var outputData = outputImage.Encode(SKEncodedImageFormat.Png, 100);
-            var bytes = outputData.ToArray();
-            var source = ImageSource.FromStream(() => new MemoryStream(bytes));
-            _toolIconSourceCache[cacheKey] = source;
-            return source;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[ToolTint] Failed to tint '{iconFile}': {ex.Message}");
-            return ImageSource.FromFile(fallbackFile);
-        }
-    }
-
-    private static IEnumerable<string> BuildToolIconPathCandidates(string iconFile)
-    {
-        var normalized = iconFile.Replace('\\', '/');
-        var fileName = Path.GetFileName(normalized);
-        yield return normalized;
-
-        var windowsNormalized = normalized.Replace('/', '\\');
-        if (!string.Equals(windowsNormalized, normalized, StringComparison.Ordinal))
-            yield return windowsNormalized;
-
-        if (!string.IsNullOrWhiteSpace(fileName))
-            yield return fileName;
-    }
-
-    private static async Task<Stream?> OpenToolIconTemplateStreamAsync(string iconFile)
-    {
-        foreach (var candidate in BuildToolIconPathCandidates(iconFile).Distinct(StringComparer.OrdinalIgnoreCase))
-        {
-            try
-            {
-                return await FileSystem.OpenAppPackageFileAsync(candidate);
-            }
-            catch (FileNotFoundException)
-            {
-            }
-            catch (DirectoryNotFoundException)
-            {
-            }
-        }
-
-        return null;
+        return await IconRenderHelper
+            .CreateTintedImageSourceFromPackageAsync(iconFile, tintColor, IconTintMode.AccentPreserveShading, token)
+            .ConfigureAwait(false);
     }
 
     private void UpdateToolSettingsPanelState()
