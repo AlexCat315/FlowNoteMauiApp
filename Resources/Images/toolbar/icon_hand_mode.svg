@@ -3,7 +3,7 @@
     xmlns="http://www.w3.org/2000/svg"
     width="800.000000"
     height="800.000000"
-    viewBox="188 154 394 512"
+    viewBox="0 0 512 512"
     preserveAspectRatio="xMidYMid meet"
 >
   <metadata>
@@ -26,7 +26,7 @@
   </metadata>
   <g
         transform="translate(0.000000,800.000000) scale(0.100000,-0.100000)"
-        fill="#000000"
+        fill="#000"
         stroke="none"
     >
     <path

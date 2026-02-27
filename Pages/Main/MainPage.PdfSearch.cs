@@ -260,6 +260,9 @@ public partial class MainPage
 
     private void OnPageChanged(object? sender, PdfPageChangedEventArgs e)
     {
+        if (_currentPageIndex == e.PageIndex && _totalPageCount == e.PageCount)
+            return;
+
         _currentPageIndex = e.PageIndex;
         _totalPageCount = e.PageCount;
         EnsureSideWritingGuardBoundsReady();

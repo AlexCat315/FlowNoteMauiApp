@@ -80,7 +80,6 @@
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="3"
-                            TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
                             Source="icon_plus.png"
                         />
                         <ImageButton
@@ -91,18 +90,16 @@
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="3"
-                            TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
                             Source="icon_search.png"
                         />
                         <ImageButton
                             x:Name="TopModePenButton"
                             Style="{StaticResource FlatTopIconButton}"
-                            WidthRequest="24"
-                            HeightRequest="24"
-                            MinimumWidthRequest="24"
-                            MinimumHeightRequest="24"
-                            Padding="3"
-                            TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
+                            WidthRequest="25"
+                            HeightRequest="25"
+                            MinimumWidthRequest="25"
+                            MinimumHeightRequest="25"
+                            Padding="1"
                             Source="icon_stylus_mode.png"
                         />
                         <ImageButton
@@ -113,7 +110,6 @@
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="3"
-                            TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
                             Source="icon_settings.png"
                         />
                         <ImageButton
@@ -124,7 +120,6 @@
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="2"
-                            TintColor="{AppThemeBinding Light=#1F2937, Dark=#0B1220}"
                             Source="icon_thumbnail.png"
                         />
                     </HorizontalStackLayout>

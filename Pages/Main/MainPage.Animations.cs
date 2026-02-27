@@ -2,21 +2,21 @@ namespace FlowNoteMauiApp;
 
 public partial class MainPage
 {
-    private const uint PopupInDurationMs = 180;
-    private const uint PopupOutDurationMs = 135;
-    private const uint ScreenInDurationMs = 210;
+    private const uint PopupInDurationMs = 150;
+    private const uint PopupOutDurationMs = 120;
+    private const uint ScreenInDurationMs = 190;
 
     private void AnimatePopupIn(VisualElement panel)
     {
         panel.AbortAnimation("flow-popup-in");
         panel.AbortAnimation("flow-popup-out");
         panel.Opacity = 0;
-        panel.Scale = 0.94;
-        panel.TranslationY = 10;
+        panel.Scale = 0.97;
+        panel.TranslationY = 8;
         _ = Task.WhenAll(
-            panel.FadeToAsync(1, PopupInDurationMs, Easing.SinOut),
-            panel.ScaleToAsync(1, PopupInDurationMs, Easing.SpringOut),
-            panel.TranslateToAsync(panel.TranslationX, 0, PopupInDurationMs, Easing.SpringOut));
+            panel.FadeToAsync(1, PopupInDurationMs, Easing.CubicOut),
+            panel.ScaleToAsync(1, PopupInDurationMs, Easing.CubicOut),
+            panel.TranslateToAsync(panel.TranslationX, 0, PopupInDurationMs, Easing.CubicOut));
     }
 
     private void AnimatePopupOut(VisualElement panel, Action? onCompleted = null)
@@ -38,8 +38,8 @@ public partial class MainPage
         {
             await Task.WhenAll(
                 panel.FadeToAsync(0, PopupOutDurationMs, Easing.CubicIn),
-                panel.ScaleToAsync(0.965, PopupOutDurationMs, Easing.CubicIn),
-                panel.TranslateToAsync(panel.TranslationX, 10, PopupOutDurationMs, Easing.CubicIn));
+                panel.ScaleToAsync(0.975, PopupOutDurationMs, Easing.CubicIn),
+                panel.TranslateToAsync(panel.TranslationX, 8, PopupOutDurationMs, Easing.CubicIn));
         }
         catch
         {
@@ -57,10 +57,10 @@ public partial class MainPage
     {
         screen.AbortAnimation("flow-screen-in");
         screen.Opacity = 0;
-        screen.Scale = 0.992;
-        screen.TranslationY = 14;
+        screen.Scale = 0.996;
+        screen.TranslationY = 10;
         _ = Task.WhenAll(
-            screen.FadeToAsync(1, ScreenInDurationMs, Easing.SinOut),
+            screen.FadeToAsync(1, ScreenInDurationMs, Easing.CubicOut),
             screen.ScaleToAsync(1, ScreenInDurationMs, Easing.CubicOut),
             screen.TranslateToAsync(0, 0, ScreenInDurationMs, Easing.CubicOut));
     }

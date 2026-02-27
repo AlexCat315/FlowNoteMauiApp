@@ -249,11 +249,21 @@ public partial class MainPage
                 var targetX = anchorX + anchorWidth - panelWidth;
                 targetX = Math.Clamp(targetX, 10d, Math.Max(10d, HomePanelView.Width - panelWidth - 10d));
                 var targetY = anchorY + anchorHeight + 5d;
+                HomeSortPanel.TranslationX = 0;
+                HomeSortPanel.TranslationY = 0;
                 HomeSortPanel.Margin = new Thickness(targetX, targetY, 0, 0);
             }
 
             ApplyPosition(0);
         });
+    }
+
+    private void OnHomeLayoutChanged(object? sender, EventArgs e)
+    {
+        if (!HomeSortPanel.IsVisible)
+            return;
+
+        PositionHomeSortPanelUnderSortButton();
     }
 
     private void OnHomeFilterAllClicked(object? sender, EventArgs e) => SetHomeFilter(HomeFilterType.All);

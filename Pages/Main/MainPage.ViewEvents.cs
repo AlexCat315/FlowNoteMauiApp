@@ -41,6 +41,8 @@ public partial class MainPage
         QuickPenButton.Clicked += OnHomeQuickPenClicked;
         FindInHome<ImageButton>("HomeImportButton").Clicked += OnHomeImportLocalClicked;
         HomeSearchEntry.TextChanged += OnHomeSearchTextChanged;
+        HomePanelView.SizeChanged += OnHomeLayoutChanged;
+        HomeSortMenuButton.SizeChanged += OnHomeLayoutChanged;
     }
 
     private void WireEditorChromeEvents()

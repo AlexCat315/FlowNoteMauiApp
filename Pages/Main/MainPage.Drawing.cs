@@ -54,10 +54,19 @@ public partial class MainPage
     private readonly Dictionary<string, ImageSource> _toolIconSourceCache = new();
     private CancellationTokenSource? _toolTintUpdateCts;
     private readonly Dictionary<string, ImageSource> _thumbnailSourceCache = new(StringComparer.Ordinal);
+    private readonly SemaphoreSlim _thumbnailRenderSemaphore = new(2, 2);
     private readonly ConcurrentDictionary<int, PdfPageBounds> _pageBoundsCache = new();
     private CancellationTokenSource? _thumbnailLoadCts;
+    private readonly Dictionary<int, Border> _thumbnailItemLookup = new();
+    private int _thumbnailWindowStart = -1;
+    private int _thumbnailWindowEnd = -1;
+    private int _thumbnailSelectedPage = -1;
     private const int ThumbnailRequestWidth = 220;
     private const int ThumbnailRequestHeight = 320;
+    private const int MaxOverlayThumbnailItems = 36;
+    private const int MaxPlainThumbnailItems = 80;
+    private const double ThumbnailPreviewWidth = 118d;
+    private const double ThumbnailPreviewHeight = 168d;
     private const float MinPressureSensitivity = 0.4f;
     private const float MaxPressureSensitivity = 2.0f;
     private bool _thumbnailIncludeInkOverlay = true;
@@ -67,6 +76,10 @@ public partial class MainPage
     {
         public required DrawingStroke Stroke { get; init; }
         public required float LayerOpacity { get; init; }
+        public required float MinX { get; init; }
+        public required float MinY { get; init; }
+        public required float MaxX { get; init; }
+        public required float MaxY { get; init; }
     }
     private readonly Dictionary<InkToolKind, InkToolState> _inkToolStates = new()
     {
@@ -1206,13 +1219,35 @@ public partial class MainPage
         _thumbnailLoadCts?.Dispose();
         _thumbnailLoadCts = null;
         _thumbnailSourceCache.Clear();
+        _thumbnailItemLookup.Clear();
+        _thumbnailWindowStart = -1;
+        _thumbnailWindowEnd = -1;
+        _thumbnailSelectedPage = -1;
     }
 
     private void RefreshThumbnailList()
     {
-        ThumbnailList.Children.Clear();
         if (!IsEditorInitialized || _totalPageCount <= 0)
+        {
+            ThumbnailList.Children.Clear();
+            _thumbnailItemLookup.Clear();
+            _thumbnailWindowStart = -1;
+            _thumbnailWindowEnd = -1;
+            _thumbnailSelectedPage = -1;
             return;
+        }
+
+        var maxVisibleItems = _thumbnailIncludeInkOverlay ? MaxOverlayThumbnailItems : MaxPlainThumbnailItems;
+        var (startIndex, endIndex) = ResolveThumbnailWindow(maxVisibleItems);
+        var needsRebuild = ThumbnailList.Children.Count == 0
+            || _thumbnailItemLookup.Count == 0
+            || startIndex != _thumbnailWindowStart
+            || endIndex != _thumbnailWindowEnd;
+        if (!needsRebuild)
+        {
+            UpdateThumbnailSelection(_currentPageIndex);
+            return;
+        }
 
         _thumbnailLoadCts?.Cancel();
         _thumbnailLoadCts?.Dispose();
@@ -1222,14 +1257,8 @@ public partial class MainPage
             ? CaptureThumbnailStrokeSnapshots()
             : null;
 
-        const int maxVisibleItems = 80;
-        var startIndex = 0;
-        var endIndex = _totalPageCount - 1;
-        if (_totalPageCount > maxVisibleItems)
-        {
-            startIndex = Math.Clamp(_currentPageIndex - (maxVisibleItems / 2), 0, _totalPageCount - maxVisibleItems);
-            endIndex = startIndex + maxVisibleItems - 1;
-        }
+        ThumbnailList.Children.Clear();
+        _thumbnailItemLookup.Clear();
 
         if (startIndex > 0)
         {
@@ -1255,6 +1284,72 @@ public partial class MainPage
                 overlaySnapshots,
                 TF("ThumbnailPageTailFormat", "... Page {0}", _totalPageCount)));
         }
+
+        _thumbnailWindowStart = startIndex;
+        _thumbnailWindowEnd = endIndex;
+        _thumbnailSelectedPage = -1;
+        UpdateThumbnailSelection(_currentPageIndex);
+    }
+
+    private (int Start, int End) ResolveThumbnailWindow(int maxVisibleItems)
+    {
+        if (_totalPageCount <= maxVisibleItems)
+            return (0, _totalPageCount - 1);
+
+        var hasExistingWindow = _thumbnailWindowStart >= 0
+            && _thumbnailWindowEnd >= _thumbnailWindowStart
+            && _thumbnailWindowEnd < _totalPageCount;
+        if (hasExistingWindow
+            && _currentPageIndex >= _thumbnailWindowStart
+            && _currentPageIndex <= _thumbnailWindowEnd)
+        {
+            return (_thumbnailWindowStart, _thumbnailWindowEnd);
+        }
+
+        var start = Math.Clamp(_currentPageIndex - (maxVisibleItems / 2), 0, _totalPageCount - maxVisibleItems);
+        var end = start + maxVisibleItems - 1;
+        return (start, end);
+    }
+
+    private void UpdateThumbnailSelection(int pageIndex)
+    {
+        if (_thumbnailSelectedPage == pageIndex
+            && _thumbnailItemLookup.TryGetValue(pageIndex, out _))
+        {
+            return;
+        }
+
+        if (_thumbnailSelectedPage >= 0
+            && _thumbnailItemLookup.TryGetValue(_thumbnailSelectedPage, out var previousItem))
+        {
+            ApplyThumbnailItemSelectionVisual(previousItem, false);
+        }
+
+        if (_thumbnailItemLookup.TryGetValue(pageIndex, out var currentItem))
+        {
+            ApplyThumbnailItemSelectionVisual(currentItem, true);
+            _thumbnailSelectedPage = pageIndex;
+        }
+        else
+        {
+            _thumbnailSelectedPage = -1;
+        }
+    }
+
+    private void ApplyThumbnailItemSelectionVisual(Border item, bool isCurrent)
+    {
+        var palette = Palette;
+        item.BackgroundColor = isCurrent ? palette.LayerSelectedBackground : Colors.Transparent;
+        item.Stroke = isCurrent ? palette.LayerSelectedBorder : palette.LayerNormalBorder;
+
+        if (item.Content is VerticalStackLayout stack
+            && stack.Children.FirstOrDefault() is Border previewBorder)
+        {
+            previewBorder.Stroke = isCurrent ? palette.ModeButtonExpandedBorder : palette.LayerNormalBorder;
+            previewBorder.BackgroundColor = isCurrent
+                ? palette.ModeButtonExpandedBackground
+                : palette.ModeButtonCollapsedBackground;
+        }
     }
 
     private string BuildThumbnailCacheKey(int pageIndex)
@@ -1271,11 +1366,14 @@ public partial class MainPage
         IReadOnlyList<ThumbnailStrokeSnapshot>? overlaySnapshots = null,
         string? titleOverride = null)
     {
-        var palette = Palette;
         var previewImage = new Image
         {
             Aspect = Aspect.AspectFit,
             Source = "icon_file.png",
+            WidthRequest = ThumbnailPreviewWidth,
+            HeightRequest = ThumbnailPreviewHeight,
+            MinimumWidthRequest = ThumbnailPreviewWidth,
+            MinimumHeightRequest = ThumbnailPreviewHeight,
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center
         };
@@ -1292,8 +1390,6 @@ public partial class MainPage
 
         var item = new Border
         {
-            BackgroundColor = isCurrent ? palette.LayerSelectedBackground : Colors.Transparent,
-            Stroke = isCurrent ? palette.LayerSelectedBorder : palette.LayerNormalBorder,
             StrokeThickness = 1,
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
             Padding = new Thickness(8, 8, 8, 6),
@@ -1307,10 +1403,8 @@ public partial class MainPage
                         WidthRequest = 122,
                         HeightRequest = 172,
                         HorizontalOptions = LayoutOptions.Center,
-                        Stroke = isCurrent ? palette.ModeButtonExpandedBorder : palette.LayerNormalBorder,
                         StrokeThickness = 1,
                         StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
-                        BackgroundColor = isCurrent ? palette.ModeButtonExpandedBackground : palette.ModeButtonCollapsedBackground,
                         Padding = 2,
                         Content = previewImage
                     },
@@ -1324,6 +1418,11 @@ public partial class MainPage
                 }
             }
         };
+        ApplyThumbnailItemSelectionVisual(item, isCurrent);
+        if (!_thumbnailItemLookup.ContainsKey(pageIndex))
+        {
+            _thumbnailItemLookup[pageIndex] = item;
+        }
 
         item.GestureRecognizers.Add(new TapGestureRecognizer
         {
@@ -1334,7 +1433,7 @@ public partial class MainPage
 
                 PdfViewer.GoToPage(pageIndex);
                 _currentPageIndex = pageIndex;
-                RefreshThumbnailList();
+                UpdateThumbnailSelection(pageIndex);
             })
         });
 
@@ -1351,8 +1450,12 @@ public partial class MainPage
         if (!IsEditorInitialized || token.IsCancellationRequested)
             return;
 
+        var gateEntered = false;
         try
         {
+            await _thumbnailRenderSemaphore.WaitAsync(token).ConfigureAwait(false);
+            gateEntered = true;
+
             var thumbnailStream = await PdfViewer
                 .GetThumbnailAsync(pageIndex, ThumbnailRequestWidth, ThumbnailRequestHeight)
                 .ConfigureAwait(false);
@@ -1377,8 +1480,14 @@ public partial class MainPage
                 var pageBounds = await GetCachedPageBoundsAsync(pageIndex).ConfigureAwait(false);
                 if (pageBounds is PdfPageBounds bounds)
                 {
+                    var pageSnapshots = overlaySnapshots
+                        .Where(snapshot => DoesSnapshotIntersectPage(snapshot, bounds))
+                        .ToArray();
+                    if (pageSnapshots.Length == 0)
+                        goto publish_image;
+
                     var composedBytes = await Task
-                        .Run(() => ComposeThumbnailWithInkOverlay(bytes, bounds, overlaySnapshots, token), token)
+                        .Run(() => ComposeThumbnailWithInkOverlay(bytes, bounds, pageSnapshots, token), token)
                         .ConfigureAwait(false);
                     if (composedBytes is { Length: > 0 })
                     {
@@ -1387,6 +1496,7 @@ public partial class MainPage
                 }
             }
 
+        publish_image:
             if (token.IsCancellationRequested)
                 return;
 
@@ -1405,6 +1515,13 @@ public partial class MainPage
         }
         catch
         {
+        }
+        finally
+        {
+            if (gateEntered)
+            {
+                _thumbnailRenderSemaphore.Release();
+            }
         }
     }
 
@@ -1425,10 +1542,17 @@ public partial class MainPage
                 if (stroke.Points.Count < 2)
                     continue;
 
+                if (!TryGetStrokeBounds(stroke, out var minX, out var minY, out var maxX, out var maxY))
+                    continue;
+
                 snapshots.Add(new ThumbnailStrokeSnapshot
                 {
-                    Stroke = CloneStrokeForThumbnail(stroke),
-                    LayerOpacity = layerOpacity
+                    Stroke = stroke,
+                    LayerOpacity = layerOpacity,
+                    MinX = minX,
+                    MinY = minY,
+                    MaxX = maxX,
+                    MaxY = maxY
                 });
             }
         }
@@ -1436,32 +1560,29 @@ public partial class MainPage
         return snapshots;
     }
 
-    private static DrawingStroke CloneStrokeForThumbnail(DrawingStroke stroke)
+    private static bool TryGetStrokeBounds(
+        DrawingStroke stroke,
+        out float minX,
+        out float minY,
+        out float maxX,
+        out float maxY)
     {
-        return new DrawingStroke
+        minX = float.MaxValue;
+        minY = float.MaxValue;
+        maxX = float.MinValue;
+        maxY = float.MinValue;
+        if (stroke.Points.Count == 0)
+            return false;
+
+        foreach (var point in stroke.Points)
         {
-            Id = stroke.Id,
-            Color = stroke.Color,
-            StrokeWidth = stroke.StrokeWidth,
-            Opacity = stroke.Opacity,
-            IsEraser = stroke.IsEraser,
-            BrushType = stroke.BrushType,
-            Options = new StrokeOptions
-            {
-                PressureEnabled = stroke.Options.PressureEnabled,
-                SmoothingEnabled = stroke.Options.SmoothingEnabled,
-                SmoothingFactor = stroke.Options.SmoothingFactor,
-                MinPressure = stroke.Options.MinPressure,
-                MaxPressure = stroke.Options.MaxPressure,
-                TaperEnabled = stroke.Options.TaperEnabled,
-                TaperStart = stroke.Options.TaperStart,
-                TaperEnd = stroke.Options.TaperEnd,
-                Streamline = stroke.Options.Streamline
-            },
-            Points = stroke.Points
-                .Select(point => new DrawingPoint(point.X, point.Y, point.Pressure, point.Timestamp))
-                .ToList()
-        };
+            minX = Math.Min(minX, point.X);
+            minY = Math.Min(minY, point.Y);
+            maxX = Math.Max(maxX, point.X);
+            maxY = Math.Max(maxY, point.Y);
+        }
+
+        return true;
     }
 
     private static byte[]? ComposeThumbnailWithInkOverlay(
@@ -1511,7 +1632,7 @@ public partial class MainPage
             token.ThrowIfCancellationRequested();
 
             var stroke = snapshot.Stroke;
-            if (stroke.Points.Count < 2 || !DoesStrokeIntersectPage(stroke, pageBounds))
+            if (stroke.Points.Count < 2 || !DoesSnapshotIntersectPage(snapshot, pageBounds))
                 continue;
 
             if (ShouldDrawThumbnailPressureStrokeSegments(stroke))
@@ -1520,17 +1641,7 @@ public partial class MainPage
                 continue;
             }
 
-            using var path = new SKPath(stroke.CreatePath());
-            path.Transform(transform);
-
-            var alpha = stroke.IsEraser
-                ? (byte)0
-                : (byte)Math.Clamp((int)Math.Round(stroke.Color.Alpha * snapshot.LayerOpacity * stroke.Opacity), 0, 255);
-            paint.Color = stroke.IsEraser ? SKColors.Transparent : stroke.Color.WithAlpha(alpha);
-            paint.StrokeWidth = Math.Max(0.4f, stroke.StrokeWidth * strokeScale);
-            paint.BlendMode = GetThumbnailStrokeBlendMode(stroke);
-
-            overlayCanvas.DrawPath(path, paint);
+            DrawThumbnailStrokeSegments(overlayCanvas, stroke, snapshot.LayerOpacity, strokeScale, transform, paint);
         }
 
         overlayCanvas.Flush();
@@ -1547,7 +1658,22 @@ public partial class MainPage
         if (stroke.IsEraser)
             return SKBlendMode.Clear;
 
+        if (stroke.BrushType == BrushType.Highlighter || stroke.BrushType == BrushType.Marker)
+            return SKBlendMode.Multiply;
+
         return SKBlendMode.SrcOver;
+    }
+
+    private static bool DoesSnapshotIntersectPage(ThumbnailStrokeSnapshot snapshot, PdfPageBounds pageBounds)
+    {
+        var pageLeft = pageBounds.X;
+        var pageTop = pageBounds.Y;
+        var pageRight = pageBounds.X + pageBounds.Width;
+        var pageBottom = pageBounds.Y + pageBounds.Height;
+        return snapshot.MaxX >= pageLeft
+            && snapshot.MinX <= pageRight
+            && snapshot.MaxY >= pageTop
+            && snapshot.MinY <= pageBottom;
     }
 
     private static bool ShouldDrawThumbnailPressureStrokeSegments(DrawingStroke stroke)
@@ -1558,6 +1684,31 @@ public partial class MainPage
         return stroke.BrushType == BrushType.Pen
             || stroke.BrushType == BrushType.Pencil
             || stroke.BrushType == BrushType.Watercolor;
+    }
+
+    private static void DrawThumbnailStrokeSegments(
+        SKCanvas canvas,
+        DrawingStroke stroke,
+        float layerOpacity,
+        float strokeScale,
+        SKMatrix transform,
+        SKPaint paint)
+    {
+        var alpha = stroke.IsEraser
+            ? (byte)0
+            : (byte)Math.Clamp((int)Math.Round(stroke.Color.Alpha * layerOpacity * stroke.Opacity), 0, 255);
+        paint.Color = stroke.IsEraser ? SKColors.Transparent : stroke.Color.WithAlpha(alpha);
+        paint.BlendMode = GetThumbnailStrokeBlendMode(stroke);
+        paint.StrokeWidth = Math.Max(0.4f, stroke.StrokeWidth * strokeScale);
+
+        for (var index = 1; index < stroke.Points.Count; index++)
+        {
+            var previous = stroke.Points[index - 1];
+            var current = stroke.Points[index];
+            var mappedPrev = MapPoint(transform, previous.X, previous.Y);
+            var mappedCurrent = MapPoint(transform, current.X, current.Y);
+            canvas.DrawLine(mappedPrev, mappedCurrent, paint);
+        }
     }
 
     private static void DrawThumbnailPressureStrokeSegments(
