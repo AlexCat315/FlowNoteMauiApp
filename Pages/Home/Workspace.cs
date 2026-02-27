@@ -312,6 +312,7 @@ public partial class MainPage
         if (_isUiBootstrapped)
         {
             TopBarPanel.IsVisible = false;
+            PinnedInkToolsOverlay.IsVisible = false;
             UpdateEditorViewportInset();
             SetDrawerVisible(false);
             SetSettingsVisible(false);
@@ -353,6 +354,7 @@ public partial class MainPage
 
         HomePanel.IsVisible = false;
         TopBarPanel.IsVisible = true;
+        PositionPinnedInkToolsOverlay();
         UpdateEditorViewportInset();
         SetDrawerVisible(false);
         SetSettingsVisible(false);

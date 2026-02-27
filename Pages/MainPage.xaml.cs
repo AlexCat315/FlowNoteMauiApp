@@ -88,7 +88,10 @@ public partial class MainPage : ContentPage
     private void EnsureEditorInitialized()
     {
         if (IsEditorInitialized)
+        {
+            RefreshAndroidChromeLayering();
             return;
+        }
 
         _pdfViewer = new PdfView
         {
@@ -132,6 +135,7 @@ public partial class MainPage : ContentPage
 
         EditorHost.Children.Add(_pdfViewer);
         EditorHost.Children.Add(_drawingCanvas);
+        RefreshAndroidChromeLayering();
 
         ApplyViewerSettingsFromUi();
         UpdateTwoFingerNavigationPolicy();
@@ -301,6 +305,8 @@ public partial class MainPage : ContentPage
     {
         base.OnAppearing();
         EnsureDisplayInfoEventsWired();
+        EnsureAndroidChromeLayering();
+        RefreshAndroidChromeLayering();
         ScheduleFloatingPanelReposition();
     }
 
@@ -323,6 +329,7 @@ public partial class MainPage : ContentPage
             _isBootstrappingUi = true;
             WireComposedViewEvents();
             InitializeControls();
+            EnsureAndroidChromeLayering();
             RefreshSettingsUiState();
             _isUiBootstrapped = true;
             UpdateLocalizedStrings();

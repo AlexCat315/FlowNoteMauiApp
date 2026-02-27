@@ -19,16 +19,17 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid>
-        <Grid x:Name="EditorHost" />
+    <Grid IsClippedToBounds="False">
+        <Grid x:Name="EditorHost" ZIndex="0" />
 
         <homeViews:HomePanelView x:Name="HomePanelView" />
         <editorViews:EditorChromeView
             x:Name="EditorChromeView"
             InputTransparent="True"
             CascadeInputTransparent="False"
-            VerticalOptions="Start"
+            VerticalOptions="Fill"
             HorizontalOptions="Fill"
+            ZIndex="120"
         />
         <sharedViews:DrawerOverlayView
             x:Name="DrawerOverlayView"

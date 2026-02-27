@@ -47,7 +47,10 @@ public partial class MainPage
     private Border TopBarPanel => FindInEditor<Border>(nameof(TopBarPanel));
     private ScrollView TopTabsScrollView => FindInEditor<ScrollView>(nameof(TopTabsScrollView));
     private ScrollView TopToolsScrollView => FindInEditor<ScrollView>(nameof(TopToolsScrollView));
+    private BoxView TopToolsLeadingSpacer => FindInEditor<BoxView>(nameof(TopToolsLeadingSpacer));
     private HorizontalStackLayout EditorTabsHost => FindInEditor<HorizontalStackLayout>(nameof(EditorTabsHost));
+    private HorizontalStackLayout PinnedInkToolsOverlay => FindInEditor<HorizontalStackLayout>(nameof(PinnedInkToolsOverlay));
+    private Grid InkToolsStripContainer => FindInEditor<Grid>(nameof(InkToolsStripContainer));
     private HorizontalStackLayout InkToolsHost => FindInEditor<HorizontalStackLayout>(nameof(InkToolsHost));
     private ImageButton TopHomeButton => FindInEditor<ImageButton>(nameof(TopHomeButton));
     private ImageButton TopImportButton => FindInEditor<ImageButton>(nameof(TopImportButton));

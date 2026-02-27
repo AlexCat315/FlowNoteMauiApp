@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="FlowNoteMauiApp.Views.Editor.EditorChromeView"
+    IsClippedToBounds="False"
 >
     <ContentView.Resources>
         <ResourceDictionary>
@@ -13,10 +14,12 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ContentView.Resources>
-    <Grid InputTransparent="True" CascadeInputTransparent="False">
+    <Grid InputTransparent="True" CascadeInputTransparent="False" IsClippedToBounds="False">
         <Border
             x:Name="TopBarPanel"
             IsVisible="False"
+            IsClippedToBounds="False"
+            ZIndex="220"
             InputTransparent="False"
             HorizontalOptions="Fill"
             VerticalOptions="Start"
@@ -28,7 +31,7 @@
             StrokeShape="RoundRectangle 0"
             Opacity="0.995"
         >
-            <Grid RowDefinitions="Auto,Auto,1" RowSpacing="2">
+            <Grid RowDefinitions="Auto,Auto,1" RowSpacing="2" IsClippedToBounds="False">
                 <Grid
                     Grid.Row="0"
                     ColumnDefinitions="Auto,*,Auto"
@@ -126,147 +129,96 @@
                     </HorizontalStackLayout>
                 </Grid>
 
-                <ScrollView
-                    x:Name="TopToolsScrollView"
-                    Grid.Row="1"
-                    Orientation="Horizontal"
-                    HorizontalScrollBarVisibility="Never"
-                >
-                    <HorizontalStackLayout Spacing="6" Padding="0,1,0,1">
-                        <Border
-                            Padding="2,1"
-                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="Transparent"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 8"
+                <Grid Grid.Row="1" IsClippedToBounds="False">
+                    <ScrollView
+                        x:Name="TopToolsScrollView"
+                        ZIndex="20"
+                        IsClippedToBounds="False"
+                        Orientation="Horizontal"
+                        HorizontalScrollBarVisibility="Never"
+                    >
+                        <HorizontalStackLayout
+                            Spacing="6"
+                            Padding="0,1,0,1"
+                            IsClippedToBounds="False"
                         >
-                            <HorizontalStackLayout Spacing="2">
-                                <ImageButton
-                                    x:Name="UndoButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
-                                    Source="icon_arrow_back_up.png"
-                                />
-                                <ImageButton
-                                    x:Name="RedoButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
-                                    Source="icon_arrow_forward_up.png"
-                                />
-                            </HorizontalStackLayout>
-                        </Border>
+                            <BoxView
+                                x:Name="TopToolsLeadingSpacer"
+                                WidthRequest="308"
+                                Opacity="0"
+                                InputTransparent="True"
+                            />
 
-                        <Border Style="{StaticResource InkToolStripBorder}">
-                            <HorizontalStackLayout
-                                x:Name="InkToolsHost"
-                                Spacing="2"
+                            <Border
+                                Padding="2,1"
+                                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
+                                Stroke="Transparent"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 8"
                             >
-                                <ImageButton
-                                    x:Name="PenModeButton"
-                                    Style="{StaticResource InkToolGlyphButton}"
-                                    Source="icon_ballpoint_pen.png"
-                                />
-                                <ImageButton
-                                    x:Name="HighlighterButton"
-                                    Style="{StaticResource InkToolGlyphButton}"
-                                    Source="icon_pen.png"
-                                />
-                                <ImageButton
-                                    x:Name="PencilButton"
-                                    Style="{StaticResource InkToolGlyphButton}"
-                                    Source="icon_pencil.png"
-                                />
-                                <ImageButton
-                                    x:Name="MarkerButton"
-                                    Style="{StaticResource InkToolGlyphButton}"
-                                    Source="icon_markpen.png"
-                                />
-                                <ImageButton
-                                    x:Name="EraserButton"
-                                    Style="{StaticResource InkToolGlyphButton}"
-                                    Source="icon_eraser.png"
-                                />
-                                <ImageButton
-                                    x:Name="ClearButton2"
-                                    Style="{StaticResource InkToolGlyphButton}"
-                                    Source="icon_trash.png"
-                                />
-                                <ImageButton
-                                    x:Name="TopInlineLayerButton"
-                                    Style="{StaticResource InkToolGlyphButton}"
-                                    Source="icon_layers_selected.png"
-                                />
-                            </HorizontalStackLayout>
-                        </Border>
-
-                        <Border
-                            Padding="2,1"
-                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="Transparent"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 8"
-                        >
-                            <HorizontalStackLayout Spacing="2">
-                                <ImageButton
-                                    x:Name="TextToolButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
-                                    Source="icon_text.png"
-                                />
-                                <ImageButton
-                                    x:Name="ImageToolButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
-                                    Source="icon_image.png"
-                                />
-                                <ImageButton
-                                    x:Name="ShapeToolButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
-                                    Source="icon_shape.png"
-                                />
-                            </HorizontalStackLayout>
-                        </Border>
-
-                        <Border
-                            Padding="2,1"
-                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="Transparent"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 8"
-                        >
-                            <HorizontalStackLayout
-                                Spacing="2"
-                                VerticalOptions="Center"
-                            >
-                                <ImageButton
-                                    x:Name="PrevPageButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
-                                    Source="icon_arrow_left.png"
-                                />
-                                <Border
-                                    Padding="8,0"
-                                    HeightRequest="28"
-                                    VerticalOptions="Center"
-                                    BackgroundColor="{AppThemeBinding Light=#F7F8FA, Dark=#2A3C55}"
-                                    Stroke="Transparent"
-                                    StrokeThickness="0"
-                                    StrokeShape="RoundRectangle 8"
-                                >
-                                    <Label
-                                        x:Name="PageInfoLabel"
-                                        Text="Page: 1/1"
-                                        VerticalOptions="Center"
-                                        FontFamily="OpenSansSemibold"
-                                        FontSize="12"
-                                        TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                <HorizontalStackLayout Spacing="2">
+                                    <ImageButton
+                                        x:Name="TextToolButton"
+                                        Style="{StaticResource ToolbarToolIconButton}"
+                                        Source="icon_text.png"
                                     />
-                                </Border>
-                                <ImageButton
-                                    x:Name="NextPageButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
-                                    Source="icon_arrow_right.png"
-                                />
-                            </HorizontalStackLayout>
-                        </Border>
+                                    <ImageButton
+                                        x:Name="ImageToolButton"
+                                        Style="{StaticResource ToolbarToolIconButton}"
+                                        Source="icon_image.png"
+                                    />
+                                    <ImageButton
+                                        x:Name="ShapeToolButton"
+                                        Style="{StaticResource ToolbarToolIconButton}"
+                                        Source="icon_shape.png"
+                                    />
+                                </HorizontalStackLayout>
+                            </Border>
 
-                    </HorizontalStackLayout>
-                </ScrollView>
+                            <Border
+                                Padding="2,1"
+                                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
+                                Stroke="Transparent"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 8"
+                            >
+                                <HorizontalStackLayout
+                                    Spacing="2"
+                                    VerticalOptions="Center"
+                                >
+                                    <ImageButton
+                                        x:Name="PrevPageButton"
+                                        Style="{StaticResource ToolbarToolIconButton}"
+                                        Source="icon_arrow_left.png"
+                                    />
+                                    <Border
+                                        Padding="8,0"
+                                        HeightRequest="28"
+                                        VerticalOptions="Center"
+                                        BackgroundColor="{AppThemeBinding Light=#F7F8FA, Dark=#2A3C55}"
+                                        Stroke="Transparent"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 8"
+                                    >
+                                        <Label
+                                            x:Name="PageInfoLabel"
+                                            Text="Page: 1/1"
+                                            VerticalOptions="Center"
+                                            FontFamily="OpenSansSemibold"
+                                            FontSize="12"
+                                            TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                        />
+                                    </Border>
+                                    <ImageButton
+                                        x:Name="NextPageButton"
+                                        Style="{StaticResource ToolbarToolIconButton}"
+                                        Source="icon_arrow_right.png"
+                                    />
+                                </HorizontalStackLayout>
+                            </Border>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </Grid>
 
                 <BoxView
                     Grid.Row="2"
@@ -275,6 +227,98 @@
                 />
             </Grid>
         </Border>
+
+        <HorizontalStackLayout
+            x:Name="PinnedInkToolsOverlay"
+            IsVisible="False"
+            ZIndex="860"
+            Spacing="6"
+            Padding="0,1,0,1"
+            IsClippedToBounds="False"
+            HorizontalOptions="Start"
+            VerticalOptions="Start"
+            Margin="8,38,0,0"
+            InputTransparent="False"
+        >
+            <Border
+                Padding="2,1"
+                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
+                Stroke="Transparent"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 8"
+            >
+                <HorizontalStackLayout Spacing="2">
+                    <ImageButton
+                        x:Name="UndoButton"
+                        Style="{StaticResource ToolbarToolIconButton}"
+                        Source="icon_arrow_back_up.png"
+                    />
+                    <ImageButton
+                        x:Name="RedoButton"
+                        Style="{StaticResource ToolbarToolIconButton}"
+                        Source="icon_arrow_forward_up.png"
+                    />
+                </HorizontalStackLayout>
+            </Border>
+
+            <Grid
+                x:Name="InkToolsStripContainer"
+                IsClippedToBounds="False"
+                ZIndex="960"
+                HeightRequest="32"
+            >
+                <Border
+                    x:Name="InkToolsStripBorder"
+                    ZIndex="10"
+                    Style="{StaticResource InkToolStripBorder}"
+                />
+                <HorizontalStackLayout
+                    x:Name="InkToolsHost"
+                    IsClippedToBounds="False"
+                    ZIndex="980"
+                    Spacing="2"
+                    Margin="6,0"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                >
+                    <ImageButton
+                        x:Name="PenModeButton"
+                        Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_ballpoint_pen.png"
+                    />
+                    <ImageButton
+                        x:Name="HighlighterButton"
+                        Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_pen.png"
+                    />
+                    <ImageButton
+                        x:Name="PencilButton"
+                        Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_pencil.png"
+                    />
+                    <ImageButton
+                        x:Name="MarkerButton"
+                        Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_markpen.png"
+                    />
+                    <ImageButton
+                        x:Name="EraserButton"
+                        Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_eraser.png"
+                    />
+                    <ImageButton
+                        x:Name="ClearButton2"
+                        Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_trash.png"
+                    />
+                    <ImageButton
+                        x:Name="TopInlineLayerButton"
+                        Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_layers_selected.png"
+                    />
+                </HorizontalStackLayout>
+            </Grid>
+        </HorizontalStackLayout>
 
         <Border
             x:Name="DrawingToolbarPanel"

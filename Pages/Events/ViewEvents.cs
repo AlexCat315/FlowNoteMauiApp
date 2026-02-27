@@ -100,6 +100,8 @@ public partial class MainPage
         TopBarPanel.SizeChanged += OnEditorChromeLayoutChanged;
         TopTabsScrollView.SizeChanged += OnEditorChromeLayoutChanged;
         TopToolsScrollView.SizeChanged += OnEditorChromeLayoutChanged;
+        PinnedInkToolsOverlay.SizeChanged += OnEditorChromeLayoutChanged;
+        InkToolsStripContainer.SizeChanged += OnEditorChromeLayoutChanged;
         TopTabsScrollView.Scrolled += OnTopBarScrolled;
         TopToolsScrollView.Scrolled += OnTopBarScrolled;
         WireInkToolReorderGestures();

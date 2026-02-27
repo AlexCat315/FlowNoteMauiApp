@@ -28,6 +28,8 @@ public partial class MainPage
 
     private void OnEditorChromeLayoutChanged(object? sender, EventArgs e)
     {
+        PositionPinnedInkToolsOverlay();
+
         if (InputModePanel.IsVisible)
         {
             PositionInputModePanelUnderTopModeButton();
@@ -51,6 +53,11 @@ public partial class MainPage
 
     private void OnTopBarScrolled(object? sender, ScrolledEventArgs e)
     {
+        if (TopBarPanel.IsVisible)
+        {
+            PositionPinnedInkToolsOverlay();
+        }
+
         if (!InputModePanel.IsVisible
             && !DrawingToolbarPanel.IsVisible
             && !ThumbnailPanel.IsVisible
@@ -60,6 +67,67 @@ public partial class MainPage
         }
 
         ScheduleFloatingPanelReposition();
+    }
+
+    private void PositionPinnedInkToolsOverlay()
+    {
+        if (!EditorChromeView.IsVisible || !TopBarPanel.IsVisible)
+        {
+            PinnedInkToolsOverlay.IsVisible = false;
+            return;
+        }
+
+        PinnedInkToolsOverlay.IsVisible = true;
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            void ApplyPosition(int attempt)
+            {
+                if (!EditorChromeView.IsVisible || !TopBarPanel.IsVisible)
+                {
+                    PinnedInkToolsOverlay.IsVisible = false;
+                    return;
+                }
+
+                var hostX = GetVisualOffsetX(TopToolsScrollView, EditorChromeView);
+                var hostY = GetVisualOffsetY(TopToolsScrollView, EditorChromeView);
+                var hostHeight = TopToolsScrollView.Height > 1 ? TopToolsScrollView.Height : TopToolsScrollView.HeightRequest;
+                var overlayHeight = PinnedInkToolsOverlay.Height > 1 ? PinnedInkToolsOverlay.Height : 32d;
+
+                var hasValidLayout = hostHeight > 1 && EditorChromeView.Width > 1;
+                if (!hasValidLayout && attempt < 12)
+                {
+                    PinnedInkToolsOverlay.Dispatcher.DispatchDelayed(
+                        TimeSpan.FromMilliseconds(16),
+                        () => ApplyPosition(attempt + 1));
+                    return;
+                }
+
+                var overlayX = Math.Max(0d, hostX);
+                var overlayY = hostY + Math.Max(0d, (hostHeight - overlayHeight) / 2d);
+                PinnedInkToolsOverlay.Margin = new Thickness(
+                    Math.Round(overlayX),
+                    Math.Round(overlayY),
+                    0,
+                    0);
+                PinnedInkToolsOverlay.TranslationX = 0;
+                PinnedInkToolsOverlay.TranslationY = 0;
+
+                var overlayWidth = PinnedInkToolsOverlay.Width > 1
+                    ? PinnedInkToolsOverlay.Width
+                    : PinnedInkToolsOverlay.WidthRequest;
+                if (overlayWidth > 1)
+                {
+                    var targetSpacerWidth = Math.Ceiling(overlayWidth + 10d);
+                    if (Math.Abs(TopToolsLeadingSpacer.WidthRequest - targetSpacerWidth) > 0.5d)
+                    {
+                        TopToolsLeadingSpacer.WidthRequest = targetSpacerWidth;
+                    }
+                }
+            }
+
+            ApplyPosition(0);
+        });
     }
 
     private void PositionThumbnailPanelUnderTopButton()

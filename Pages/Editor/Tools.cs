@@ -2,6 +2,7 @@ using SkiaSharp;
 using Flow.PDFView;
 using Flow.PDFView.Abstractions;
 using FlowNoteMauiApp.Controls;
+using FlowNoteMauiApp.Core.Rendering.ToolIcons;
 using FlowNoteMauiApp.Helpers;
 using FlowNoteMauiApp.Models;
 using System.Diagnostics;
@@ -34,30 +35,28 @@ public partial class MainPage
 
     private void UpdateToolSelection(InkToolKind selectedTool)
     {
-        var palette = Palette;
-        var selectedColor = palette.ToolSelectedBackground;
-        var normalColor = palette.ToolNormalBackground;
-        var selectedBorder = palette.ToolSelectedBorder;
-        var normalBorder = palette.ToolNormalBorder;
-
-        ApplyToolButtonSelection(PenModeButton, selectedTool == InkToolKind.Ballpoint, selectedColor, normalColor, selectedBorder, normalBorder);
-        ApplyToolButtonSelection(HighlighterButton, selectedTool == InkToolKind.Fountain, selectedColor, normalColor, selectedBorder, normalBorder);
-        ApplyToolButtonSelection(PencilButton, selectedTool == InkToolKind.Pencil, selectedColor, normalColor, selectedBorder, normalBorder);
-        ApplyToolButtonSelection(MarkerButton, selectedTool == InkToolKind.Marker, selectedColor, normalColor, selectedBorder, normalBorder);
-        ApplyToolButtonSelection(EraserButton, selectedTool == InkToolKind.Eraser, selectedColor, normalColor, selectedBorder, normalBorder);
+        ApplyToolButtonSelection(PenModeButton, selectedTool == InkToolKind.Ballpoint);
+        ApplyToolButtonSelection(HighlighterButton, selectedTool == InkToolKind.Fountain);
+        ApplyToolButtonSelection(PencilButton, selectedTool == InkToolKind.Pencil);
+        ApplyToolButtonSelection(MarkerButton, selectedTool == InkToolKind.Marker);
+        ApplyToolButtonSelection(EraserButton, selectedTool == InkToolKind.Eraser);
     }
 
     private static void ApplyToolButtonSelection(
         ImageButton button,
-        bool selected,
-        Color selectedColor,
-        Color normalColor,
-        Color selectedBorder,
-        Color normalBorder)
+        bool selected)
     {
-        button.BackgroundColor = selected ? selectedColor : normalColor;
-        button.BorderColor = selected ? selectedBorder : normalBorder;
-        button.BorderWidth = selected ? 1 : 0;
+        button.BackgroundColor = Colors.Transparent;
+        button.BorderColor = Colors.Transparent;
+        button.BorderWidth = 0;
+
+        button.AnchorX = 0.5;
+        button.AnchorY = 0.0;
+        button.ScaleX = selected ? 1.5 : 1.36; // 宽度
+        button.ScaleY = selected ? 2.2 : 1.8; // 高度
+        button.TranslationY = selected ? -3 : -5; // 选中时向上移动一些，未选中时保持原位
+        button.ZIndex = selected ? 980 : 920; 
+        button.Opacity = selected ? 1.0 : 0.96;
     }
 
     private void OnRedoClicked(object? sender, EventArgs e)
@@ -208,7 +207,8 @@ public partial class MainPage
             InkToolKind.Ballpoint,
             InkToolKind.Fountain,
             InkToolKind.Pencil,
-            InkToolKind.Marker);
+            InkToolKind.Marker,
+            InkToolKind.Eraser);
     }
 
     private void UpdateToolButtonTintColors(params InkToolKind[] tools)
@@ -230,11 +230,16 @@ public partial class MainPage
             var renderTasks = new List<Task<(InkToolKind Tool, ImageSource Source)>>(tools.Count);
             foreach (var tool in tools)
             {
-                if (!TryGetProceduralToolKey(tool, out var toolKey))
+                if (!TryGetProceduralToolKind(tool, out var toolKind))
                     continue;
 
                 var tintColor = EnsureInkState(tool).Color;
-                renderTasks.Add(RenderToolIconAsync(tool, toolKey, tintColor, token));
+                if (tool == InkToolKind.Eraser || tintColor.Alpha == 0)
+                {
+                    tintColor = SKColor.Parse("4FA4E5");
+                }
+
+                renderTasks.Add(RenderToolIconAsync(tool, toolKind, tintColor, token));
             }
 
             if (renderTasks.Count == 0)
@@ -266,32 +271,35 @@ public partial class MainPage
 
     private async Task<(InkToolKind Tool, ImageSource Source)> RenderToolIconAsync(
         InkToolKind tool,
-        string toolKey,
+        ToolIconKind toolKind,
         SKColor tintColor,
         CancellationToken token)
     {
-        var source = await CreateTintedToolIconSourceAsync(toolKey, tintColor, token).ConfigureAwait(false);
+        var source = await CreateTintedToolIconSourceAsync(toolKind, tintColor, token).ConfigureAwait(false);
         return (tool, source);
     }
 
-    private static bool TryGetProceduralToolKey(InkToolKind tool, out string toolKey)
+    private static bool TryGetProceduralToolKind(InkToolKind tool, out ToolIconKind toolKind)
     {
         switch (tool)
         {
             case InkToolKind.Ballpoint:
-                toolKey = "ballpoint";
+                toolKind = ToolIconKind.Ballpoint;
                 return true;
             case InkToolKind.Fountain:
-                toolKey = "fountain";
+                toolKind = ToolIconKind.Fountain;
                 return true;
             case InkToolKind.Pencil:
-                toolKey = "pencil";
+                toolKind = ToolIconKind.Pencil;
                 return true;
             case InkToolKind.Marker:
-                toolKey = "marker";
+                toolKind = ToolIconKind.Marker;
+                return true;
+            case InkToolKind.Eraser:
+                toolKind = ToolIconKind.Eraser;
                 return true;
             default:
-                toolKey = string.Empty;
+                toolKind = ToolIconKind.Ballpoint;
                 return false;
         }
     }
@@ -304,14 +312,15 @@ public partial class MainPage
             InkToolKind.Fountain => HighlighterButton,
             InkToolKind.Pencil => PencilButton,
             InkToolKind.Marker => MarkerButton,
+            InkToolKind.Eraser => EraserButton,
             _ => null
         };
     }
 
-    private async Task<ImageSource> CreateTintedToolIconSourceAsync(string toolKey, SKColor tintColor, CancellationToken token)
+    private async Task<ImageSource> CreateTintedToolIconSourceAsync(ToolIconKind toolKind, SKColor tintColor, CancellationToken token)
     {
         return await IconRenderHelper
-            .CreateProcedural3DToolIconAsync(toolKey, tintColor, token)
+            .CreateProcedural3DToolIconAsync(toolKind, tintColor, token)
             .ConfigureAwait(false);
     }
 
