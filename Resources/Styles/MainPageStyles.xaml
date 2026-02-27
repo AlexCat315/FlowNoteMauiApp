@@ -181,9 +181,6 @@
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="BorderColor" Value="Transparent" />
         <Setter Property="BorderWidth" Value="0" />
-        <Setter Property="Shadow">
-            <Shadow Brush="#100B1A30" Radius="3" Offset="0,1" Opacity="0.4" />
-        </Setter>
     </Style>
 
     <Style

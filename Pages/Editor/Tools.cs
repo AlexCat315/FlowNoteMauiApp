@@ -49,11 +49,13 @@ public partial class MainPage
         button.BackgroundColor = Colors.Transparent;
         button.BorderColor = Colors.Transparent;
         button.BorderWidth = 0;
+        button.Aspect = Aspect.AspectFit;
+        button.SetIconDrawSize(selected ? 30 : 27);
 
         button.AnchorX = 0.5;
         button.AnchorY = 0.0;
-        button.ScaleX = selected ? 1.36 : 1.18;
-        button.ScaleY = selected ? 1.92 : 1.58;
+        button.ScaleX = selected ? 1.30 : 1.14;
+        button.ScaleY = selected ? 1.84 : 1.50;
         button.TranslationY = selected ? 10 : 2;
         button.ZIndex = selected ? 980 : 920; 
         button.Opacity = selected ? 1.0 : 0.96;

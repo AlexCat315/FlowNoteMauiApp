@@ -45,5 +45,51 @@
             x:Name="StatusToastView"
             InputTransparent="True"
         />
+
+        <Grid
+            x:Name="ImportProgressOverlay"
+            IsVisible="False"
+            InputTransparent="True"
+            BackgroundColor="#55000000"
+            ZIndex="2600"
+        >
+            <Border
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                WidthRequest="296"
+                MaximumWidthRequest="320"
+                Padding="16,14"
+                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2E43}"
+                Stroke="{AppThemeBinding Light=#DCE3EE, Dark=#3A4F69}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 14"
+            >
+                <VerticalStackLayout Spacing="10">
+                    <Label
+                        x:Name="ImportProgressTitleLabel"
+                        Text="Importing PDF"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="15"
+                        HorizontalTextAlignment="Center"
+                        TextColor="{AppThemeBinding Light=#1C1C1E, Dark=#F2F2F7}"
+                    />
+                    <ProgressBar
+                        x:Name="ImportProgressBar"
+                        Progress="0"
+                        HeightRequest="6"
+                        ProgressColor="#4A90E2"
+                        BackgroundColor="{AppThemeBinding Light=#E8EDF4, Dark=#324860}"
+                    />
+                    <Label
+                        x:Name="ImportProgressDetailLabel"
+                        Text="Preparing..."
+                        FontFamily="OpenSansRegular"
+                        FontSize="12"
+                        HorizontalTextAlignment="Center"
+                        TextColor="{AppThemeBinding Light=#636366, Dark=#B9C2CF}"
+                    />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
     </Grid>
 </ContentPage>

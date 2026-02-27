@@ -685,6 +685,15 @@ public partial class MainPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill
         };
+        var placeholderGlyph = new Image
+        {
+            Source = "icon_file.png",
+            WidthRequest = 14,
+            HeightRequest = 14,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            Opacity = 0.28
+        };
 
         preview.Content = new Border
         {
@@ -697,21 +706,13 @@ public partial class MainPage
                 Children =
                 {
                     previewImage,
-                    new Image
-                    {
-                        Source = "icon_file.png",
-                        WidthRequest = 14,
-                        HeightRequest = 14,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
-                        Opacity = 0.28
-                    }
+                    placeholderGlyph
                 }
             }
         };
         content.Add(preview);
         Grid.SetRow(preview, 0);
-        BindHomeCoverPreview(note, previewImage);
+        BindHomeCoverPreview(note, previewImage, placeholderGlyph);
 
         var titleGrid = new Grid
         {

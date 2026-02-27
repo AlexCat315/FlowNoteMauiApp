@@ -1,6 +1,7 @@
+using System.Buffers;
+using System.Diagnostics;
 using FlowNoteMauiApp.Resources;
 using Microsoft.Maui.Devices;
-using System.Diagnostics;
 #if IOS || MACCATALYST
 using Foundation;
 using UIKit;
@@ -19,6 +20,7 @@ public partial class MainPage
     });
     private static readonly TimeSpan PickerReentryCooldown = TimeSpan.FromMilliseconds(1600);
     private bool _isPickingPdf;
+    private bool _isImportingPdf;
     private DateTime _pickerCooldownUntilUtc = DateTime.MinValue;
 
     private async void OnLoadUrlClicked(object? sender, EventArgs e)
@@ -42,10 +44,34 @@ public partial class MainPage
             return;
         }
 
+        if (_isImportingPdf)
+            return;
+
+        _isImportingPdf = true;
+        SetImportButtonsEnabled(false);
         try
         {
+            await ShowImportProgressAsync("Importing PDF", "Connecting...");
             ShowStatus("Downloading PDF...");
-            var bytes = await _httpClient.GetByteArrayAsync(uri);
+            using var response = await _httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            var contentLength = response.Content.Headers.ContentLength;
+            await UpdateImportProgressAsync(0.06, "Downloading...");
+
+            await using var responseStream = await response.Content.ReadAsStreamAsync();
+            var bytes = await ReadAllBytesWithProgressAsync(
+                responseStream,
+                contentLength,
+                progress =>
+                {
+                    if (progress < 0d)
+                        return UpdateImportProgressAsync(0.40, "Downloading...");
+
+                    var phase = 0.08 + (progress * 0.62);
+                    return UpdateImportProgressAsync(phase, $"Downloading {progress * 100d:0}%");
+                });
+
             if (bytes.Length == 0)
             {
                 ShowStatus(AppResources.FileEmpty);
@@ -58,26 +84,37 @@ public partial class MainPage
                 suggestedName = $"{uri.Host}-{DateTime.UtcNow:yyyyMMddHHmmss}.pdf";
             }
 
+            await UpdateImportProgressAsync(0.78, "Saving document...");
             await SaveCurrentDrawingStateAsync();
             var note = await _workspaceService.ImportPdfAsync(suggestedName, bytes, _workspaceFolder);
-            await PrimeHomeCoverCacheAsync(note, bytes);
+            QueuePrimeHomeCoverCache(note, bytes);
 
             if (openAfterImport)
             {
+                await UpdateImportProgressAsync(0.92, "Opening editor...");
                 await OpenWorkspaceNoteAsync(note);
             }
             else
             {
+                await UpdateImportProgressAsync(0.92, "Refreshing home...");
                 await RefreshWorkspaceViewsAsync();
                 ShowStatus($"Imported: {note.Name}");
                 ShowHomeScreen();
             }
+
+            await UpdateImportProgressAsync(1d, "Import complete");
         }
         catch (Exception ex)
         {
             ShowStatus($"{AppResources.LoadFailed}: {ex.Message}");
             if (showAlertOnError)
                 await DisplayAlertAsync(AppResources.LoadFailed, ex.Message, "OK");
+        }
+        finally
+        {
+            _isImportingPdf = false;
+            SetImportButtonsEnabled(true);
+            await HideImportProgressAsync();
         }
     }
 
@@ -92,12 +129,15 @@ public partial class MainPage
     {
         if (_isPickingPdf)
             return;
+        if (_isImportingPdf)
+            return;
 
         var now = DateTime.UtcNow;
         if (now < _pickerCooldownUntilUtc)
             return;
 
         _isPickingPdf = true;
+        _isImportingPdf = true;
         _pickerCooldownUntilUtc = now.Add(PickerReentryCooldown);
         SetImportButtonsEnabled(false);
         try
@@ -128,10 +168,20 @@ public partial class MainPage
 
             LogPicker($"pick-result file={result.FileName} contentType={result.ContentType}");
 
+            await ShowImportProgressAsync("Importing PDF", "Reading selected file...");
             await using var stream = await result.OpenReadAsync();
-            using var memory = new MemoryStream();
-            await stream.CopyToAsync(memory);
-            var data = memory.ToArray();
+            var streamLength = TryGetStreamLength(stream);
+            var data = await ReadAllBytesWithProgressAsync(
+                stream,
+                streamLength,
+                progress =>
+                {
+                    if (progress < 0d)
+                        return UpdateImportProgressAsync(0.36, "Reading selected file...");
+
+                    var phase = 0.08 + (progress * 0.58);
+                    return UpdateImportProgressAsync(phase, $"Reading {progress * 100d:0}%");
+                });
             if (data.Length == 0)
             {
                 ShowStatus(AppResources.FileEmpty);
@@ -158,20 +208,25 @@ public partial class MainPage
                 importedName += ".pdf";
             }
 
+            await UpdateImportProgressAsync(0.74, "Saving document...");
             await SaveCurrentDrawingStateAsync();
             var note = await _workspaceService.ImportPdfAsync(importedName, data, _workspaceFolder);
-            await PrimeHomeCoverCacheAsync(note, data);
+            QueuePrimeHomeCoverCache(note, data);
 
             if (openAfterImport)
             {
+                await UpdateImportProgressAsync(0.92, "Opening editor...");
                 await OpenWorkspaceNoteAsync(note);
             }
             else
             {
+                await UpdateImportProgressAsync(0.92, "Refreshing home...");
                 await RefreshWorkspaceViewsAsync();
                 ShowStatus($"Imported: {note.Name}");
                 ShowHomeScreen();
             }
+
+            await UpdateImportProgressAsync(1d, "Import complete");
         }
         catch (OperationCanceledException)
         {
@@ -186,8 +241,10 @@ public partial class MainPage
         finally
         {
             _isPickingPdf = false;
+            _isImportingPdf = false;
             _pickerCooldownUntilUtc = DateTime.UtcNow.Add(PickerReentryCooldown);
             SetImportButtonsEnabled(true);
+            await HideImportProgressAsync();
         }
     }
 
@@ -396,6 +453,122 @@ public partial class MainPage
         }
         catch
         {
+        }
+    }
+
+    private Task ShowImportProgressAsync(string title, string detail)
+    {
+        return MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            ImportProgressTitleLabel.Text = title;
+            ImportProgressDetailLabel.Text = detail;
+            ImportProgressBar.Progress = 0d;
+            ImportProgressOverlay.InputTransparent = false;
+            ImportProgressOverlay.IsVisible = true;
+        });
+    }
+
+    private Task UpdateImportProgressAsync(double progress, string detail)
+    {
+        return MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            if (!ImportProgressOverlay.IsVisible)
+                return;
+
+            ImportProgressBar.Progress = Math.Clamp(progress, 0d, 1d);
+            if (!string.IsNullOrWhiteSpace(detail))
+            {
+                ImportProgressDetailLabel.Text = detail;
+            }
+        });
+    }
+
+    private Task HideImportProgressAsync()
+    {
+        return MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            ImportProgressOverlay.IsVisible = false;
+            ImportProgressOverlay.InputTransparent = true;
+            ImportProgressBar.Progress = 0d;
+            ImportProgressTitleLabel.Text = string.Empty;
+            ImportProgressDetailLabel.Text = string.Empty;
+        });
+    }
+
+    private static long? TryGetStreamLength(Stream stream)
+    {
+        if (!stream.CanSeek)
+            return null;
+
+        try
+        {
+            var length = stream.Length;
+            if (length > 0 && stream.Position != 0)
+            {
+                stream.Position = 0;
+            }
+
+            return length > 0 ? length : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static async Task<byte[]> ReadAllBytesWithProgressAsync(
+        Stream stream,
+        long? totalBytes,
+        Func<double, Task> reportProgressAsync,
+        CancellationToken token = default)
+    {
+        const int bufferSize = 128 * 1024;
+        using var memory = totalBytes is > 0 and <= int.MaxValue
+            ? new MemoryStream((int)totalBytes.Value)
+            : new MemoryStream();
+
+        var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+        long totalRead = 0;
+        var lastTick = Stopwatch.GetTimestamp();
+        var lastReportedProgress = -1d;
+
+        try
+        {
+            while (true)
+            {
+                var read = await stream.ReadAsync(buffer.AsMemory(0, bufferSize), token).ConfigureAwait(false);
+                if (read <= 0)
+                    break;
+
+                await memory.WriteAsync(buffer.AsMemory(0, read), token).ConfigureAwait(false);
+                totalRead += read;
+
+                var progress = totalBytes is > 0
+                    ? Math.Clamp(totalRead / (double)totalBytes.Value, 0d, 1d)
+                    : -1d;
+                var now = Stopwatch.GetTimestamp();
+                var shouldReport = progress < 0d
+                    ? Stopwatch.GetElapsedTime(lastTick, now).TotalMilliseconds >= 140
+                    : progress >= 1d
+                      || progress - lastReportedProgress >= 0.02d
+                      || Stopwatch.GetElapsedTime(lastTick, now).TotalMilliseconds >= 120;
+                if (!shouldReport)
+                    continue;
+
+                await reportProgressAsync(progress).ConfigureAwait(false);
+                lastTick = now;
+                if (progress >= 0d)
+                {
+                    lastReportedProgress = progress;
+                }
+            }
+
+            await reportProgressAsync(1d).ConfigureAwait(false);
+            return memory.ToArray();
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 

@@ -9,29 +9,33 @@ namespace FlowNoteMauiApp;
 
 public partial class MainPage
 {
-    private const int HomeCoverRequestWidth = 280;
-    private const int HomeCoverRequestHeight = 392;
+    private const int HomeCoverRequestWidth = 376;
+    private const int HomeCoverRequestHeight = 528;
+    private static readonly TimeSpan HomeCoverLoadTimeout = TimeSpan.FromSeconds(32);
+    private static readonly TimeSpan HomeCoverRendererReadyTimeout = TimeSpan.FromSeconds(3);
     private readonly SemaphoreSlim _homeCoverRenderSemaphore = new(1, 1);
     private readonly ConcurrentDictionary<string, ImageSource> _homeCoverSourceCache = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, Task<ImageSource?>> _homeCoverLoadTasks = new(StringComparer.Ordinal);
     private PdfView? _homeCoverRendererView;
+    private Task? _homeCoverRendererReadyTask;
 
-    private void BindHomeCoverPreview(WorkspaceNote note, Image previewImage)
+    private void BindHomeCoverPreview(WorkspaceNote note, Image previewImage, Image? placeholderImage = null)
     {
         var cacheKey = BuildHomeCoverCacheKey(note);
         if (_homeCoverSourceCache.TryGetValue(cacheKey, out var cachedSource))
         {
-            previewImage.Source = cachedSource;
+            ApplyHomeCoverSource(previewImage, placeholderImage, cachedSource);
             return;
         }
 
-        _ = LoadAndApplyHomeCoverAsync(note, cacheKey, previewImage, CancellationToken.None);
+        _ = LoadAndApplyHomeCoverAsync(note, cacheKey, previewImage, placeholderImage, CancellationToken.None);
     }
 
     private async Task LoadAndApplyHomeCoverAsync(
         WorkspaceNote note,
         string cacheKey,
         Image previewImage,
+        Image? placeholderImage,
         CancellationToken token)
     {
         try
@@ -47,7 +51,7 @@ public partial class MainPage
             {
                 if (!token.IsCancellationRequested)
                 {
-                    previewImage.Source = source;
+                    ApplyHomeCoverSource(previewImage, placeholderImage, source);
                 }
             });
         }
@@ -137,7 +141,7 @@ public partial class MainPage
         try
         {
             var completed = await Task
-                .WhenAny(loadTcs.Task, Task.Delay(TimeSpan.FromSeconds(8), token))
+                .WhenAny(loadTcs.Task, Task.Delay(HomeCoverLoadTimeout, token))
                 .ConfigureAwait(false);
             if (!ReferenceEquals(completed, loadTcs.Task))
                 throw new TimeoutException("Home cover render timed out.");
@@ -164,22 +168,36 @@ public partial class MainPage
     private async Task<PdfView> EnsureHomeCoverRendererViewAsync()
     {
         if (_homeCoverRendererView is not null)
+        {
+            if (_homeCoverRendererReadyTask is not null)
+            {
+                await WaitForHomeCoverRendererReadyAsync(_homeCoverRendererReadyTask).ConfigureAwait(false);
+            }
             return _homeCoverRendererView;
+        }
+
+        var readyTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _homeCoverRendererReadyTask = readyTcs.Task;
 
         await MainThread.InvokeOnMainThreadAsync(() =>
         {
             if (_homeCoverRendererView is not null)
+            {
+                readyTcs.TrySetResult(true);
                 return;
+            }
 
             EnsureUiBootstrapped();
 
             _homeCoverRendererView = new PdfView
             {
-                IsVisible = false,
-                Opacity = 0,
+                IsVisible = true,
+                Opacity = 0.001,
                 InputTransparent = true,
-                WidthRequest = 1,
-                HeightRequest = 1,
+                WidthRequest = 2,
+                HeightRequest = 2,
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Start,
                 MinZoom = 1f,
                 MaxZoom = 1f,
                 Zoom = 1f,
@@ -192,10 +210,49 @@ public partial class MainPage
                 FitPolicy = FitPolicy.Width
             };
 
+            _homeCoverRendererView.Loaded += OnHomeCoverRendererLoaded;
             EditorHost.Children.Insert(0, _homeCoverRendererView);
+            if (_homeCoverRendererView.Handler is not null)
+            {
+                _homeCoverRendererView.Loaded -= OnHomeCoverRendererLoaded;
+                readyTcs.TrySetResult(true);
+            }
+
+            void OnHomeCoverRendererLoaded(object? sender, EventArgs args)
+            {
+                if (_homeCoverRendererView is null)
+                    return;
+
+                _homeCoverRendererView.Loaded -= OnHomeCoverRendererLoaded;
+                readyTcs.TrySetResult(true);
+            }
         });
 
+        if (_homeCoverRendererReadyTask is not null)
+        {
+            await WaitForHomeCoverRendererReadyAsync(_homeCoverRendererReadyTask).ConfigureAwait(false);
+        }
+
         return _homeCoverRendererView!;
+    }
+
+    private static async Task WaitForHomeCoverRendererReadyAsync(Task readyTask)
+    {
+        var completed = await Task.WhenAny(readyTask, Task.Delay(HomeCoverRendererReadyTimeout)).ConfigureAwait(false);
+        if (ReferenceEquals(completed, readyTask))
+        {
+            await readyTask.ConfigureAwait(false);
+        }
+    }
+
+    private static void ApplyHomeCoverSource(Image previewImage, Image? placeholderImage, ImageSource source)
+    {
+        previewImage.Source = source;
+        if (placeholderImage is not null)
+        {
+            placeholderImage.IsVisible = false;
+            placeholderImage.Opacity = 0;
+        }
     }
 
     private async Task PrimeHomeCoverCacheAsync(WorkspaceNote note, byte[] pdfBytes, CancellationToken token = default)
@@ -247,7 +304,7 @@ public partial class MainPage
 
     private static string ResolveHomeCoverCacheDirectory()
     {
-        var cacheRoot = FileSystem.Current.CacheDirectory;
+        var cacheRoot = FileSystem.Current.AppDataDirectory;
         return Path.Combine(cacheRoot, "home-covers");
     }
 
@@ -290,5 +347,23 @@ public partial class MainPage
         catch
         {
         }
+    }
+
+    private void QueuePrimeHomeCoverCache(WorkspaceNote note, byte[] pdfBytes)
+    {
+        if (pdfBytes.Length == 0)
+            return;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await PrimeHomeCoverCacheAsync(note, pdfBytes).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[HomeCover] queue pre-generate failed for {note.Id}: {ex.Message}");
+            }
+        });
     }
 }

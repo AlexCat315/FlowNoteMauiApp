@@ -74,11 +74,11 @@ public partial class MainPage
 
         UndoButton.SetIconDrawSize(15);
         RedoButton.SetIconDrawSize(15);
-        PenModeButton.SetIconDrawSize(26);
-        HighlighterButton.SetIconDrawSize(26);
-        PencilButton.SetIconDrawSize(26);
-        MarkerButton.SetIconDrawSize(26);
-        EraserButton.SetIconDrawSize(26);
+        PenModeButton.SetIconDrawSize(27);
+        HighlighterButton.SetIconDrawSize(27);
+        PencilButton.SetIconDrawSize(27);
+        MarkerButton.SetIconDrawSize(27);
+        EraserButton.SetIconDrawSize(27);
         ClearButton2.SetIconDrawSize(19);
         TopInlineLayerButton.SetIconDrawSize(19);
         TextToolButton.SetIconDrawSize(15);

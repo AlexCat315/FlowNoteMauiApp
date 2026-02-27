@@ -6,26 +6,46 @@ public static class ProceduralToolIconRenderer
 {
     public static SKBitmap Render(ToolIconKind toolKind, SKColor accentColor, int size = 256)
     {
-        var safeSize = Math.Clamp(size, 64, 512);
-        var bitmap = new SKBitmap(safeSize, safeSize, SKColorType.Rgba8888, SKAlphaType.Premul);
-        using var canvas = new SKCanvas(bitmap);
-        canvas.Clear(SKColors.Transparent);
+        var outputSize = Math.Clamp(size, 64, 512);
+        var workingSize = Math.Clamp(outputSize * 2, 128, 1024);
+        using var workingBitmap = new SKBitmap(workingSize, workingSize, SKColorType.Rgba8888, SKAlphaType.Premul);
+        using (var canvas = new SKCanvas(workingBitmap))
+        {
+            canvas.Clear(SKColors.Transparent);
+            var supersampleScale = workingSize / (float)outputSize;
+            canvas.Scale(supersampleScale, supersampleScale);
+            DrawToolScene(canvas, toolKind, accentColor, outputSize);
+            canvas.Flush();
+        }
 
+        if (workingSize == outputSize)
+            return workingBitmap.Copy();
+
+        var output = new SKBitmap(outputSize, outputSize, SKColorType.Rgba8888, SKAlphaType.Premul);
+        using var workingImage = SKImage.FromBitmap(workingBitmap);
+        using var outputCanvas = new SKCanvas(output);
+        using var paint = new SKPaint { IsAntialias = true, IsDither = true };
+        var sampling = new SKSamplingOptions(new SKCubicResampler(0.333f, 0.333f));
+        outputCanvas.Clear(SKColors.Transparent);
+        outputCanvas.DrawImage(workingImage, new SKRect(0f, 0f, outputSize, outputSize), sampling, paint);
+        outputCanvas.Flush();
+        return output;
+    }
+
+    private static void DrawToolScene(SKCanvas canvas, ToolIconKind toolKind, SKColor accentColor, int size)
+    {
         // Draw the tool upside-down in local coordinates, then flip vertically so the tip points down.
         canvas.Save();
-        canvas.Translate(0, safeSize);
+        canvas.Translate(0, size);
         canvas.Scale(1f, -1f);
-        DrawToolUpright(canvas, toolKind, accentColor, safeSize);
+        DrawToolUpright(canvas, toolKind, accentColor, size);
         canvas.Restore();
 
-        var shadowLeft = safeSize * 0.24f;
-        var shadowTop = safeSize * 0.84f;
-        var shadowRight = safeSize * 0.76f;
-        var shadowBottom = safeSize * 0.94f;
+        var shadowLeft = size * 0.24f;
+        var shadowTop = size * 0.84f;
+        var shadowRight = size * 0.76f;
+        var shadowBottom = size * 0.94f;
         DrawGroundShadow(canvas, new SKRect(shadowLeft, shadowTop, shadowRight, shadowBottom));
-
-        canvas.Flush();
-        return bitmap;
     }
 
     private static void DrawToolUpright(SKCanvas canvas, ToolIconKind toolKind, SKColor accentColor, int size)
