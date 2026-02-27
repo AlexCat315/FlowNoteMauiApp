@@ -678,24 +678,40 @@ public partial class MainPage
             Padding = new Thickness(8)
         };
 
+        var previewImage = new Image
+        {
+            Source = "icon_file.png",
+            Aspect = Aspect.AspectFill,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill
+        };
+
         preview.Content = new Border
         {
             BackgroundColor = HomePreviewPaperBackground,
             Stroke = IsDarkTheme ? Color.FromArgb("#5D779A") : Color.FromArgb("#D8E1EE"),
             StrokeThickness = 1,
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
-            Content = new Image
+            Content = new Grid
             {
-                Source = "icon_file.png",
-                WidthRequest = 14,
-                HeightRequest = 14,
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center,
-                Opacity = 0.76
+                Children =
+                {
+                    previewImage,
+                    new Image
+                    {
+                        Source = "icon_file.png",
+                        WidthRequest = 14,
+                        HeightRequest = 14,
+                        HorizontalOptions = LayoutOptions.Center,
+                        VerticalOptions = LayoutOptions.Center,
+                        Opacity = 0.28
+                    }
+                }
             }
         };
         content.Add(preview);
         Grid.SetRow(preview, 0);
+        BindHomeCoverPreview(note, previewImage);
 
         var titleGrid = new Grid
         {

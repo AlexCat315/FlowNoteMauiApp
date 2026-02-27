@@ -284,27 +284,22 @@
                     <ImageButton
                         x:Name="PenModeButton"
                         Style="{StaticResource InkToolGlyphButton}"
-                        Source="icon_ballpoint_pen.png"
                     />
                     <ImageButton
                         x:Name="HighlighterButton"
                         Style="{StaticResource InkToolGlyphButton}"
-                        Source="icon_pen.png"
                     />
                     <ImageButton
                         x:Name="PencilButton"
                         Style="{StaticResource InkToolGlyphButton}"
-                        Source="icon_pencil.png"
                     />
                     <ImageButton
                         x:Name="MarkerButton"
                         Style="{StaticResource InkToolGlyphButton}"
-                        Source="icon_markpen.png"
                     />
                     <ImageButton
                         x:Name="EraserButton"
                         Style="{StaticResource InkToolGlyphButton}"
-                        Source="icon_eraser.png"
                     />
                     <ImageButton
                         x:Name="ClearButton2"

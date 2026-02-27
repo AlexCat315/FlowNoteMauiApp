@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using FlowNoteMauiApp.Core.Rendering.ToolIcons;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
 using SkiaSharp;
 
@@ -79,17 +80,32 @@ public static class IconRenderHelper
         CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
-        var cacheKey = $"proc3d:{toolKind}:{accentColor.Alpha:X2}{accentColor.Red:X2}{accentColor.Green:X2}{accentColor.Blue:X2}";
+        var renderSize = ResolveProceduralIconRenderSize();
+        var cacheKey = $"proc3d:{toolKind}:{renderSize}:{accentColor.Alpha:X2}{accentColor.Red:X2}{accentColor.Green:X2}{accentColor.Blue:X2}";
         if (Cache.TryGetValue(cacheKey, out var cachedSource))
             return Task.FromResult(cachedSource);
 
-        using var bitmap = ProceduralToolIconRenderer.Render(toolKind, accentColor);
+        using var bitmap = ProceduralToolIconRenderer.Render(toolKind, accentColor, renderSize);
         using var outputImage = SKImage.FromBitmap(bitmap);
         using var outputData = outputImage.Encode(SKEncodedImageFormat.Png, 100);
         var bytes = outputData.ToArray();
         var source = ImageSource.FromStream(() => new MemoryStream(bytes));
         Cache[cacheKey] = source;
         return Task.FromResult(source);
+    }
+
+    private static int ResolveProceduralIconRenderSize()
+    {
+        try
+        {
+            var density = Math.Max(1d, DeviceDisplay.Current.MainDisplayInfo.Density);
+            var target = (int)Math.Ceiling(96d * density);
+            return Math.Clamp(target, 192, 448);
+        }
+        catch
+        {
+            return 256;
+        }
     }
 
     private static SKBitmap RenderMonochrome(SKBitmap baseBitmap, SKColor tintColor)

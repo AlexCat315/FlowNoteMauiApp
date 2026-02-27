@@ -4,9 +4,9 @@ namespace FlowNoteMauiApp.Core.Rendering.ToolIcons;
 
 public static class ProceduralToolIconRenderer
 {
-    public static SKBitmap Render(ToolIconKind toolKind, SKColor accentColor, int size = 96)
+    public static SKBitmap Render(ToolIconKind toolKind, SKColor accentColor, int size = 256)
     {
-        var safeSize = Math.Clamp(size, 32, 256);
+        var safeSize = Math.Clamp(size, 64, 512);
         var bitmap = new SKBitmap(safeSize, safeSize, SKColorType.Rgba8888, SKAlphaType.Premul);
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.Transparent);
@@ -107,29 +107,6 @@ public static class ProceduralToolIconRenderer
         // Rubber head (colored)
         var rubberRect = new SKRect(bodyRect.Left, size * 0.17f, bodyRect.Right, size * 0.30f);
         DrawAccentCap(canvas, rubberRect, accentColor);
-
-        // Blue wedge to emulate slanted eraser feeling
-        using var wedge = new SKPath();
-        wedge.MoveTo(bodyRect.Right - (size * 0.015f), bodyRect.Bottom - (size * 0.03f));
-        wedge.LineTo(bodyRect.Right + (size * 0.09f), bodyRect.Bottom + (size * 0.03f));
-        wedge.LineTo(bodyRect.Right - (size * 0.01f), bodyRect.Bottom + (size * 0.08f));
-        wedge.Close();
-
-        using var wedgePaint = new SKPaint
-        {
-            IsAntialias = true,
-            Shader = SKShader.CreateLinearGradient(
-                new SKPoint(bodyRect.Right - (size * 0.01f), bodyRect.Bottom),
-                new SKPoint(bodyRect.Right + (size * 0.09f), bodyRect.Bottom + (size * 0.08f)),
-                new[]
-                {
-                    Lighten(accentColor, 0.2f),
-                    Darken(accentColor, 0.2f)
-                },
-                null,
-                SKShaderTileMode.Clamp)
-        };
-        canvas.DrawPath(wedge, wedgePaint);
     }
 
     private static SKRect DrawTubeBody(SKCanvas canvas, float centerX, float top, float width, float height, float radius)
