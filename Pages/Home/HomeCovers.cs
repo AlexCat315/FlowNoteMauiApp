@@ -25,8 +25,7 @@ public partial class MainPage
             return;
         }
 
-        var token = _homeFeedRenderCts?.Token ?? CancellationToken.None;
-        _ = LoadAndApplyHomeCoverAsync(note, cacheKey, previewImage, token);
+        _ = LoadAndApplyHomeCoverAsync(note, cacheKey, previewImage, CancellationToken.None);
     }
 
     private async Task LoadAndApplyHomeCoverAsync(
@@ -137,6 +136,12 @@ public partial class MainPage
         using var registration = token.Register(() => loadTcs.TrySetCanceled(token));
         try
         {
+            var completed = await Task
+                .WhenAny(loadTcs.Task, Task.Delay(TimeSpan.FromSeconds(8), token))
+                .ConfigureAwait(false);
+            if (!ReferenceEquals(completed, loadTcs.Task))
+                throw new TimeoutException("Home cover render timed out.");
+
             await loadTcs.Task.ConfigureAwait(false);
             if (token.IsCancellationRequested)
                 return null;
@@ -166,6 +171,8 @@ public partial class MainPage
             if (_homeCoverRendererView is not null)
                 return;
 
+            EnsureUiBootstrapped();
+
             _homeCoverRendererView = new PdfView
             {
                 IsVisible = false,
@@ -189,6 +196,47 @@ public partial class MainPage
         });
 
         return _homeCoverRendererView!;
+    }
+
+    private async Task PrimeHomeCoverCacheAsync(WorkspaceNote note, byte[] pdfBytes, CancellationToken token = default)
+    {
+        if (pdfBytes.Length == 0)
+            return;
+
+        var cacheKey = BuildHomeCoverCacheKey(note);
+        if (_homeCoverSourceCache.ContainsKey(cacheKey))
+            return;
+
+        if (TryLoadHomeCoverFromDisk(cacheKey, out var diskSource))
+        {
+            _homeCoverSourceCache[cacheKey] = diskSource;
+            return;
+        }
+
+        await _homeCoverRenderSemaphore.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            if (_homeCoverSourceCache.ContainsKey(cacheKey))
+                return;
+
+            var coverBytes = await RenderHomeCoverBytesAsync(pdfBytes, token).ConfigureAwait(false);
+            if (coverBytes is null || coverBytes.Length == 0)
+                return;
+
+            SaveHomeCoverToDisk(cacheKey, coverBytes);
+            _homeCoverSourceCache[cacheKey] = ImageSource.FromStream(() => new MemoryStream(coverBytes));
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[HomeCover] pre-generate failed for {note.Id}: {ex.Message}");
+        }
+        finally
+        {
+            _homeCoverRenderSemaphore.Release();
+        }
     }
 
     private static string BuildHomeCoverCacheKey(WorkspaceNote note)

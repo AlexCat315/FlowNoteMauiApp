@@ -60,6 +60,7 @@ public partial class MainPage
 
             await SaveCurrentDrawingStateAsync();
             var note = await _workspaceService.ImportPdfAsync(suggestedName, bytes, _workspaceFolder);
+            await PrimeHomeCoverCacheAsync(note, bytes);
 
             if (openAfterImport)
             {
@@ -159,6 +160,7 @@ public partial class MainPage
 
             await SaveCurrentDrawingStateAsync();
             var note = await _workspaceService.ImportPdfAsync(importedName, data, _workspaceFolder);
+            await PrimeHomeCoverCacheAsync(note, data);
 
             if (openAfterImport)
             {

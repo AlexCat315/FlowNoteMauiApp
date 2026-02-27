@@ -52,9 +52,9 @@ public partial class MainPage
 
         button.AnchorX = 0.5;
         button.AnchorY = 0.0;
-        button.ScaleX = selected ? 1.5 : 1.36; // 宽度
-        button.ScaleY = selected ? 2.2 : 1.8; // 高度
-        button.TranslationY = selected ? -3 : -5; // 选中时向上移动一些，未选中时保持原位
+        button.ScaleX = selected ? 1.36 : 1.18;
+        button.ScaleY = selected ? 1.92 : 1.58;
+        button.TranslationY = selected ? 10 : 2;
         button.ZIndex = selected ? 980 : 920; 
         button.Opacity = selected ? 1.0 : 0.96;
     }

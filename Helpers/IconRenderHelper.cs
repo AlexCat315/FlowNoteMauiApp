@@ -99,12 +99,12 @@ public static class IconRenderHelper
         try
         {
             var density = Math.Max(1d, DeviceDisplay.Current.MainDisplayInfo.Density);
-            var target = (int)Math.Ceiling(96d * density);
-            return Math.Clamp(target, 192, 448);
+            var target = (int)Math.Ceiling(128d * density);
+            return Math.Clamp(target, 256, 512);
         }
         catch
         {
-            return 256;
+            return 320;
         }
     }
 

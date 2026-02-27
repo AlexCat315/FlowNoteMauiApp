@@ -30,6 +30,7 @@ public static class ProceduralToolIconRenderer
 
     private static void DrawToolUpright(SKCanvas canvas, ToolIconKind toolKind, SKColor accentColor, int size)
     {
+        var unit = size / 96f;
         var centerX = size * 0.5f;
         var bodyTop = size * 0.26f;
         var bodyBottom = size * 0.86f;
@@ -39,52 +40,54 @@ public static class ProceduralToolIconRenderer
         {
             case ToolIconKind.Ballpoint:
             {
-                var bodyRect = DrawTubeBody(canvas, centerX, bodyTop, size * 0.28f, bodyBottom - bodyTop, size * 0.10f);
-                DrawGripBand(canvas, bodyRect, 0.58f, SKColor.Parse("101010"));
+                var bodyRect = DrawTubeBody(canvas, centerX, bodyTop, size * 0.28f, bodyBottom - bodyTop, size * 0.10f, unit);
+                DrawGripBand(canvas, bodyRect, 0.58f, SKColor.Parse("101010"), unit);
                 DrawAccentWindow(canvas,
                     new SKRect(centerX - (size * 0.055f), bodyRect.Top + (size * 0.14f), centerX + (size * 0.055f), bodyRect.Top + (size * 0.42f)),
-                    accentColor);
-                DrawMetalNib(canvas, centerX, nibTop, bodyTop);
+                    accentColor,
+                    unit);
+                DrawMetalNib(canvas, centerX, nibTop, bodyTop, unit);
                 break;
             }
             case ToolIconKind.Fountain:
             {
-                var bodyRect = DrawTubeBody(canvas, centerX, bodyTop - (size * 0.01f), size * 0.27f, bodyBottom - bodyTop + (size * 0.01f), size * 0.10f);
-                DrawGripBand(canvas, bodyRect, 0.60f, SKColor.Parse("101010"));
-                DrawAccentBand(canvas, bodyRect, 0.16f, accentColor);
-                DrawInkTip(canvas, centerX, nibTop, bodyTop);
+                var bodyRect = DrawTubeBody(canvas, centerX, bodyTop - (size * 0.01f), size * 0.27f, bodyBottom - bodyTop + (size * 0.01f), size * 0.10f, unit);
+                DrawGripBand(canvas, bodyRect, 0.60f, SKColor.Parse("101010"), unit);
+                DrawAccentBand(canvas, bodyRect, 0.16f, accentColor, unit);
+                DrawInkTip(canvas, centerX, nibTop, bodyTop, unit);
                 break;
             }
             case ToolIconKind.Pencil:
             {
-                var bodyRect = DrawTubeBody(canvas, centerX, bodyTop, size * 0.27f, bodyBottom - bodyTop, size * 0.10f);
-                DrawGripBand(canvas, bodyRect, 0.57f, SKColor.Parse("141414"));
-                DrawAccentBand(canvas, bodyRect, 0.20f, accentColor);
-                DrawPencilTip(canvas, centerX, nibTop, bodyTop);
+                var bodyRect = DrawTubeBody(canvas, centerX, bodyTop, size * 0.27f, bodyBottom - bodyTop, size * 0.10f, unit);
+                DrawGripBand(canvas, bodyRect, 0.57f, SKColor.Parse("141414"), unit);
+                DrawAccentBand(canvas, bodyRect, 0.20f, accentColor, unit);
+                DrawPencilTip(canvas, centerX, nibTop, bodyTop, unit);
                 break;
             }
             case ToolIconKind.Marker:
             {
-                var bodyRect = DrawTubeBody(canvas, centerX, size * 0.32f, size * 0.32f, size * 0.54f, size * 0.11f);
-                DrawAccentCap(canvas, new SKRect(bodyRect.Left, size * 0.15f, bodyRect.Right, size * 0.32f), accentColor);
-                DrawGripBand(canvas, bodyRect, 0.49f, Darken(accentColor, 0.1f));
-                DrawChiselTip(canvas, centerX, size * 0.15f, size * 0.32f, accentColor);
+                var bodyRect = DrawTubeBody(canvas, centerX, size * 0.32f, size * 0.32f, size * 0.54f, size * 0.11f, unit);
+                DrawAccentCap(canvas, new SKRect(bodyRect.Left, size * 0.15f, bodyRect.Right, size * 0.32f), accentColor, unit);
+                DrawGripBand(canvas, bodyRect, 0.49f, Darken(accentColor, 0.1f), unit);
+                DrawChiselTip(canvas, centerX, size * 0.15f, size * 0.32f, accentColor, unit);
                 break;
             }
             case ToolIconKind.Eraser:
             {
-                DrawEraser(canvas, centerX, accentColor, size);
+                DrawEraser(canvas, centerX, accentColor, size, unit);
                 break;
             }
         }
     }
 
-    private static void DrawEraser(SKCanvas canvas, float centerX, SKColor accentColor, int size)
+    private static void DrawEraser(SKCanvas canvas, float centerX, SKColor accentColor, int size, float unit)
     {
-        var bodyRect = DrawTubeBody(canvas, centerX, size * 0.30f, size * 0.30f, size * 0.48f, size * 0.12f);
+        var bodyRect = DrawTubeBody(canvas, centerX, size * 0.30f, size * 0.30f, size * 0.48f, size * 0.12f, unit);
 
         // Sleeve band
-        var sleeveRect = new SKRect(bodyRect.Left + 2f, bodyRect.Top + (size * 0.16f), bodyRect.Right - 2f, bodyRect.Top + (size * 0.24f));
+        var sleevePad = 2f * unit;
+        var sleeveRect = new SKRect(bodyRect.Left + sleevePad, bodyRect.Top + (size * 0.16f), bodyRect.Right - sleevePad, bodyRect.Top + (size * 0.24f));
         using (var sleevePaint = new SKPaint
         {
             IsAntialias = true,
@@ -101,15 +104,16 @@ public static class ProceduralToolIconRenderer
                 SKShaderTileMode.Clamp)
         })
         {
-            canvas.DrawRoundRect(sleeveRect, 2f, 2f, sleevePaint);
+            var sleeveRadius = 2f * unit;
+            canvas.DrawRoundRect(sleeveRect, sleeveRadius, sleeveRadius, sleevePaint);
         }
 
         // Rubber head (colored)
         var rubberRect = new SKRect(bodyRect.Left, size * 0.17f, bodyRect.Right, size * 0.30f);
-        DrawAccentCap(canvas, rubberRect, accentColor);
+        DrawAccentCap(canvas, rubberRect, accentColor, unit);
     }
 
-    private static SKRect DrawTubeBody(SKCanvas canvas, float centerX, float top, float width, float height, float radius)
+    private static SKRect DrawTubeBody(SKCanvas canvas, float centerX, float top, float width, float height, float radius, float unit)
     {
         var rect = SKRect.Create(centerX - (width / 2f), top, width, height);
         using var fillPaint = new SKPaint
@@ -133,18 +137,23 @@ public static class ProceduralToolIconRenderer
         {
             IsAntialias = true,
             Style = SKPaintStyle.Stroke,
-            StrokeWidth = 1.15f,
+            StrokeWidth = Math.Max(1f, 1.15f * unit),
             Color = SKColor.Parse("CDD6E2")
         };
         canvas.DrawRoundRect(rect, radius, radius, strokePaint);
 
-        var highlight = new SKRect(rect.Left + (width * 0.16f), rect.Top + 4f, rect.Left + (width * 0.26f), rect.Bottom - 6f);
+        var highlight = new SKRect(
+            rect.Left + (width * 0.16f),
+            rect.Top + (4f * unit),
+            rect.Left + (width * 0.26f),
+            rect.Bottom - (6f * unit));
         using var highlightPaint = new SKPaint
         {
             IsAntialias = true,
             Color = new SKColor(255, 255, 255, 138)
         };
-        canvas.DrawRoundRect(highlight, 2f, 2f, highlightPaint);
+        var highlightRadius = 2f * unit;
+        canvas.DrawRoundRect(highlight, highlightRadius, highlightRadius, highlightPaint);
         return rect;
     }
 
@@ -167,10 +176,11 @@ public static class ProceduralToolIconRenderer
         canvas.DrawOval(rect, paint);
     }
 
-    private static void DrawGripBand(SKCanvas canvas, SKRect bodyRect, float verticalRatio, SKColor toneColor)
+    private static void DrawGripBand(SKCanvas canvas, SKRect bodyRect, float verticalRatio, SKColor toneColor, float unit)
     {
         var y = bodyRect.Top + (bodyRect.Height * verticalRatio);
-        var rect = new SKRect(bodyRect.Left + 1.6f, y, bodyRect.Right - 1.6f, y + 5f);
+        var horizontalInset = 1.6f * unit;
+        var rect = new SKRect(bodyRect.Left + horizontalInset, y, bodyRect.Right - horizontalInset, y + (5f * unit));
         var centerColor = Darken(toneColor, 0.1f);
         using var paint = new SKPaint
         {
@@ -187,10 +197,11 @@ public static class ProceduralToolIconRenderer
                 null,
                 SKShaderTileMode.Clamp)
         };
-        canvas.DrawRoundRect(rect, 1.8f, 1.8f, paint);
+        var radius = 1.8f * unit;
+        canvas.DrawRoundRect(rect, radius, radius, paint);
     }
 
-    private static void DrawAccentWindow(SKCanvas canvas, SKRect rect, SKColor accentColor)
+    private static void DrawAccentWindow(SKCanvas canvas, SKRect rect, SKColor accentColor, float unit)
     {
         var left = Lighten(accentColor, 0.20f);
         var right = Darken(accentColor, 0.28f);
@@ -204,13 +215,15 @@ public static class ProceduralToolIconRenderer
                 null,
                 SKShaderTileMode.Clamp)
         };
-        canvas.DrawRoundRect(rect, 2f, 2f, paint);
+        var radius = 2f * unit;
+        canvas.DrawRoundRect(rect, radius, radius, paint);
     }
 
-    private static void DrawAccentBand(SKCanvas canvas, SKRect bodyRect, float verticalRatio, SKColor accentColor)
+    private static void DrawAccentBand(SKCanvas canvas, SKRect bodyRect, float verticalRatio, SKColor accentColor, float unit)
     {
         var y = bodyRect.Top + (bodyRect.Height * verticalRatio);
-        var rect = new SKRect(bodyRect.Left + 1.8f, y, bodyRect.Right - 1.8f, y + 5.5f);
+        var horizontalInset = 1.8f * unit;
+        var rect = new SKRect(bodyRect.Left + horizontalInset, y, bodyRect.Right - horizontalInset, y + (5.5f * unit));
         using var paint = new SKPaint
         {
             IsAntialias = true,
@@ -226,10 +239,11 @@ public static class ProceduralToolIconRenderer
                 null,
                 SKShaderTileMode.Clamp)
         };
-        canvas.DrawRoundRect(rect, 2f, 2f, paint);
+        var radius = 2f * unit;
+        canvas.DrawRoundRect(rect, radius, radius, paint);
     }
 
-    private static void DrawAccentCap(SKCanvas canvas, SKRect rect, SKColor accentColor)
+    private static void DrawAccentCap(SKCanvas canvas, SKRect rect, SKColor accentColor, float unit)
     {
         var topColor = Lighten(accentColor, 0.22f);
         var bottomColor = Darken(accentColor, 0.16f);
@@ -243,24 +257,25 @@ public static class ProceduralToolIconRenderer
                 null,
                 SKShaderTileMode.Clamp)
         };
-        canvas.DrawRoundRect(rect, 6f, 6f, paint);
+        var radius = 6f * unit;
+        canvas.DrawRoundRect(rect, radius, radius, paint);
 
         using var strokePaint = new SKPaint
         {
             IsAntialias = true,
             Style = SKPaintStyle.Stroke,
-            StrokeWidth = 1f,
+            StrokeWidth = Math.Max(1f, 1f * unit),
             Color = Darken(accentColor, 0.35f)
         };
-        canvas.DrawRoundRect(rect, 6f, 6f, strokePaint);
+        canvas.DrawRoundRect(rect, radius, radius, strokePaint);
     }
 
-    private static void DrawMetalNib(SKCanvas canvas, float centerX, float top, float bottom)
+    private static void DrawMetalNib(SKCanvas canvas, float centerX, float top, float bottom, float unit)
     {
         using var nibPath = new SKPath();
         nibPath.MoveTo(centerX, top);
-        nibPath.LineTo(centerX - 8.2f, bottom);
-        nibPath.LineTo(centerX + 8.2f, bottom);
+        nibPath.LineTo(centerX - (8.2f * unit), bottom);
+        nibPath.LineTo(centerX + (8.2f * unit), bottom);
         nibPath.Close();
 
         using var paint = new SKPaint
@@ -284,7 +299,7 @@ public static class ProceduralToolIconRenderer
         {
             IsAntialias = true,
             Style = SKPaintStyle.Stroke,
-            StrokeWidth = 1f,
+            StrokeWidth = Math.Max(1f, 1f * unit),
             Color = SKColor.Parse("667386")
         };
         canvas.DrawPath(nibPath, strokePaint);
@@ -293,17 +308,17 @@ public static class ProceduralToolIconRenderer
         {
             IsAntialias = true,
             Color = SKColor.Parse("5F6C7E"),
-            StrokeWidth = 0.9f
+            StrokeWidth = Math.Max(1f, 0.9f * unit)
         };
-        canvas.DrawLine(centerX, top + 3f, centerX, bottom - 2f, splitPaint);
+        canvas.DrawLine(centerX, top + (3f * unit), centerX, bottom - (2f * unit), splitPaint);
     }
 
-    private static void DrawInkTip(SKCanvas canvas, float centerX, float top, float bottom)
+    private static void DrawInkTip(SKCanvas canvas, float centerX, float top, float bottom, float unit)
     {
         using var tipPath = new SKPath();
         tipPath.MoveTo(centerX, top);
-        tipPath.LineTo(centerX - 7.2f, bottom);
-        tipPath.LineTo(centerX + 7.2f, bottom);
+        tipPath.LineTo(centerX - (7.2f * unit), bottom);
+        tipPath.LineTo(centerX + (7.2f * unit), bottom);
         tipPath.Close();
 
         using var paint = new SKPaint
@@ -326,17 +341,22 @@ public static class ProceduralToolIconRenderer
         {
             IsAntialias = true,
             Color = new SKColor(255, 255, 255, 88),
-            StrokeWidth = 0.9f
+            StrokeWidth = Math.Max(1f, 0.9f * unit)
         };
-        canvas.DrawLine(centerX - 1.2f, top + 3f, centerX - 2.2f, bottom - 4f, highlightPaint);
+        canvas.DrawLine(
+            centerX - (1.2f * unit),
+            top + (3f * unit),
+            centerX - (2.2f * unit),
+            bottom - (4f * unit),
+            highlightPaint);
     }
 
-    private static void DrawPencilTip(SKCanvas canvas, float centerX, float top, float bottom)
+    private static void DrawPencilTip(SKCanvas canvas, float centerX, float top, float bottom, float unit)
     {
         using var woodPath = new SKPath();
         woodPath.MoveTo(centerX, top);
-        woodPath.LineTo(centerX - 7.4f, bottom);
-        woodPath.LineTo(centerX + 7.4f, bottom);
+        woodPath.LineTo(centerX - (7.4f * unit), bottom);
+        woodPath.LineTo(centerX + (7.4f * unit), bottom);
         woodPath.Close();
 
         using var woodPaint = new SKPaint
@@ -360,24 +380,24 @@ public static class ProceduralToolIconRenderer
             IsAntialias = true,
             Color = SKColor.Parse("141518")
         };
-        canvas.DrawCircle(centerX, top + 0.9f, 2.2f, leadPaint);
+        canvas.DrawCircle(centerX, top + (0.9f * unit), 2.2f * unit, leadPaint);
     }
 
-    private static void DrawChiselTip(SKCanvas canvas, float centerX, float top, float bottom, SKColor accentColor)
+    private static void DrawChiselTip(SKCanvas canvas, float centerX, float top, float bottom, SKColor accentColor, float unit)
     {
         using var tipPath = new SKPath();
-        tipPath.MoveTo(centerX - 9f, bottom - 2f);
-        tipPath.LineTo(centerX + 8f, bottom - 6f);
-        tipPath.LineTo(centerX + 8f, top + 3f);
-        tipPath.LineTo(centerX - 9f, top + 7f);
+        tipPath.MoveTo(centerX - (9f * unit), bottom - (2f * unit));
+        tipPath.LineTo(centerX + (8f * unit), bottom - (6f * unit));
+        tipPath.LineTo(centerX + (8f * unit), top + (3f * unit));
+        tipPath.LineTo(centerX - (9f * unit), top + (7f * unit));
         tipPath.Close();
 
         using var paint = new SKPaint
         {
             IsAntialias = true,
             Shader = SKShader.CreateLinearGradient(
-                new SKPoint(centerX - 9f, top + 3f),
-                new SKPoint(centerX + 8f, bottom - 2f),
+                new SKPoint(centerX - (9f * unit), top + (3f * unit)),
+                new SKPoint(centerX + (8f * unit), bottom - (2f * unit)),
                 new[]
                 {
                     Lighten(accentColor, 0.12f),
