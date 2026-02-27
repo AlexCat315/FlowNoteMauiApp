@@ -57,7 +57,7 @@ public partial class MainPage
     {
         button.BackgroundColor = selected ? selectedColor : normalColor;
         button.BorderColor = selected ? selectedBorder : normalBorder;
-        button.BorderWidth = 1;
+        button.BorderWidth = selected ? 1 : 0;
     }
 
     private void OnRedoClicked(object? sender, EventArgs e)
@@ -230,11 +230,11 @@ public partial class MainPage
             var renderTasks = new List<Task<(InkToolKind Tool, ImageSource Source)>>(tools.Count);
             foreach (var tool in tools)
             {
-                if (!TryGetToolIconFile(tool, out var iconFile))
+                if (!TryGetProceduralToolKey(tool, out var toolKey))
                     continue;
 
                 var tintColor = EnsureInkState(tool).Color;
-                renderTasks.Add(RenderToolIconAsync(tool, iconFile, tintColor, token));
+                renderTasks.Add(RenderToolIconAsync(tool, toolKey, tintColor, token));
             }
 
             if (renderTasks.Count == 0)
@@ -266,32 +266,32 @@ public partial class MainPage
 
     private async Task<(InkToolKind Tool, ImageSource Source)> RenderToolIconAsync(
         InkToolKind tool,
-        string iconFile,
+        string toolKey,
         SKColor tintColor,
         CancellationToken token)
     {
-        var source = await CreateTintedToolIconSourceAsync(iconFile, tintColor, token).ConfigureAwait(false);
+        var source = await CreateTintedToolIconSourceAsync(toolKey, tintColor, token).ConfigureAwait(false);
         return (tool, source);
     }
 
-    private static bool TryGetToolIconFile(InkToolKind tool, out string iconFile)
+    private static bool TryGetProceduralToolKey(InkToolKind tool, out string toolKey)
     {
         switch (tool)
         {
             case InkToolKind.Ballpoint:
-                iconFile = "toolicons/icon_ballpoint_pen.png";
+                toolKey = "ballpoint";
                 return true;
             case InkToolKind.Fountain:
-                iconFile = "toolicons/icon_gelpen.png";
+                toolKey = "fountain";
                 return true;
             case InkToolKind.Pencil:
-                iconFile = "toolicons/icon_pencil.png";
+                toolKey = "pencil";
                 return true;
             case InkToolKind.Marker:
-                iconFile = "toolicons/icon_markpen.png";
+                toolKey = "marker";
                 return true;
             default:
-                iconFile = string.Empty;
+                toolKey = string.Empty;
                 return false;
         }
     }
@@ -308,10 +308,10 @@ public partial class MainPage
         };
     }
 
-    private async Task<ImageSource> CreateTintedToolIconSourceAsync(string iconFile, SKColor tintColor, CancellationToken token)
+    private async Task<ImageSource> CreateTintedToolIconSourceAsync(string toolKey, SKColor tintColor, CancellationToken token)
     {
         return await IconRenderHelper
-            .CreateTintedImageSourceFromPackageAsync(iconFile, tintColor, IconTintMode.AccentPreserveShading, token)
+            .CreateProcedural3DToolIconAsync(toolKey, tintColor, token)
             .ConfigureAwait(false);
     }
 

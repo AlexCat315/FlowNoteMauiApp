@@ -154,50 +154,44 @@
                             </HorizontalStackLayout>
                         </Border>
 
-                        <Border
-                            Padding="2,1"
-                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1D2E45}"
-                            Stroke="Transparent"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 8"
-                        >
+                        <Border Style="{StaticResource InkToolStripBorder}">
                             <HorizontalStackLayout
                                 x:Name="InkToolsHost"
                                 Spacing="2"
                             >
                                 <ImageButton
                                     x:Name="PenModeButton"
-                                    Style="{StaticResource ToolbarToolIconButtonSelected}"
+                                    Style="{StaticResource InkToolGlyphButton}"
                                     Source="icon_ballpoint_pen.png"
                                 />
                                 <ImageButton
                                     x:Name="HighlighterButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
-                                    Source="icon_gelpen.png"
+                                    Style="{StaticResource InkToolGlyphButton}"
+                                    Source="icon_pen.png"
                                 />
                                 <ImageButton
                                     x:Name="PencilButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
+                                    Style="{StaticResource InkToolGlyphButton}"
                                     Source="icon_pencil.png"
                                 />
                                 <ImageButton
                                     x:Name="MarkerButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
+                                    Style="{StaticResource InkToolGlyphButton}"
                                     Source="icon_markpen.png"
                                 />
                                 <ImageButton
                                     x:Name="EraserButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
+                                    Style="{StaticResource InkToolGlyphButton}"
                                     Source="icon_eraser.png"
                                 />
                                 <ImageButton
                                     x:Name="ClearButton2"
-                                    Style="{StaticResource ToolbarToolIconButton}"
+                                    Style="{StaticResource InkToolGlyphButton}"
                                     Source="icon_trash.png"
                                 />
                                 <ImageButton
                                     x:Name="TopInlineLayerButton"
-                                    Style="{StaticResource ToolbarToolIconButton}"
+                                    Style="{StaticResource InkToolGlyphButton}"
                                     Source="icon_layers_selected.png"
                                 />
                             </HorizontalStackLayout>

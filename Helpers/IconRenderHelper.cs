@@ -72,6 +72,397 @@ public static class IconRenderHelper
         }
     }
 
+    public static Task<ImageSource> CreateProcedural3DToolIconAsync(
+        string toolKey,
+        SKColor accentColor,
+        CancellationToken token = default)
+    {
+        token.ThrowIfCancellationRequested();
+        var normalizedTool = NormalizeToolKey(toolKey);
+        var cacheKey = $"proc3d:{normalizedTool}:{accentColor.Alpha:X2}{accentColor.Red:X2}{accentColor.Green:X2}{accentColor.Blue:X2}";
+        if (Cache.TryGetValue(cacheKey, out var cachedSource))
+            return Task.FromResult(cachedSource);
+
+        using var bitmap = RenderProcedural3DToolIcon(normalizedTool, accentColor);
+        using var outputImage = SKImage.FromBitmap(bitmap);
+        using var outputData = outputImage.Encode(SKEncodedImageFormat.Png, 100);
+        var bytes = outputData.ToArray();
+        var source = ImageSource.FromStream(() => new MemoryStream(bytes));
+        Cache[cacheKey] = source;
+        return Task.FromResult(source);
+    }
+
+    private static string NormalizeToolKey(string toolKey)
+    {
+        if (string.IsNullOrWhiteSpace(toolKey))
+            return "ballpoint";
+
+        return toolKey.Trim().ToLowerInvariant() switch
+        {
+            "pen" => "ballpoint",
+            "gelpen" => "fountain",
+            "highlighter" => "marker",
+            _ => toolKey.Trim().ToLowerInvariant()
+        };
+    }
+
+    private static SKBitmap RenderProcedural3DToolIcon(string toolKey, SKColor accentColor)
+    {
+        const int size = 96;
+        var bitmap = new SKBitmap(size, size, SKColorType.Rgba8888, SKAlphaType.Premul);
+        using var canvas = new SKCanvas(bitmap);
+        canvas.Clear(SKColors.Transparent);
+        DrawGroundShadow(canvas, new SKRect(24, 82, 72, 90));
+
+        switch (toolKey)
+        {
+            case "ballpoint":
+                DrawBallpointIcon(canvas, accentColor);
+                break;
+            case "fountain":
+                DrawFountainIcon(canvas, accentColor);
+                break;
+            case "pencil":
+                DrawPencilIcon(canvas, accentColor);
+                break;
+            case "marker":
+                DrawMarkerIcon(canvas, accentColor);
+                break;
+            default:
+                DrawBallpointIcon(canvas, accentColor);
+                break;
+        }
+
+        canvas.Flush();
+        return bitmap;
+    }
+
+    private static void DrawBallpointIcon(SKCanvas canvas, SKColor accentColor)
+    {
+        const float centerX = 48f;
+        var bodyRect = DrawTubeBody(canvas, centerX, top: 24f, width: 28f, height: 60f, radius: 10f);
+        DrawGripBand(canvas, bodyRect, 0.58f, SKColor.Parse("111111"));
+        DrawAccentWindow(canvas, new SKRect(centerX - 5.5f, bodyRect.Top + 14f, centerX + 5.5f, bodyRect.Top + 40f), accentColor);
+        DrawMetalNib(canvas, centerX, top: 7f, bottom: 24f);
+    }
+
+    private static void DrawFountainIcon(SKCanvas canvas, SKColor accentColor)
+    {
+        const float centerX = 48f;
+        var bodyRect = DrawTubeBody(canvas, centerX, top: 23f, width: 27f, height: 61f, radius: 10f);
+        DrawGripBand(canvas, bodyRect, 0.58f, SKColor.Parse("101010"));
+        DrawAccentBand(canvas, bodyRect, 0.15f, accentColor);
+        DrawInkTip(canvas, centerX, top: 8f, bottom: 23f);
+    }
+
+    private static void DrawPencilIcon(SKCanvas canvas, SKColor accentColor)
+    {
+        const float centerX = 48f;
+        var bodyRect = DrawTubeBody(canvas, centerX, top: 24f, width: 27f, height: 60f, radius: 10f);
+        DrawGripBand(canvas, bodyRect, 0.56f, SKColor.Parse("111111"));
+        DrawAccentBand(canvas, bodyRect, 0.18f, accentColor);
+        DrawPencilTip(canvas, centerX, top: 8f, bottom: 24f);
+    }
+
+    private static void DrawMarkerIcon(SKCanvas canvas, SKColor accentColor)
+    {
+        const float centerX = 48f;
+        var bodyRect = DrawTubeBody(canvas, centerX, top: 30f, width: 32f, height: 54f, radius: 11f);
+        DrawAccentCap(canvas, new SKRect(bodyRect.Left, 14f, bodyRect.Right, 30f), accentColor);
+        DrawGripBand(canvas, bodyRect, 0.47f, accentColor);
+        DrawChiselTip(canvas, centerX, top: 14f, bottom: 30f, accentColor);
+    }
+
+    private static SKRect DrawTubeBody(SKCanvas canvas, float centerX, float top, float width, float height, float radius)
+    {
+        var rect = SKRect.Create(centerX - (width / 2f), top, width, height);
+        using var fillPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateLinearGradient(
+                new SKPoint(rect.Left, rect.MidY),
+                new SKPoint(rect.Right, rect.MidY),
+                new[]
+                {
+                    SKColor.Parse("FFFFFF"),
+                    SKColor.Parse("E8EDF4"),
+                    SKColor.Parse("FFFFFF")
+                },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        canvas.DrawRoundRect(rect, radius, radius, fillPaint);
+
+        using var strokePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 1.15f,
+            Color = SKColor.Parse("CDD6E2")
+        };
+        canvas.DrawRoundRect(rect, radius, radius, strokePaint);
+
+        var highlight = new SKRect(rect.Left + (width * 0.16f), rect.Top + 4f, rect.Left + (width * 0.26f), rect.Bottom - 6f);
+        using var highlightPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(255, 255, 255, 138)
+        };
+        canvas.DrawRoundRect(highlight, 2f, 2f, highlightPaint);
+        return rect;
+    }
+
+    private static void DrawGroundShadow(SKCanvas canvas, SKRect rect)
+    {
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateRadialGradient(
+                new SKPoint(rect.MidX, rect.MidY),
+                rect.Width * 0.45f,
+                new[]
+                {
+                    new SKColor(12, 24, 40, 54),
+                    new SKColor(12, 24, 40, 0)
+                },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        canvas.DrawOval(rect, paint);
+    }
+
+    private static void DrawGripBand(SKCanvas canvas, SKRect bodyRect, float verticalRatio, SKColor toneColor)
+    {
+        var y = bodyRect.Top + (bodyRect.Height * verticalRatio);
+        var rect = new SKRect(bodyRect.Left + 1.6f, y, bodyRect.Right - 1.6f, y + 5f);
+        var centerColor = Darken(toneColor, 0.1f);
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateLinearGradient(
+                new SKPoint(rect.Left, rect.Top),
+                new SKPoint(rect.Right, rect.Top),
+                new[]
+                {
+                    Darken(centerColor, 0.45f),
+                    centerColor,
+                    Darken(centerColor, 0.45f)
+                },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        canvas.DrawRoundRect(rect, 1.8f, 1.8f, paint);
+    }
+
+    private static void DrawAccentWindow(SKCanvas canvas, SKRect rect, SKColor accentColor)
+    {
+        var left = Lighten(accentColor, 0.20f);
+        var right = Darken(accentColor, 0.28f);
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateLinearGradient(
+                new SKPoint(rect.Left, rect.MidY),
+                new SKPoint(rect.Right, rect.MidY),
+                new[] { left, accentColor, right },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        canvas.DrawRoundRect(rect, 2f, 2f, paint);
+    }
+
+    private static void DrawAccentBand(SKCanvas canvas, SKRect bodyRect, float verticalRatio, SKColor accentColor)
+    {
+        var y = bodyRect.Top + (bodyRect.Height * verticalRatio);
+        var rect = new SKRect(bodyRect.Left + 1.8f, y, bodyRect.Right - 1.8f, y + 5.5f);
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateLinearGradient(
+                new SKPoint(rect.Left, rect.Top),
+                new SKPoint(rect.Right, rect.Top),
+                new[]
+                {
+                    Darken(accentColor, 0.26f),
+                    accentColor,
+                    Darken(accentColor, 0.26f)
+                },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        canvas.DrawRoundRect(rect, 2f, 2f, paint);
+    }
+
+    private static void DrawAccentCap(SKCanvas canvas, SKRect rect, SKColor accentColor)
+    {
+        var topColor = Lighten(accentColor, 0.22f);
+        var bottomColor = Darken(accentColor, 0.16f);
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateLinearGradient(
+                new SKPoint(rect.MidX, rect.Top),
+                new SKPoint(rect.MidX, rect.Bottom),
+                new[] { topColor, accentColor, bottomColor },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        canvas.DrawRoundRect(rect, 6f, 6f, paint);
+
+        using var strokePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 1f,
+            Color = Darken(accentColor, 0.35f)
+        };
+        canvas.DrawRoundRect(rect, 6f, 6f, strokePaint);
+    }
+
+    private static void DrawMetalNib(SKCanvas canvas, float centerX, float top, float bottom)
+    {
+        using var nibPath = new SKPath();
+        nibPath.MoveTo(centerX, top);
+        nibPath.LineTo(centerX - 8.2f, bottom);
+        nibPath.LineTo(centerX + 8.2f, bottom);
+        nibPath.Close();
+
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateLinearGradient(
+                new SKPoint(centerX, top),
+                new SKPoint(centerX, bottom),
+                new[]
+                {
+                    SKColor.Parse("96A2B2"),
+                    SKColor.Parse("E8EDF3"),
+                    SKColor.Parse("798597")
+                },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        canvas.DrawPath(nibPath, paint);
+
+        using var strokePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 1f,
+            Color = SKColor.Parse("667386")
+        };
+        canvas.DrawPath(nibPath, strokePaint);
+
+        using var splitPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = SKColor.Parse("5F6C7E"),
+            StrokeWidth = 0.9f
+        };
+        canvas.DrawLine(centerX, top + 3f, centerX, bottom - 2f, splitPaint);
+    }
+
+    private static void DrawInkTip(SKCanvas canvas, float centerX, float top, float bottom)
+    {
+        using var tipPath = new SKPath();
+        tipPath.MoveTo(centerX, top);
+        tipPath.LineTo(centerX - 7.2f, bottom);
+        tipPath.LineTo(centerX + 7.2f, bottom);
+        tipPath.Close();
+
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateLinearGradient(
+                new SKPoint(centerX, top),
+                new SKPoint(centerX, bottom),
+                new[]
+                {
+                    SKColor.Parse("1E2128"),
+                    SKColor.Parse("050608")
+                },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        canvas.DrawPath(tipPath, paint);
+
+        using var highlightPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(255, 255, 255, 88),
+            StrokeWidth = 0.9f
+        };
+        canvas.DrawLine(centerX - 1.2f, top + 3f, centerX - 2.2f, bottom - 4f, highlightPaint);
+    }
+
+    private static void DrawPencilTip(SKCanvas canvas, float centerX, float top, float bottom)
+    {
+        using var woodPath = new SKPath();
+        woodPath.MoveTo(centerX, top);
+        woodPath.LineTo(centerX - 7.4f, bottom);
+        woodPath.LineTo(centerX + 7.4f, bottom);
+        woodPath.Close();
+
+        using var woodPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateLinearGradient(
+                new SKPoint(centerX, top),
+                new SKPoint(centerX, bottom),
+                new[]
+                {
+                    SKColor.Parse("F2C799"),
+                    SKColor.Parse("D39A67")
+                },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        canvas.DrawPath(woodPath, woodPaint);
+
+        using var leadPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = SKColor.Parse("141518")
+        };
+        canvas.DrawCircle(centerX, top + 0.9f, 2.2f, leadPaint);
+    }
+
+    private static void DrawChiselTip(SKCanvas canvas, float centerX, float top, float bottom, SKColor accentColor)
+    {
+        using var tipPath = new SKPath();
+        tipPath.MoveTo(centerX - 9f, bottom - 2f);
+        tipPath.LineTo(centerX + 8f, bottom - 6f);
+        tipPath.LineTo(centerX + 8f, top + 3f);
+        tipPath.LineTo(centerX - 9f, top + 7f);
+        tipPath.Close();
+
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateLinearGradient(
+                new SKPoint(centerX - 9f, top + 3f),
+                new SKPoint(centerX + 8f, bottom - 2f),
+                new[]
+                {
+                    Lighten(accentColor, 0.12f),
+                    Darken(accentColor, 0.22f)
+                },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        canvas.DrawPath(tipPath, paint);
+    }
+
+    private static SKColor Lighten(SKColor color, float amount)
+    {
+        return LerpColor(color, SKColors.White, Math.Clamp(amount, 0f, 1f));
+    }
+
+    private static SKColor Darken(SKColor color, float amount)
+    {
+        return LerpColor(color, SKColors.Black, Math.Clamp(amount, 0f, 1f));
+    }
+
     private static SKBitmap RenderMonochrome(SKBitmap baseBitmap, SKColor tintColor)
     {
         var tintedBitmap = new SKBitmap(baseBitmap.Width, baseBitmap.Height, baseBitmap.ColorType, baseBitmap.AlphaType);

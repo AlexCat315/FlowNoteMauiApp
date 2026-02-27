@@ -150,6 +150,42 @@
         </Setter>
     </Style>
 
+    <Style x:Key="InkToolStripBorder" TargetType="Border">
+        <Setter Property="Padding" Value="6,2" />
+        <Setter
+            Property="BackgroundColor"
+            Value="{AppThemeBinding Light=#F7F9FD, Dark=#22354D}"
+        />
+        <Setter
+            Property="Stroke"
+            Value="{AppThemeBinding Light=#DCE3EE, Dark=#3A4F69}"
+        />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 18" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#1C12253E" Radius="10" Offset="0,2" Opacity="0.55" />
+        </Setter>
+    </Style>
+
+    <Style
+        x:Key="InkToolGlyphButton"
+        TargetType="ImageButton"
+        BasedOn="{StaticResource ToolbarToolIconButton}"
+    >
+        <Setter Property="WidthRequest" Value="34" />
+        <Setter Property="HeightRequest" Value="34" />
+        <Setter Property="MinimumWidthRequest" Value="34" />
+        <Setter Property="MinimumHeightRequest" Value="34" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="3" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#100B1A30" Radius="3" Offset="0,1" Opacity="0.4" />
+        </Setter>
+    </Style>
+
     <Style
         x:Key="ToolbarToolIconButtonSelected"
         TargetType="ImageButton"
