@@ -12,6 +12,7 @@ public partial class MainPage
 {
     private const int HomeCoverRequestWidth = 376;
     private const int HomeCoverRequestHeight = 528;
+    private const int HomeCoverCompositionVersion = 2;
     private static readonly TimeSpan HomeCoverLoadTimeout = TimeSpan.FromSeconds(32);
     private static readonly TimeSpan HomeCoverRendererReadyTimeout = TimeSpan.FromSeconds(3);
     private readonly SemaphoreSlim _homeCoverRenderSemaphore = new(1, 1);
@@ -240,36 +241,50 @@ public partial class MainPage
 
         try
         {
-            var bounds = pageBounds.Value;
-            var hasIntersectingStroke = false;
-            foreach (var snapshot in snapshots)
+            var candidateBounds = new List<PdfPageBounds> { pageBounds.Value };
+            if (string.Equals(note.Id, _currentNoteId, StringComparison.Ordinal) && IsEditorInitialized)
             {
-                if (!DoesSnapshotIntersectPage(snapshot, bounds))
+                var sourceBounds = await GetCachedPageBoundsAsync(0).ConfigureAwait(false);
+                if (sourceBounds is PdfPageBounds resolvedBounds
+                    && resolvedBounds.Width > 0
+                    && resolvedBounds.Height > 0)
+                {
+                    var hasSameGeometry = Math.Abs(resolvedBounds.X - candidateBounds[0].X) < 0.01d
+                        && Math.Abs(resolvedBounds.Y - candidateBounds[0].Y) < 0.01d
+                        && Math.Abs(resolvedBounds.Width - candidateBounds[0].Width) < 0.01d
+                        && Math.Abs(resolvedBounds.Height - candidateBounds[0].Height) < 0.01d;
+                    if (!hasSameGeometry)
+                    {
+                        candidateBounds.Add(resolvedBounds);
+                    }
+                }
+            }
+
+            HomeCoverOverlayProjection? bestProjection = null;
+            foreach (var bounds in candidateBounds)
+            {
+                var projection = ResolveHomeCoverOverlayProjection(snapshots, bounds);
+                if (projection.Snapshots.Count == 0)
                     continue;
 
-                hasIntersectingStroke = true;
-                break;
+                if (bestProjection is null || projection.Snapshots.Count > bestProjection.Snapshots.Count)
+                {
+                    bestProjection = projection;
+                }
             }
 
-            var composed = ComposeThumbnailWithInkOverlay(baseCoverBytes, bounds, snapshots, token);
-            if (composed is { Length: > 0 } && hasIntersectingStroke)
-                return composed;
+            if (bestProjection is null || bestProjection.Snapshots.Count == 0)
+                return baseCoverBytes;
 
-            if (!hasIntersectingStroke)
-            {
-                var fallback = ComposeThumbnailWithInkOverlay(
-                    baseCoverBytes,
-                    bounds,
-                    snapshots,
-                    token,
-                    requireIntersection: false,
-                    overridePageOriginX: 0f,
-                    overridePageOriginY: 0f);
-                if (fallback is { Length: > 0 })
-                    return fallback;
-            }
-
-            return composed ?? baseCoverBytes;
+            var composed = ComposeThumbnailWithInkOverlay(
+                baseCoverBytes,
+                bestProjection.ComposeBounds,
+                bestProjection.Snapshots,
+                token,
+                requireIntersection: false,
+                overridePageOriginX: bestProjection.PageOriginX,
+                overridePageOriginY: bestProjection.PageOriginY);
+            return composed is { Length: > 0 } ? composed : baseCoverBytes;
         }
         catch (OperationCanceledException)
         {
@@ -282,7 +297,61 @@ public partial class MainPage
         }
     }
 
-    private static List<ThumbnailStrokeSnapshot> BuildHomeCoverStrokeSnapshots(DrawingDocumentState state)
+    private sealed class HomeCoverOverlayProjection
+    {
+        public required PdfPageBounds ComposeBounds { get; init; }
+        public required float PageOriginX { get; init; }
+        public required float PageOriginY { get; init; }
+        public required List<ThumbnailStrokeSnapshot> Snapshots { get; init; }
+    }
+
+    private static HomeCoverOverlayProjection ResolveHomeCoverOverlayProjection(
+        IReadOnlyList<ThumbnailStrokeSnapshot> snapshots,
+        PdfPageBounds composeBounds)
+    {
+        var absoluteSnapshots = new List<ThumbnailStrokeSnapshot>();
+        var localSnapshots = new List<ThumbnailStrokeSnapshot>();
+        var localBounds = new PdfPageBounds(0d, 0d, composeBounds.Width, composeBounds.Height);
+
+        for (var index = 0; index < snapshots.Count; index++)
+        {
+            var snapshot = snapshots[index];
+            if (DoesSnapshotIntersectPage(snapshot, composeBounds))
+            {
+                absoluteSnapshots.Add(snapshot);
+            }
+
+            if (DoesSnapshotIntersectPage(snapshot, localBounds))
+            {
+                localSnapshots.Add(snapshot);
+            }
+        }
+
+        var useLocalProjection = localSnapshots.Count > absoluteSnapshots.Count + 2
+            || (absoluteSnapshots.Count == 0 && localSnapshots.Count > 0);
+        if (useLocalProjection)
+        {
+            return new HomeCoverOverlayProjection
+            {
+                ComposeBounds = composeBounds,
+                PageOriginX = 0f,
+                PageOriginY = 0f,
+                Snapshots = localSnapshots
+            };
+        }
+
+        return new HomeCoverOverlayProjection
+        {
+            ComposeBounds = composeBounds,
+            PageOriginX = (float)composeBounds.X,
+            PageOriginY = (float)composeBounds.Y,
+            Snapshots = absoluteSnapshots
+        };
+    }
+
+    private static List<ThumbnailStrokeSnapshot> BuildHomeCoverStrokeSnapshots(
+        DrawingDocumentState state,
+        int maxPointsPerStroke = 0)
     {
         var snapshots = new List<ThumbnailStrokeSnapshot>();
         foreach (var layerState in state.Layers)
@@ -296,7 +365,7 @@ public partial class MainPage
                 if (strokeState.Points.Count < 2)
                     continue;
 
-                var stroke = MaterializeStroke(strokeState);
+                var stroke = MaterializeStroke(strokeState, maxPointsPerStroke);
                 if (!TryGetStrokeBounds(stroke, out var minX, out var minY, out var maxX, out var maxY))
                     continue;
 
@@ -315,7 +384,9 @@ public partial class MainPage
         return snapshots;
     }
 
-    private static DrawingStroke MaterializeStroke(DrawingStrokeState strokeState)
+    private static DrawingStroke MaterializeStroke(
+        DrawingStrokeState strokeState,
+        int maxPointsPerStroke = 0)
     {
         var stroke = new DrawingStroke
         {
@@ -336,6 +407,23 @@ public partial class MainPage
                 Streamline = strokeState.Streamline
             }
         };
+
+        if (maxPointsPerStroke > 1 && strokeState.Points.Count > maxPointsPerStroke)
+        {
+            var sourceCount = strokeState.Points.Count;
+            var divisor = Math.Max(1, maxPointsPerStroke - 1);
+            var maxIndex = sourceCount - 1;
+            for (var index = 0; index <= divisor; index++)
+            {
+                var ratio = index / (double)divisor;
+                var sampledIndex = (int)Math.Round(ratio * maxIndex);
+                sampledIndex = Math.Clamp(sampledIndex, 0, maxIndex);
+                var point = strokeState.Points[sampledIndex];
+                stroke.AddPoint(new DrawingPoint(point.X, point.Y, point.Pressure, point.Timestamp));
+            }
+
+            return stroke;
+        }
 
         foreach (var point in strokeState.Points)
         {
@@ -492,7 +580,7 @@ public partial class MainPage
         var liveRevision = _liveInkRevisionByNoteId.TryGetValue(note.Id, out var revision)
             ? revision
             : 0L;
-        return $"{note.Id}_{version}_{inkVersion}_{liveRevision}";
+        return $"{note.Id}_{version}_{inkVersion}_{liveRevision}_v{HomeCoverCompositionVersion}";
     }
 
     private static string ResolveHomeCoverCacheDirectory()

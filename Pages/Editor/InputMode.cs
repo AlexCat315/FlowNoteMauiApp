@@ -14,7 +14,7 @@ public partial class MainPage
 {
     private void OnDrawingToolbarCloseClicked(object? sender, EventArgs e)
     {
-        AnimatePopupOut(DrawingToolbarPanel, () => DrawingToolbarPanel.IsVisible = false);
+        HideDrawingToolbarPanel();
     }
 
     private void OnPenModeClicked(object? sender, EventArgs e)
@@ -260,13 +260,11 @@ public partial class MainPage
         var shouldShowToolbar = showToolbar && _drawingInputMode != DrawingInputMode.TapRead;
         if (shouldShowToolbar)
         {
-            DrawingToolbarPanel.IsVisible = true;
-            PositionDrawingToolbarPanelUnderTool(_activeInkTool);
-            AnimatePopupIn(DrawingToolbarPanel);
+            ShowDrawingToolbarPanel();
         }
         else if (DrawingToolbarPanel.IsVisible)
         {
-            AnimatePopupOut(DrawingToolbarPanel, () => DrawingToolbarPanel.IsVisible = false);
+            HideDrawingToolbarPanel();
         }
 
         if (showStatus)
@@ -294,14 +292,33 @@ public partial class MainPage
         var shouldShow = !DrawingToolbarPanel.IsVisible;
         if (shouldShow)
         {
-            DrawingToolbarPanel.IsVisible = true;
-            PositionDrawingToolbarPanelUnderTool(_activeInkTool);
-            AnimatePopupIn(DrawingToolbarPanel);
+            ShowDrawingToolbarPanel();
         }
         else
         {
-            AnimatePopupOut(DrawingToolbarPanel, () => DrawingToolbarPanel.IsVisible = false);
+            HideDrawingToolbarPanel();
         }
+    }
+
+    private void ShowDrawingToolbarPanel()
+    {
+        DrawingToolbarPanel.AbortAnimation("flow-popup-in");
+        DrawingToolbarPanel.AbortAnimation("flow-popup-out");
+        DrawingToolbarPanel.IsVisible = true;
+        DrawingToolbarPanel.Opacity = 1;
+        DrawingToolbarPanel.Scale = 1;
+        DrawingToolbarPanel.TranslationY = 0;
+        PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+    }
+
+    private void HideDrawingToolbarPanel()
+    {
+        DrawingToolbarPanel.AbortAnimation("flow-popup-in");
+        DrawingToolbarPanel.AbortAnimation("flow-popup-out");
+        DrawingToolbarPanel.IsVisible = false;
+        DrawingToolbarPanel.Opacity = 1;
+        DrawingToolbarPanel.Scale = 1;
+        DrawingToolbarPanel.TranslationY = 0;
     }
 
     private void ClearArmedInkTool(bool hideDrawingToolbar)

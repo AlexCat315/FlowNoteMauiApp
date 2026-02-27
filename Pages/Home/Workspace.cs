@@ -424,8 +424,13 @@ public partial class MainPage
             return;
         }
 
-        // Include the chrome's Y offset so PDF content never peeks through above the top bar.
-        var chromeTopOffset = double.IsNaN(TopBarPanel.Y) ? 0d : Math.Max(0d, TopBarPanel.Y);
+        // Use the top bar's absolute offset inside the page so safe-area/title-bar space is counted.
+        var chromeTopOffset = GetVisualOffsetY(TopBarPanel, this);
+        if (double.IsNaN(chromeTopOffset) || chromeTopOffset < 0d)
+        {
+            chromeTopOffset = 0d;
+        }
+
         if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
         {
             // Pull the custom chrome up into the native title-bar gap so the top background stays opaque.
@@ -490,13 +495,13 @@ public partial class MainPage
     private const double HomeCardPreviewHeight = 206d;
     private const float HomeCardCornerRadius = 16f;
     private const float HomePreviewCornerRadius = 12f;
-    private Color HomeCardBackground => IsDarkTheme ? Color.FromArgb("#24374E") : Color.FromArgb("#FFFFFF");
-    private Color HomeCardStroke => IsDarkTheme ? Color.FromArgb("#415878") : Color.FromArgb("#D8E2EE");
-    private Color HomePreviewBackground => IsDarkTheme ? Color.FromArgb("#2D4360") : Color.FromArgb("#EBF1FA");
-    private Color HomePreviewStroke => IsDarkTheme ? Color.FromArgb("#4E6688") : Color.FromArgb("#CBD8EA");
-    private Color HomePreviewPaperBackground => IsDarkTheme ? Color.FromArgb("#3A526F") : Color.FromArgb("#FFFFFF");
-    private Color HomeMetaChipBackground => IsDarkTheme ? Color.FromArgb("#324A67") : Color.FromArgb("#EDF3FB");
-    private Color HomeMetaChipStroke => IsDarkTheme ? Color.FromArgb("#4A6486") : Color.FromArgb("#D8E2EE");
+    private Color HomeCardBackground => IsDarkTheme ? Color.FromArgb("#233242") : Color.FromArgb("#FFFFFF");
+    private Color HomeCardStroke => IsDarkTheme ? Color.FromArgb("#3A4A5E") : Color.FromArgb("#E5E7ED");
+    private Color HomePreviewBackground => IsDarkTheme ? Color.FromArgb("#2B3A4B") : Color.FromArgb("#F3F4F7");
+    private Color HomePreviewStroke => IsDarkTheme ? Color.FromArgb("#44566D") : Color.FromArgb("#E1E4EB");
+    private Color HomePreviewPaperBackground => IsDarkTheme ? Color.FromArgb("#34475B") : Color.FromArgb("#FFFFFF");
+    private Color HomeMetaChipBackground => IsDarkTheme ? Color.FromArgb("#304154") : Color.FromArgb("#F4F5F8");
+    private Color HomeMetaChipStroke => IsDarkTheme ? Color.FromArgb("#43566F") : Color.FromArgb("#E4E7EE");
 
     private void RenderHomeEmptyState(string title, string description)
     {

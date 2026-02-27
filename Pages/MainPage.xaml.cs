@@ -40,6 +40,9 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         InitializeComponent();
+#if IOS || MACCATALYST
+        SafeAreaEdges = Microsoft.Maui.SafeAreaEdges.All;
+#endif
         HomePanelView.IsVisible = true;
         HomePanelView.InputTransparent = false;
         EditorChromeView.IsVisible = false;

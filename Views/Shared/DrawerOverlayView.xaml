@@ -14,33 +14,33 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ContentView.Resources>
-<Grid x:Name="HomeDrawerOverlay" IsVisible="False" BackgroundColor="#660F1B2D">
-    <Grid ColumnDefinitions="336,*">
+<Grid x:Name="HomeDrawerOverlay" IsVisible="False" BackgroundColor="#55000000">
+    <Grid ColumnDefinitions="308,*">
         <Border
                 Grid.Column="0"
-                Margin="14,12,0,12"
-                Padding="16,14,16,16"
+                Margin="12,10,0,10"
+                Padding="14,12,14,12"
                 Style="{StaticResource DrawerOverlayPanel}"
             >
             <ScrollView>
-                <VerticalStackLayout Spacing="10">
+                <VerticalStackLayout Spacing="8">
                     <Grid
-                            Padding="2,2,2,8"
+                            Padding="1,1,1,6"
                             ColumnDefinitions="Auto,*,Auto"
-                            ColumnSpacing="12"
+                            ColumnSpacing="10"
                         >
                         <Border
-                                WidthRequest="44"
-                                HeightRequest="44"
-                                StrokeShape="RoundRectangle 22"
-                                Stroke="{AppThemeBinding Light=#C8D5E8, Dark=#4D6583}"
+                                WidthRequest="38"
+                                HeightRequest="38"
+                                StrokeShape="RoundRectangle 19"
+                                Stroke="{AppThemeBinding Light=#D3DAE6, Dark=#4B607A}"
                                 StrokeThickness="1"
-                                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2A3D58}"
+                                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2A3A50}"
                             >
                             <Image
                                     Source="icon_file.png"
-                                    WidthRequest="16"
-                                    HeightRequest="16"
+                                    WidthRequest="14"
+                                    HeightRequest="14"
                                     VerticalOptions="Center"
                                     HorizontalOptions="Center"
                                     Opacity="0.88"
@@ -55,13 +55,13 @@
                                     x:Name="DrawerAuthLabel"
                                     Text="登录/注册"
                                     FontFamily="OpenSansSemibold"
-                                    FontSize="17"
+                                    FontSize="15.5"
                                     TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
                                 />
                             <Label
                                     x:Name="DrawerSyncHintLabel"
                                     Text="同步你的学习进度"
-                                    FontSize="12.5"
+                                    FontSize="11.5"
                                     TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}"
                                 />
                         </VerticalStackLayout>
@@ -70,10 +70,10 @@
                                 Grid.Column="2"
                                 Style="{StaticResource HeaderIconButton}"
                                 Source="icon_x.png"
-                                WidthRequest="30"
-                                HeightRequest="30"
-                                MinimumWidthRequest="30"
-                                MinimumHeightRequest="30"
+                                WidthRequest="26"
+                                HeightRequest="26"
+                                MinimumWidthRequest="26"
+                                MinimumHeightRequest="26"
                             />
                     </Grid>
 
@@ -157,10 +157,10 @@
                     </Border>
 
                     <Border
-                            Margin="0,8,0,0"
-                            Padding="14,12"
+                            Margin="0,6,0,0"
+                            Padding="12,10"
                             Stroke="Transparent"
-                            StrokeShape="RoundRectangle 16"
+                            StrokeShape="RoundRectangle 14"
                         >
                         <Border.Background>
                             <LinearGradientBrush
@@ -175,8 +175,8 @@
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                             <Image
                                     Source="icon_file.png"
-                                    WidthRequest="16"
-                                    HeightRequest="16"
+                                    WidthRequest="14"
+                                    HeightRequest="14"
                                     Opacity="0.9"
                                     VerticalOptions="Center"
                                 />
@@ -185,7 +185,7 @@
                                     Grid.Column="1"
                                     Text="注册即领免费试用\n解锁全功能笔记工作流"
                                     FontFamily="OpenSansSemibold"
-                                    FontSize="13"
+                                    FontSize="12"
                                     LineHeight="1.2"
                                     TextColor="White"
                                 />

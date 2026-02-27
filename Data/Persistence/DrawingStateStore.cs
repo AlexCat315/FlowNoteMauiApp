@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text.Json;
 using FlowNoteMauiApp.Models;
 using FlowNoteMauiApp.Core.Services;
@@ -31,8 +32,9 @@ public sealed class DrawingStateStore : IDrawingPersistenceService
 
         Directory.CreateDirectory(_inkDirectory);
         var path = GetInkPath(noteId);
-        var json = JsonSerializer.Serialize(state, JsonOptions);
-        await File.WriteAllTextAsync(path, json);
+        var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(state, JsonOptions);
+        var payload = CompressBytes(jsonBytes);
+        await File.WriteAllBytesAsync(path, payload);
     }
 
     public async Task<DrawingDocumentState?> LoadAsync(string noteId)
@@ -46,8 +48,17 @@ public sealed class DrawingStateStore : IDrawingPersistenceService
 
         try
         {
-            var json = await File.ReadAllTextAsync(path);
-            return JsonSerializer.Deserialize<DrawingDocumentState>(json, JsonOptions);
+            var payload = await File.ReadAllBytesAsync(path);
+            if (payload.Length == 0)
+                return null;
+
+            var jsonBytes = IsGzip(payload)
+                ? DecompressBytes(payload)
+                : payload;
+            if (jsonBytes.Length == 0)
+                return null;
+
+            return JsonSerializer.Deserialize<DrawingDocumentState>(jsonBytes, JsonOptions);
         }
         catch
         {
@@ -59,5 +70,30 @@ public sealed class DrawingStateStore : IDrawingPersistenceService
     {
         var safeId = noteId.Trim().Replace('/', '_').Replace('\\', '_');
         return Path.Combine(_inkDirectory, $"{safeId}.json");
+    }
+
+    private static bool IsGzip(byte[] payload)
+    {
+        return payload.Length >= 2 && payload[0] == 0x1F && payload[1] == 0x8B;
+    }
+
+    private static byte[] CompressBytes(byte[] input)
+    {
+        using var output = new MemoryStream();
+        using (var gzip = new GZipStream(output, CompressionLevel.Fastest, leaveOpen: true))
+        {
+            gzip.Write(input, 0, input.Length);
+        }
+
+        return output.ToArray();
+    }
+
+    private static byte[] DecompressBytes(byte[] input)
+    {
+        using var inputStream = new MemoryStream(input);
+        using var gzip = new GZipStream(inputStream, CompressionMode.Decompress);
+        using var output = new MemoryStream();
+        gzip.CopyTo(output);
+        return output.ToArray();
     }
 }

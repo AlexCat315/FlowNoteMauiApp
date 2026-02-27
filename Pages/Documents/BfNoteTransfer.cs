@@ -14,6 +14,9 @@ public partial class MainPage
     private const string BfNoteManifestEntryName = "manifest.json";
     private const string BfNotePdfEntryName = "document.pdf";
     private const string BfNoteInkStateEntryName = "ink-state.json";
+    private const double OverlayExportRenderScale = 1.95d;
+    private const int OverlayExportMinPixels = 720;
+    private const int OverlayExportMaxPixels = 2500;
 
     private static readonly JsonSerializerOptions BfNoteJsonOptions = new()
     {
@@ -279,7 +282,7 @@ public partial class MainPage
         var drawingState = await MainThread
             .InvokeOnMainThreadAsync(() => DrawingCanvas.ExportState())
             .ConfigureAwait(false);
-        var snapshots = BuildHomeCoverStrokeSnapshots(drawingState);
+        var snapshots = BuildHomeCoverStrokeSnapshots(drawingState, maxPointsPerStroke: 360);
         if (_totalPageCount <= 0)
             return false;
 
@@ -301,8 +304,14 @@ public partial class MainPage
 
             var pageWidth = (float)Math.Max(1d, bounds.Width);
             var pageHeight = (float)Math.Max(1d, bounds.Height);
-            var requestWidth = (int)Math.Clamp(Math.Round(pageWidth * 2.1d), 720d, 2800d);
-            var requestHeight = (int)Math.Clamp(Math.Round(pageHeight * 2.1d), 720d, 2800d);
+            var requestWidth = (int)Math.Clamp(
+                Math.Round(pageWidth * OverlayExportRenderScale),
+                OverlayExportMinPixels,
+                OverlayExportMaxPixels);
+            var requestHeight = (int)Math.Clamp(
+                Math.Round(pageHeight * OverlayExportRenderScale),
+                OverlayExportMinPixels,
+                OverlayExportMaxPixels);
 
             byte[]? pageBytes = null;
             var stream = await PdfViewer.GetThumbnailAsync(pageIndex, requestWidth, requestHeight).ConfigureAwait(false);
@@ -338,7 +347,7 @@ public partial class MainPage
             pageCanvas.Clear(SKColors.White);
             if (pageBytes is { Length: > 0 })
             {
-                using var pageBitmap = SKBitmap.Decode(pageBytes);
+                using var pageBitmap = CreateOpaquePdfBitmap(pageBytes);
                 if (pageBitmap is not null && pageBitmap.Width > 0 && pageBitmap.Height > 0)
                 {
                     pageCanvas.DrawBitmap(pageBitmap, new SKRect(0f, 0f, pageWidth, pageHeight));
@@ -349,6 +358,26 @@ public partial class MainPage
 
         document.Close();
         return true;
+    }
+
+    private static SKBitmap? CreateOpaquePdfBitmap(byte[] pageBytes)
+    {
+        using var decoded = SKBitmap.Decode(pageBytes);
+        if (decoded is null || decoded.Width <= 0 || decoded.Height <= 0)
+            return null;
+
+        var info = new SKImageInfo(decoded.Width, decoded.Height, SKColorType.Rgba8888, SKAlphaType.Opaque);
+        using var surface = SKSurface.Create(info);
+        if (surface is null)
+            return decoded.Copy();
+
+        var canvas = surface.Canvas;
+        canvas.Clear(SKColors.White);
+        canvas.DrawBitmap(decoded, 0, 0);
+        canvas.Flush();
+
+        using var image = surface.Snapshot();
+        return SKBitmap.FromImage(image);
     }
 
     private static FilePickerFileType BuildBfNotePickerFileTypes()
