@@ -239,12 +239,12 @@
         />
         <Setter
             Property="Stroke"
-            Value="{AppThemeBinding Light=#DFE4EC, Dark=#3A4D65}"
+            Value="{AppThemeBinding Light=#E8ECF3, Dark=#3B4D64}"
         />
-        <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+        <Setter Property="StrokeThickness" Value="0.8" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 18" />
         <Setter Property="Shadow">
-            <Shadow Brush="#260F1726" Radius="22" Offset="0,8" Opacity="0.85" />
+            <Shadow Brush="#14000000" Radius="14" Offset="0,4" Opacity="0.35" />
         </Setter>
     </Style>
 
@@ -255,17 +255,17 @@
         />
         <Setter
             Property="Stroke"
-            Value="{AppThemeBinding Light=#E4E8EF, Dark=#3D526C}"
+            Value="{AppThemeBinding Light=#E9EDF4, Dark=#3D5068}"
         />
-        <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 14" />
-        <Setter Property="Padding" Value="7,5" />
+        <Setter Property="StrokeThickness" Value="0.8" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="5,3" />
     </Style>
 
     <Style x:Key="DrawerSectionTitleLabel" TargetType="Label">
         <Setter Property="FontFamily" Value="OpenSansSemibold" />
-        <Setter Property="FontSize" Value="11.5" />
-        <Setter Property="Margin" Value="2,6,0,0" />
+        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="Margin" Value="2,5,0,0" />
         <Setter
             Property="TextColor"
             Value="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}"
@@ -274,19 +274,19 @@
 
     <Style x:Key="DrawerItemButton" TargetType="Button">
         <Setter Property="FontFamily" Value="OpenSansSemibold" />
-        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontSize" Value="12" />
         <Setter
             Property="TextColor"
             Value="{AppThemeBinding Light=#1F2A3A, Dark=#F2F5FA}"
         />
         <Setter Property="HorizontalOptions" Value="Fill" />
-        <Setter Property="CornerRadius" Value="10" />
-        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="8,7" />
         <Setter Property="BorderWidth" Value="0" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="ImageSource" Value="icon_file.png" />
-        <Setter Property="ContentLayout" Value="Left,8" />
-        <Setter Property="MinimumHeightRequest" Value="36" />
+        <Setter Property="ContentLayout" Value="Left,6" />
+        <Setter Property="MinimumHeightRequest" Value="32" />
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">
@@ -302,7 +302,7 @@
                         <VisualState.Setters>
                             <Setter
                                 Property="BackgroundColor"
-                                Value="{AppThemeBinding Light=#EEF1F6, Dark=#31445D}"
+                                Value="{AppThemeBinding Light=#F4F6FA, Dark=#31455E}"
                             />
                         </VisualState.Setters>
                     </VisualState>
@@ -310,7 +310,7 @@
                         <VisualState.Setters>
                             <Setter
                                 Property="BackgroundColor"
-                                Value="{AppThemeBinding Light=#E7ECF4, Dark=#364B65}"
+                                Value="{AppThemeBinding Light=#EEF2F8, Dark=#354A63}"
                             />
                         </VisualState.Setters>
                     </VisualState>

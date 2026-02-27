@@ -87,6 +87,7 @@ public partial class MainPage
     private Button InputModeFingerButton => FindInEditor<Button>(nameof(InputModeFingerButton));
     private Button InputModeReadButton => FindInEditor<Button>(nameof(InputModeReadButton));
     private Border DrawingToolbarPanel => FindInEditor<Border>(nameof(DrawingToolbarPanel));
+    private ScrollView DrawingToolbarContentScroll => FindInEditor<ScrollView>(nameof(DrawingToolbarContentScroll));
     private Label ToolSettingsTitleLabel => FindInEditor<Label>(nameof(ToolSettingsTitleLabel));
     private VerticalStackLayout EraserModePanel => FindInEditor<VerticalStackLayout>(nameof(EraserModePanel));
     private Button PixelEraserModeButton => FindInEditor<Button>(nameof(PixelEraserModeButton));

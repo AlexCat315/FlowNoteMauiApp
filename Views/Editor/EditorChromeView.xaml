@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:FlowNoteMauiApp.Controls"
     x:Class="FlowNoteMauiApp.Views.Editor.EditorChromeView"
-    
 >
     <ContentView.Resources>
         <ResourceDictionary>
@@ -15,11 +14,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ContentView.Resources>
-    <Grid
-        InputTransparent="True"
-        CascadeInputTransparent="False"
-        
-    >
+    <Grid InputTransparent="True" CascadeInputTransparent="False">
         <!-- Solid top backdrop to prevent PDF content from bleeding through system/title-bar inset area. -->
         <Border
             HeightRequest="112"
@@ -35,7 +30,6 @@
         <Border
             x:Name="TopBarPanel"
             IsVisible="False"
-            
             ZIndex="220"
             InputTransparent="False"
             HorizontalOptions="Fill"
@@ -48,11 +42,7 @@
             StrokeShape="RoundRectangle 0"
             Opacity="1"
         >
-            <Grid
-                RowDefinitions="Auto,Auto,1"
-                RowSpacing="2"
-                
-            >
+            <Grid RowDefinitions="Auto,Auto,1" RowSpacing="2">
                 <Grid
                     Grid.Row="0"
                     ColumnDefinitions="Auto,*,Auto"
@@ -150,19 +140,14 @@
                     </HorizontalStackLayout>
                 </Grid>
 
-                <Grid Grid.Row="1" >
+                <Grid Grid.Row="1">
                     <ScrollView
                         x:Name="TopToolsScrollView"
                         ZIndex="20"
-                        
                         Orientation="Horizontal"
                         HorizontalScrollBarVisibility="Never"
                     >
-                        <HorizontalStackLayout
-                            Spacing="6"
-                            Padding="0,1,0,1"
-                            
-                        >
+                        <HorizontalStackLayout Spacing="6" Padding="0,1,0,1">
                             <BoxView
                                 x:Name="TopToolsLeadingSpacer"
                                 WidthRequest="308"
@@ -255,7 +240,6 @@
             ZIndex="860"
             Spacing="6"
             Padding="0,1,0,1"
-            
             HorizontalOptions="Start"
             VerticalOptions="Start"
             Margin="8,38,0,0"
@@ -284,7 +268,6 @@
 
             <Grid
                 x:Name="InkToolsStripContainer"
-                
                 ZIndex="960"
                 HeightRequest="32"
             >
@@ -295,7 +278,6 @@
                 />
                 <HorizontalStackLayout
                     x:Name="InkToolsHost"
-                    
                     ZIndex="980"
                     Spacing="2"
                     Margin="6,0"
@@ -354,7 +336,7 @@
             Padding="0"
             Style="{StaticResource PanelCard}"
         >
-            <VerticalStackLayout Spacing="0">
+            <Grid RowDefinitions="Auto,1,*" RowSpacing="0">
                 <Grid
                     Padding="12,10"
                     ColumnDefinitions="*,Auto"
@@ -377,280 +359,289 @@
                 </Grid>
 
                 <BoxView
+                    Grid.Row="1"
                     HeightRequest="1"
                     Color="{AppThemeBinding Light=#ECEFF4, Dark=#36475F}"
                 />
 
-                <VerticalStackLayout Padding="12,10" Spacing="10">
+                <ScrollView
+                    x:Name="DrawingToolbarContentScroll"
+                    Grid.Row="2"
+                    VerticalScrollBarVisibility="Default"
+                >
+                    <VerticalStackLayout Padding="12,10" Spacing="10">
                     <VerticalStackLayout
-                        x:Name="EraserModePanel"
-                        IsVisible="False"
-                        Spacing="10"
-                    >
+                            x:Name="EraserModePanel"
+                            IsVisible="False"
+                            Spacing="10"
+                        >
                         <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
                             <Button
-                                x:Name="PixelEraserModeButton"
-                                Text="像素擦除"
-                                Style="{StaticResource InputModeItemButton}"
-                                FontSize="12"
-                            />
+                                    x:Name="PixelEraserModeButton"
+                                    Text="像素擦除"
+                                    Style="{StaticResource InputModeItemButton}"
+                                    FontSize="12"
+                                />
                             <Button
-                                x:Name="StrokeEraserModeButton"
-                                Grid.Column="1"
-                                Text="整笔擦除"
-                                Style="{StaticResource InputModeItemButton}"
-                                FontSize="12"
-                            />
+                                    x:Name="StrokeEraserModeButton"
+                                    Grid.Column="1"
+                                    Text="整笔擦除"
+                                    Style="{StaticResource InputModeItemButton}"
+                                    FontSize="12"
+                                />
                             <Button
-                                x:Name="LassoEraserModeButton"
-                                Grid.Column="2"
-                                Text="圈选擦除"
-                                Style="{StaticResource InputModeItemButton}"
-                                FontSize="12"
-                            />
+                                    x:Name="LassoEraserModeButton"
+                                    Grid.Column="2"
+                                    Text="圈选擦除"
+                                    Style="{StaticResource InputModeItemButton}"
+                                    FontSize="12"
+                                />
                         </Grid>
                     </VerticalStackLayout>
 
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                         <Label
-                            x:Name="DrawingPenWidthLabel"
-                            Text="粗细"
-                            FontFamily="OpenSansSemibold"
-                            FontSize="13"
-                            VerticalOptions="Center"
-                        />
-                        <Label
-                            x:Name="StrokeWidthLabel"
-                            Grid.Column="2"
-                            Text="3.0mm"
-                            FontSize="12"
-                            VerticalOptions="Center"
-                            HorizontalTextAlignment="End"
-                            TextColor="{AppThemeBinding Light=#8A8F99, Dark=#A8B3C4}"
-                        />
-                    </Grid>
-
-                    <Border
-                        Padding="8"
-                        BackgroundColor="{AppThemeBinding Light=#FAFBFD, Dark=#27384F}"
-                        Stroke="{AppThemeBinding Light=#ECEEF3, Dark=#36465E}"
-                        StrokeThickness="1"
-                        StrokeShape="RoundRectangle 12"
-                    >
-                        <Slider
-                            x:Name="StrokeWidthSlider"
-                            Minimum="1"
-                            Maximum="20"
-                            Value="3"
-                            VerticalOptions="Center"
-                        />
-                    </Border>
-
-                    <VerticalStackLayout x:Name="PressurePanel" Spacing="8">
-                        <Grid
-                            ColumnDefinitions="Auto,*,Auto"
-                            ColumnSpacing="10"
-                        >
-                            <Label
-                                x:Name="PressureSensitivityTitleLabel"
-                                Text="压感"
+                                x:Name="DrawingPenWidthLabel"
+                                Text="粗细"
                                 FontFamily="OpenSansSemibold"
                                 FontSize="13"
                                 VerticalOptions="Center"
                             />
-                            <Label
-                                x:Name="PressureValueLabel"
+                        <Label
+                                x:Name="StrokeWidthLabel"
                                 Grid.Column="2"
-                                Text="100%"
+                                Text="3.0mm"
                                 FontSize="12"
                                 VerticalOptions="Center"
                                 HorizontalTextAlignment="End"
                                 TextColor="{AppThemeBinding Light=#8A8F99, Dark=#A8B3C4}"
                             />
-                        </Grid>
-                        <Border
+                    </Grid>
+
+                    <Border
                             Padding="8"
                             BackgroundColor="{AppThemeBinding Light=#FAFBFD, Dark=#27384F}"
                             Stroke="{AppThemeBinding Light=#ECEEF3, Dark=#36465E}"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 12"
                         >
-                            <Slider
-                                x:Name="PressureSensitivitySlider"
-                                Minimum="0.4"
-                                Maximum="2.0"
-                                Value="1.0"
+                        <Slider
+                                x:Name="StrokeWidthSlider"
+                                Minimum="1"
+                                Maximum="20"
+                                Value="3"
                                 VerticalOptions="Center"
                             />
+                    </Border>
+
+                    <VerticalStackLayout x:Name="PressurePanel" Spacing="8">
+                        <Grid
+                                ColumnDefinitions="Auto,*,Auto"
+                                ColumnSpacing="10"
+                            >
+                            <Label
+                                    x:Name="PressureSensitivityTitleLabel"
+                                    Text="压感"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="13"
+                                    VerticalOptions="Center"
+                                />
+                            <Label
+                                    x:Name="PressureValueLabel"
+                                    Grid.Column="2"
+                                    Text="100%"
+                                    FontSize="12"
+                                    VerticalOptions="Center"
+                                    HorizontalTextAlignment="End"
+                                    TextColor="{AppThemeBinding Light=#8A8F99, Dark=#A8B3C4}"
+                                />
+                        </Grid>
+                        <Border
+                                Padding="8"
+                                BackgroundColor="{AppThemeBinding Light=#FAFBFD, Dark=#27384F}"
+                                Stroke="{AppThemeBinding Light=#ECEEF3, Dark=#36465E}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                            >
+                            <Slider
+                                    x:Name="PressureSensitivitySlider"
+                                    Minimum="0.4"
+                                    Maximum="2.0"
+                                    Value="1.0"
+                                    VerticalOptions="Center"
+                                />
                         </Border>
                     </VerticalStackLayout>
 
                     <VerticalStackLayout x:Name="ToolColorPanel" Spacing="10">
                         <Label
-                            x:Name="ToolColorTitleLabel"
-                            Text="颜色"
-                            FontFamily="OpenSansSemibold"
-                            FontSize="13"
-                            VerticalOptions="Center"
-                        />
-                        <Border
-                            Padding="8"
-                            BackgroundColor="{AppThemeBinding Light=#FAFBFD, Dark=#27384F}"
-                            Stroke="{AppThemeBinding Light=#ECEEF3, Dark=#36465E}"
-                            StrokeThickness="1"
-                            StrokeShape="RoundRectangle 12"
-                        >
-                            <HorizontalStackLayout
-                                Spacing="6"
+                                x:Name="ToolColorTitleLabel"
+                                Text="颜色"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="13"
                                 VerticalOptions="Center"
+                            />
+                        <Border
+                                Padding="8"
+                                BackgroundColor="{AppThemeBinding Light=#FAFBFD, Dark=#27384F}"
+                                Stroke="{AppThemeBinding Light=#ECEEF3, Dark=#36465E}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
                             >
+                            <HorizontalStackLayout
+                                    Spacing="6"
+                                    VerticalOptions="Center"
+                                >
                                 <Button
-                                    x:Name="ColorBlack"
-                                    Style="{StaticResource ColorButton}"
-                                    BackgroundColor="#111111"
-                                />
+                                        x:Name="ColorBlack"
+                                        Style="{StaticResource ColorButton}"
+                                        BackgroundColor="#111111"
+                                    />
                                 <Button
-                                    x:Name="ColorBlue"
-                                    Style="{StaticResource ColorButton}"
-                                    BackgroundColor="#2F74D0"
-                                />
+                                        x:Name="ColorBlue"
+                                        Style="{StaticResource ColorButton}"
+                                        BackgroundColor="#2F74D0"
+                                    />
                                 <Button
-                                    x:Name="ColorRed"
-                                    Style="{StaticResource ColorButton}"
-                                    BackgroundColor="#E23B30"
-                                />
+                                        x:Name="ColorRed"
+                                        Style="{StaticResource ColorButton}"
+                                        BackgroundColor="#E23B30"
+                                    />
                                 <Button
-                                    x:Name="ColorGreen"
-                                    Style="{StaticResource ColorButton}"
-                                    BackgroundColor="#2CC66D"
-                                />
+                                        x:Name="ColorGreen"
+                                        Style="{StaticResource ColorButton}"
+                                        BackgroundColor="#2CC66D"
+                                    />
                                 <Button
-                                    x:Name="ColorOrange"
-                                    Style="{StaticResource ColorButton}"
-                                    BackgroundColor="#F4B100"
-                                />
+                                        x:Name="ColorOrange"
+                                        Style="{StaticResource ColorButton}"
+                                        BackgroundColor="#F4B100"
+                                    />
                                 <Button
-                                    x:Name="ColorWhite"
-                                    Style="{StaticResource ColorButton}"
-                                    BackgroundColor="#FFFFFF"
-                                    BorderColor="#CBD5E1"
-                                    BorderWidth="1"
-                                />
+                                        x:Name="ColorWhite"
+                                        Style="{StaticResource ColorButton}"
+                                        BackgroundColor="#FFFFFF"
+                                        BorderColor="#CBD5E1"
+                                        BorderWidth="1"
+                                    />
                             </HorizontalStackLayout>
                         </Border>
                         <Button
-                            x:Name="OpenColorWheelButton"
-                            Text="颜色轮盘"
-                            FontSize="12"
-                            CornerRadius="10"
-                            Padding="10,6"
-                            BackgroundColor="{AppThemeBinding Light=#EAF1FB, Dark=#334A67}"
-                            TextColor="{AppThemeBinding Light=#254A78, Dark=#D3E5FF}"
-                        />
+                                x:Name="OpenColorWheelButton"
+                                Text="颜色轮盘"
+                                FontSize="12"
+                                CornerRadius="10"
+                                Padding="10,6"
+                                BackgroundColor="{AppThemeBinding Light=#EAF1FB, Dark=#334A67}"
+                                TextColor="{AppThemeBinding Light=#254A78, Dark=#D3E5FF}"
+                            />
                         <Border
-                            x:Name="ColorWheelPickerPanel"
-                            IsVisible="False"
-                            Padding="10"
-                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#23364F}"
-                            Stroke="{AppThemeBinding Light=#E3E9F3, Dark=#3A526F}"
-                            StrokeThickness="1"
-                            StrokeShape="RoundRectangle 12"
-                        >
+                                x:Name="ColorWheelPickerPanel"
+                                IsVisible="False"
+                                Padding="8"
+                                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#23364F}"
+                                Stroke="{AppThemeBinding Light=#E3E9F3, Dark=#3A526F}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                            >
                             <VerticalStackLayout Spacing="8">
                                 <controls:ColorWheelView
-                                    x:Name="ColorWheelView"
-                                    HeightRequest="176"
-                                    HorizontalOptions="Center"
-                                    VerticalOptions="Center"
-                                />
+                                        x:Name="ColorWheelView"
+                                        WidthRequest="152"
+                                        HeightRequest="152"
+                                        MinimumHeightRequest="128"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"
+                                    />
                                 <Grid
-                                    ColumnDefinitions="Auto,*,Auto"
-                                    ColumnSpacing="8"
-                                >
+                                        ColumnDefinitions="Auto,*,Auto"
+                                        ColumnSpacing="8"
+                                    >
                                     <Label
-                                        x:Name="ColorSaturationLabel"
-                                        Text="饱和度"
-                                        FontSize="12"
-                                        VerticalOptions="Center"
-                                    />
+                                            x:Name="ColorSaturationLabel"
+                                            Text="饱和度"
+                                            FontSize="12"
+                                            VerticalOptions="Center"
+                                        />
                                     <Slider
-                                        x:Name="ColorSaturationSlider"
-                                        Grid.Column="1"
-                                        Minimum="0"
-                                        Maximum="1"
-                                        Value="1"
-                                    />
+                                            x:Name="ColorSaturationSlider"
+                                            Grid.Column="1"
+                                            Minimum="0"
+                                            Maximum="1"
+                                            Value="1"
+                                        />
                                     <Label
-                                        x:Name="ColorSaturationValueLabel"
-                                        Grid.Column="2"
-                                        Text="100%"
-                                        FontSize="11"
-                                        VerticalOptions="Center"
-                                        TextColor="{AppThemeBinding Light=#7A869A, Dark=#A6B7D0}"
-                                    />
+                                            x:Name="ColorSaturationValueLabel"
+                                            Grid.Column="2"
+                                            Text="100%"
+                                            FontSize="11"
+                                            VerticalOptions="Center"
+                                            TextColor="{AppThemeBinding Light=#7A869A, Dark=#A6B7D0}"
+                                        />
                                 </Grid>
                                 <Grid
-                                    ColumnDefinitions="Auto,*,Auto"
-                                    ColumnSpacing="8"
-                                >
+                                        ColumnDefinitions="Auto,*,Auto"
+                                        ColumnSpacing="8"
+                                    >
                                     <Label
-                                        x:Name="ColorBrightnessLabel"
-                                        Text="明度"
-                                        FontSize="12"
-                                        VerticalOptions="Center"
-                                    />
+                                            x:Name="ColorBrightnessLabel"
+                                            Text="明度"
+                                            FontSize="12"
+                                            VerticalOptions="Center"
+                                        />
                                     <Slider
-                                        x:Name="ColorBrightnessSlider"
-                                        Grid.Column="1"
-                                        Minimum="0"
-                                        Maximum="1"
-                                        Value="1"
-                                    />
+                                            x:Name="ColorBrightnessSlider"
+                                            Grid.Column="1"
+                                            Minimum="0"
+                                            Maximum="1"
+                                            Value="1"
+                                        />
                                     <Label
-                                        x:Name="ColorBrightnessValueLabel"
-                                        Grid.Column="2"
-                                        Text="100%"
-                                        FontSize="11"
-                                        VerticalOptions="Center"
-                                        TextColor="{AppThemeBinding Light=#7A869A, Dark=#A6B7D0}"
-                                    />
+                                            x:Name="ColorBrightnessValueLabel"
+                                            Grid.Column="2"
+                                            Text="100%"
+                                            FontSize="11"
+                                            VerticalOptions="Center"
+                                            TextColor="{AppThemeBinding Light=#7A869A, Dark=#A6B7D0}"
+                                        />
                                 </Grid>
                                 <Grid
-                                    ColumnDefinitions="Auto,*,*"
-                                    ColumnSpacing="8"
-                                >
+                                        ColumnDefinitions="Auto,*,*"
+                                        ColumnSpacing="8"
+                                    >
                                     <Border
-                                        x:Name="ColorWheelPreviewSwatch"
-                                        WidthRequest="26"
-                                        HeightRequest="26"
-                                        StrokeShape="RoundRectangle 13"
-                                        Stroke="{AppThemeBinding Light=#CBD5E1, Dark=#4B5F7A}"
-                                        StrokeThickness="1"
-                                        BackgroundColor="#111111"
-                                        VerticalOptions="Center"
-                                    />
+                                            x:Name="ColorWheelPreviewSwatch"
+                                            WidthRequest="26"
+                                            HeightRequest="26"
+                                            StrokeShape="RoundRectangle 13"
+                                            Stroke="{AppThemeBinding Light=#CBD5E1, Dark=#4B5F7A}"
+                                            StrokeThickness="1"
+                                            BackgroundColor="#111111"
+                                            VerticalOptions="Center"
+                                        />
                                     <Button
-                                        x:Name="ApplyColorWheelButton"
-                                        Grid.Column="1"
-                                        Text="应用"
-                                        FontSize="12"
-                                        CornerRadius="9"
-                                        Padding="10,6"
-                                    />
+                                            x:Name="ApplyColorWheelButton"
+                                            Grid.Column="1"
+                                            Text="应用"
+                                            FontSize="12"
+                                            CornerRadius="9"
+                                            Padding="10,6"
+                                        />
                                     <Button
-                                        x:Name="CancelColorWheelButton"
-                                        Grid.Column="2"
-                                        Text="收起"
-                                        FontSize="12"
-                                        CornerRadius="9"
-                                        Padding="10,6"
-                                    />
+                                            x:Name="CancelColorWheelButton"
+                                            Grid.Column="2"
+                                            Text="收起"
+                                            FontSize="12"
+                                            CornerRadius="9"
+                                            Padding="10,6"
+                                        />
                                 </Grid>
                             </VerticalStackLayout>
                         </Border>
                     </VerticalStackLayout>
-                </VerticalStackLayout>
-            </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
         </Border>
 
         <Border

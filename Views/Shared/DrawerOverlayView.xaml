@@ -15,53 +15,53 @@
         </ResourceDictionary>
     </ContentView.Resources>
 <Grid x:Name="HomeDrawerOverlay" IsVisible="False" BackgroundColor="#55000000">
-    <Grid ColumnDefinitions="308,*">
+    <Grid ColumnDefinitions="292,*">
         <Border
                 Grid.Column="0"
-                Margin="12,10,0,10"
-                Padding="14,12,14,12"
+                Margin="10,8,0,8"
+                Padding="12,10,12,10"
                 Style="{StaticResource DrawerOverlayPanel}"
             >
             <ScrollView>
-                <VerticalStackLayout Spacing="8">
+                <VerticalStackLayout Spacing="6">
                     <Grid
-                            Padding="1,1,1,6"
+                            Padding="1,1,1,4"
                             ColumnDefinitions="Auto,*,Auto"
-                            ColumnSpacing="10"
+                            ColumnSpacing="8"
                         >
                         <Border
-                                WidthRequest="38"
-                                HeightRequest="38"
-                                StrokeShape="RoundRectangle 19"
+                                WidthRequest="34"
+                                HeightRequest="34"
+                                StrokeShape="RoundRectangle 17"
                                 Stroke="{AppThemeBinding Light=#D3DAE6, Dark=#4B607A}"
                                 StrokeThickness="1"
                                 BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2A3A50}"
                             >
                             <Image
                                     Source="icon_file.png"
-                                    WidthRequest="14"
-                                    HeightRequest="14"
+                                    WidthRequest="13"
+                                    HeightRequest="13"
                                     VerticalOptions="Center"
                                     HorizontalOptions="Center"
-                                    Opacity="0.88"
+                                    Opacity="0.78"
                                 />
                         </Border>
                         <VerticalStackLayout
                                 Grid.Column="1"
-                                Spacing="2"
+                                Spacing="1"
                                 VerticalOptions="Center"
                             >
                             <Label
                                     x:Name="DrawerAuthLabel"
                                     Text="登录/注册"
                                     FontFamily="OpenSansSemibold"
-                                    FontSize="15.5"
+                                    FontSize="14.5"
                                     TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
                                 />
                             <Label
                                     x:Name="DrawerSyncHintLabel"
                                     Text="同步你的学习进度"
-                                    FontSize="11.5"
+                                    FontSize="10.5"
                                     TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}"
                                 />
                         </VerticalStackLayout>
@@ -70,10 +70,10 @@
                                 Grid.Column="2"
                                 Style="{StaticResource HeaderIconButton}"
                                 Source="icon_x.png"
-                                WidthRequest="26"
-                                HeightRequest="26"
-                                MinimumWidthRequest="26"
-                                MinimumHeightRequest="26"
+                                WidthRequest="24"
+                                HeightRequest="24"
+                                MinimumWidthRequest="24"
+                                MinimumHeightRequest="24"
                             />
                     </Grid>
 
@@ -85,17 +85,29 @@
                                     Text="所有文档"
                                     ImageSource="icon_file.png"
                                 />
+                            <BoxView
+                                    HeightRequest="0.5"
+                                    Color="{AppThemeBinding Light=#EEF2F7, Dark=#374D66}"
+                                />
                             <Button
                                     x:Name="DrawerRecentButton"
                                     Style="{StaticResource DrawerItemButton}"
                                     Text="最近使用"
                                     ImageSource="home_bell.png"
                                 />
+                            <BoxView
+                                    HeightRequest="0.5"
+                                    Color="{AppThemeBinding Light=#EEF2F7, Dark=#374D66}"
+                                />
                             <Button
                                     x:Name="DrawerFavoriteButton"
                                     Style="{StaticResource DrawerItemButton}"
                                     Text="我的收藏"
                                     ImageSource="home_done.png"
+                                />
+                            <BoxView
+                                    HeightRequest="0.5"
+                                    Color="{AppThemeBinding Light=#EEF2F7, Dark=#374D66}"
                                 />
                             <Button
                                     x:Name="DrawerTrashButton"
@@ -119,6 +131,10 @@
                                     Text="编辑标签"
                                     ImageSource="icon_pencil.png"
                                 />
+                            <BoxView
+                                    HeightRequest="0.5"
+                                    Color="{AppThemeBinding Light=#EEF2F7, Dark=#374D66}"
+                                />
                             <Button
                                     x:Name="DrawerCreateTagButton"
                                     Style="{StaticResource DrawerItemButton}"
@@ -141,11 +157,19 @@
                                     Text="帮助中心"
                                     ImageSource="icon_search.png"
                                 />
+                            <BoxView
+                                    HeightRequest="0.5"
+                                    Color="{AppThemeBinding Light=#EEF2F7, Dark=#374D66}"
+                                />
                             <Button
                                     x:Name="DrawerAboutButton"
                                     Style="{StaticResource DrawerItemButton}"
                                     Text="关于我们"
                                     ImageSource="icon_settings.png"
+                                />
+                            <BoxView
+                                    HeightRequest="0.5"
+                                    Color="{AppThemeBinding Light=#EEF2F7, Dark=#374D66}"
                                 />
                             <Button
                                     x:Name="DrawerDiscountButton"
@@ -158,26 +182,18 @@
 
                     <Border
                             Margin="0,6,0,0"
-                            Padding="12,10"
-                            Stroke="Transparent"
-                            StrokeShape="RoundRectangle 14"
+                            Padding="10,8"
+                            BackgroundColor="{AppThemeBinding Light=#F4F6FA, Dark=#2C415A}"
+                            Stroke="{AppThemeBinding Light=#E3E8F1, Dark=#415C79}"
+                            StrokeThickness="0.8"
+                            StrokeShape="RoundRectangle 12"
                         >
-                        <Border.Background>
-                            <LinearGradientBrush
-                                    StartPoint="0,0"
-                                    EndPoint="1,1"
-                                >
-                                <GradientStop Color="#4A90E2" Offset="0" />
-                                <GradientStop Color="#6A7FF0" Offset="0.6" />
-                                <GradientStop Color="#57B8E5" Offset="1" />
-                            </LinearGradientBrush>
-                        </Border.Background>
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                             <Image
                                     Source="icon_file.png"
-                                    WidthRequest="14"
-                                    HeightRequest="14"
-                                    Opacity="0.9"
+                                    WidthRequest="13"
+                                    HeightRequest="13"
+                                    Opacity="0.66"
                                     VerticalOptions="Center"
                                 />
                             <Label
@@ -185,9 +201,9 @@
                                     Grid.Column="1"
                                     Text="注册即领免费试用\n解锁全功能笔记工作流"
                                     FontFamily="OpenSansSemibold"
-                                    FontSize="12"
+                                    FontSize="11.5"
                                     LineHeight="1.2"
-                                    TextColor="White"
+                                    TextColor="{AppThemeBinding Light=#395070, Dark=#D7E6FA}"
                                 />
                         </Grid>
                     </Border>

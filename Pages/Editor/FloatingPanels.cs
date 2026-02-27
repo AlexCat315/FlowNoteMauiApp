@@ -37,6 +37,7 @@ public partial class MainPage
 
         if (DrawingToolbarPanel.IsVisible)
         {
+            ApplyDrawingToolbarResponsiveLayout();
             PositionDrawingToolbarPanelUnderTool(_activeInkTool);
         }
 
@@ -210,6 +211,8 @@ public partial class MainPage
         if (!DrawingToolbarPanel.IsVisible)
             return;
 
+        ApplyDrawingToolbarResponsiveLayout();
+
         MainThread.BeginInvokeOnMainThread(() =>
         {
             void ApplyPosition(int attempt)
@@ -264,6 +267,31 @@ public partial class MainPage
 
             ApplyPosition(0);
         });
+    }
+
+    private void ApplyDrawingToolbarResponsiveLayout()
+    {
+        if (EditorChromeView.Height <= 1)
+            return;
+
+        var viewportHeight = EditorChromeView.Height;
+        var topReserved = Math.Max(TopBarPanel.Height + 14d, 56d);
+        var preferredPanelHeight = viewportHeight - topReserved - 10d;
+        var minPanelHeight = Math.Min(180d, Math.Max(128d, viewportHeight - 16d));
+        var maxPanelHeight = Math.Max(minPanelHeight, viewportHeight - 8d);
+        var availablePanelHeight = Math.Min(maxPanelHeight, Math.Max(minPanelHeight, preferredPanelHeight));
+        if (Math.Abs(DrawingToolbarPanel.MaximumHeightRequest - availablePanelHeight) > 0.5d)
+        {
+            DrawingToolbarPanel.MaximumHeightRequest = availablePanelHeight;
+        }
+
+        var preferredScrollHeight = availablePanelHeight - 56d;
+        var maxScrollHeight = Math.Max(72d, availablePanelHeight - 24d);
+        var scrollMax = Math.Min(maxScrollHeight, Math.Max(72d, preferredScrollHeight));
+        if (Math.Abs(DrawingToolbarContentScroll.MaximumHeightRequest - scrollMax) > 0.5d)
+        {
+            DrawingToolbarContentScroll.MaximumHeightRequest = scrollMax;
+        }
     }
 
     private static double GetVisualOffsetX(VisualElement element, VisualElement ancestor)

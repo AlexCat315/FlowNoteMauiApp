@@ -54,9 +54,9 @@ public partial class MainPage
 
         button.AnchorX = 0.5;
         button.AnchorY = 0.0;
-        button.ScaleX = selected ? 1.30 : 1.14;
-        button.ScaleY = selected ? 1.84 : 1.50;
-        button.TranslationY = selected ? 10 : 2;
+        button.ScaleX = 1.14;
+        button.ScaleY = 1.50;
+        button.TranslationY = 2;
         button.ZIndex = selected ? 980 : 920;
         button.Opacity = selected ? 1.0 : 0.96;
     }
@@ -215,6 +215,20 @@ public partial class MainPage
         var state = EnsureInkState(_activeInkTool);
         SyncColorWheelWithColor(state.Color);
         ColorWheelPickerPanel.IsVisible = !ColorWheelPickerPanel.IsVisible;
+        if (DrawingToolbarPanel.IsVisible)
+        {
+            ApplyDrawingToolbarResponsiveLayout();
+            PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+            DrawingToolbarPanel.Dispatcher.DispatchDelayed(
+                TimeSpan.FromMilliseconds(20),
+                () =>
+                {
+                    if (!DrawingToolbarPanel.IsVisible)
+                        return;
+                    ApplyDrawingToolbarResponsiveLayout();
+                    PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+                });
+        }
     }
 
     private void OnApplyColorWheelClicked(object? sender, EventArgs e)
@@ -228,6 +242,20 @@ public partial class MainPage
         var color = ColorWheelView.BuildColor(_colorWheelSaturation, _colorWheelBrightness);
         SetActiveToolColor(color);
         ColorWheelPickerPanel.IsVisible = false;
+        if (DrawingToolbarPanel.IsVisible)
+        {
+            ApplyDrawingToolbarResponsiveLayout();
+            PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+            DrawingToolbarPanel.Dispatcher.DispatchDelayed(
+                TimeSpan.FromMilliseconds(20),
+                () =>
+                {
+                    if (!DrawingToolbarPanel.IsVisible)
+                        return;
+                    ApplyDrawingToolbarResponsiveLayout();
+                    PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+                });
+        }
     }
 
     private void OnCancelColorWheelClicked(object? sender, EventArgs e)
@@ -238,6 +266,20 @@ public partial class MainPage
 
         var state = EnsureInkState(_activeInkTool);
         SyncColorWheelWithColor(state.Color);
+        if (DrawingToolbarPanel.IsVisible)
+        {
+            ApplyDrawingToolbarResponsiveLayout();
+            PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+            DrawingToolbarPanel.Dispatcher.DispatchDelayed(
+                TimeSpan.FromMilliseconds(20),
+                () =>
+                {
+                    if (!DrawingToolbarPanel.IsVisible)
+                        return;
+                    ApplyDrawingToolbarResponsiveLayout();
+                    PositionDrawingToolbarPanelUnderTool(_activeInkTool);
+                });
+        }
     }
 
     private void OnColorWheelHueChanged(object? sender, EventArgs e)

@@ -146,6 +146,8 @@ public partial class MainPage
     {
         if (sender is not VisualElement visual)
             return;
+        if (IsInkToolCoreButton(visual))
+            return;
 
         var state = GetInteractionState(visual);
         CaptureInteractionBase(visual, state);
@@ -156,6 +158,8 @@ public partial class MainPage
     {
         if (sender is not VisualElement visual)
             return;
+        if (IsInkToolCoreButton(visual))
+            return;
 
         var state = GetInteractionState(visual);
         _ = AnimateMicroPressStateAsync(visual, state, pressed: false);
@@ -164,6 +168,8 @@ public partial class MainPage
     private async void OnMicroInteractionClicked(object? sender, EventArgs e)
     {
         if (sender is not VisualElement visual)
+            return;
+        if (IsInkToolCoreButton(visual))
             return;
 
         try
@@ -246,6 +252,15 @@ public partial class MainPage
         }
 
         return completion.Task;
+    }
+
+    private bool IsInkToolCoreButton(VisualElement visual)
+    {
+        return ReferenceEquals(visual, PenModeButton)
+            || ReferenceEquals(visual, HighlighterButton)
+            || ReferenceEquals(visual, PencilButton)
+            || ReferenceEquals(visual, MarkerButton)
+            || ReferenceEquals(visual, EraserButton);
     }
 
     private sealed class MicroInteractionState

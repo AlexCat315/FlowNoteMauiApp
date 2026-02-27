@@ -145,9 +145,8 @@ public sealed class ColorWheelView : SKCanvasView
         var dx = e.Location.X - _center.X;
         var dy = e.Location.Y - _center.Y;
         var distance = MathF.Sqrt((dx * dx) + (dy * dy));
-        var minDistance = _innerRadius - 14f;
-        var maxDistance = _outerRadius + 14f;
-        if (distance < minDistance || distance > maxDistance)
+        var maxDistance = _outerRadius + 18f;
+        if (distance < 6f || distance > maxDistance)
         {
             e.Handled = false;
             return;
