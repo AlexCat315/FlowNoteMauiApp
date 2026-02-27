@@ -19,10 +19,12 @@ public static class IconRenderHelper
     private const float RecolorHueMin = 140f;
     private const float RecolorHueMax = 260f;
     private static readonly ConcurrentDictionary<string, ImageSource> Cache = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, byte[]> TemplateBytesCache = new(StringComparer.Ordinal);
 
     public static void ClearCache()
     {
         Cache.Clear();
+        TemplateBytesCache.Clear();
     }
 
     public static async Task<ImageSource> CreateTintedImageSourceFromPackageAsync(
@@ -38,11 +40,11 @@ public static class IconRenderHelper
 
         try
         {
-            await using var rawStream = await OpenIconTemplateStreamAsync(iconFile).ConfigureAwait(false);
-            if (rawStream is null)
+            var templateBytes = await GetTemplateBytesAsync(iconFile, token).ConfigureAwait(false);
+            if (templateBytes is null || templateBytes.Length == 0)
                 return ImageSource.FromFile(fallbackFile);
 
-            using var baseBitmap = SKBitmap.Decode(rawStream);
+            using var baseBitmap = SKBitmap.Decode(templateBytes);
             if (baseBitmap is null)
                 return ImageSource.FromFile(fallbackFile);
 
@@ -50,7 +52,7 @@ public static class IconRenderHelper
 
             using var tintedBitmap = tintMode == IconTintMode.Monochrome
                 ? RenderMonochrome(baseBitmap, tintColor)
-                : RenderAccentPreserveShading(baseBitmap, tintColor);
+                : RenderAccentPreserveShading(baseBitmap, tintColor, token);
 
             using var outputImage = SKImage.FromBitmap(tintedBitmap);
             using var outputData = outputImage.Encode(SKEncodedImageFormat.Png, 100);
@@ -85,35 +87,40 @@ public static class IconRenderHelper
         return tintedBitmap;
     }
 
-    private static SKBitmap RenderAccentPreserveShading(SKBitmap baseBitmap, SKColor tintColor)
+    private static SKBitmap RenderAccentPreserveShading(SKBitmap baseBitmap, SKColor tintColor, CancellationToken token)
     {
-        var tintedBitmap = new SKBitmap(baseBitmap.Width, baseBitmap.Height, baseBitmap.ColorType, baseBitmap.AlphaType);
+        var sourcePixels = baseBitmap.Pixels;
+        var tintedPixels = new SKColor[sourcePixels.Length];
         RgbToHsv(tintColor, out var tintHue, out var tintSaturation, out var tintValue);
 
-        for (var y = 0; y < baseBitmap.Height; y++)
+        for (var i = 0; i < sourcePixels.Length; i++)
         {
-            for (var x = 0; x < baseBitmap.Width; x++)
+            if ((i & 255) == 0)
             {
-                var source = baseBitmap.GetPixel(x, y);
-                if (source.Alpha == 0)
-                {
-                    tintedBitmap.SetPixel(x, y, SKColors.Transparent);
-                    continue;
-                }
-
-                RgbToHsv(source, out var hue, out var saturation, out var value);
-                if (!ShouldRecolorAccentPixel(hue, saturation, value))
-                {
-                    tintedBitmap.SetPixel(x, y, source);
-                    continue;
-                }
-
-                var target = CreateTintedVariant(source, hue, saturation, value, tintHue, tintSaturation, tintValue);
-                var blendStrength = CalculateBlendStrength(saturation);
-                tintedBitmap.SetPixel(x, y, LerpColor(source, target, blendStrength));
+                token.ThrowIfCancellationRequested();
             }
+
+            var source = sourcePixels[i];
+            if (source.Alpha == 0)
+            {
+                tintedPixels[i] = SKColors.Transparent;
+                continue;
+            }
+
+            RgbToHsv(source, out var hue, out var saturation, out var value);
+            if (!ShouldRecolorAccentPixel(hue, saturation, value))
+            {
+                tintedPixels[i] = source;
+                continue;
+            }
+
+            var target = CreateTintedVariant(source, hue, saturation, value, tintHue, tintSaturation, tintValue);
+            var blendStrength = CalculateBlendStrength(saturation);
+            tintedPixels[i] = LerpColor(source, target, blendStrength);
         }
 
+        var tintedBitmap = new SKBitmap(baseBitmap.Width, baseBitmap.Height, baseBitmap.ColorType, baseBitmap.AlphaType);
+        tintedBitmap.Pixels = tintedPixels;
         return tintedBitmap;
     }
 
@@ -265,19 +272,40 @@ public static class IconRenderHelper
         }
     }
 
-    private static async Task<Stream?> OpenIconTemplateStreamAsync(string iconFile)
+    private static async Task<byte[]?> GetTemplateBytesAsync(string iconFile, CancellationToken token)
+    {
+        if (TemplateBytesCache.TryGetValue(iconFile, out var bytes))
+            return bytes;
+
+        bytes = await LoadTemplateBytesAsync(iconFile, token).ConfigureAwait(false);
+        if (bytes is null || bytes.Length == 0)
+            return null;
+
+        TemplateBytesCache.TryAdd(iconFile, bytes);
+        return bytes;
+    }
+
+    private static async Task<byte[]?> LoadTemplateBytesAsync(string iconFile, CancellationToken token)
     {
         foreach (var candidate in BuildIconPathCandidates(iconFile).Distinct(StringComparer.OrdinalIgnoreCase))
         {
             try
             {
-                return await FileSystem.OpenAppPackageFileAsync(candidate).ConfigureAwait(false);
+                await using var stream = await FileSystem.OpenAppPackageFileAsync(candidate).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
+                using var memory = new MemoryStream();
+                await stream.CopyToAsync(memory, token).ConfigureAwait(false);
+                return memory.ToArray();
             }
             catch (FileNotFoundException)
             {
             }
             catch (DirectoryNotFoundException)
             {
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
         }
 

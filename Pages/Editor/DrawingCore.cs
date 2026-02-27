@@ -53,6 +53,7 @@ public partial class MainPage
     private EraserToolMode _eraserMode = EraserToolMode.Pixel;
     private bool _isUpdatingToolUi;
     private CancellationTokenSource? _toolTintUpdateCts;
+    private bool _hasUnsavedInkChanges;
     private readonly Dictionary<string, ImageSource> _thumbnailSourceCache = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _thumbnailRenderSemaphore = new(2, 2);
     private readonly ConcurrentDictionary<int, PdfPageBounds> _pageBoundsCache = new();

@@ -96,11 +96,11 @@
                         <ImageButton
                             x:Name="TopModePenButton"
                             Style="{StaticResource FlatTopIconButton}"
-                            WidthRequest="25"
-                            HeightRequest="25"
-                            MinimumWidthRequest="25"
-                            MinimumHeightRequest="25"
-                            Padding="1"
+                            WidthRequest="24"
+                            HeightRequest="24"
+                            MinimumWidthRequest="24"
+                            MinimumHeightRequest="24"
+                            Padding="3"
                             Source="icon_stylus_mode.png"
                         />
                         <ImageButton

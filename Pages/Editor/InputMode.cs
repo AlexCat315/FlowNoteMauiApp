@@ -58,7 +58,6 @@ public partial class MainPage
             DrawingInputMode.TapRead => "icon_read_mode.png",
             _ => "icon_stylus_mode.png"
         };
-        TopModePenButton.Source = modeIcon;
 
         var iconTint = IsDarkTheme ? Colors.White : Colors.Black;
         _ = TopModePenButton.SetIconAsync(modeIcon, iconTint, IconTintMode.Monochrome);
@@ -66,11 +65,10 @@ public partial class MainPage
 
     private void ApplyImageButtonIconSizing()
     {
-        HomeSortMenuButton.SetIconDrawSize(13);
-        TopHomeButton.SetIconDrawSize(14);
+        HomeSortMenuButton.SetIconDrawSize(14);
         TopImportButton.SetIconDrawSize(14);
         TopSearchButton.SetIconDrawSize(14);
-        TopModePenButton.SetIconDrawSize(14);
+        TopModePenButton.SetIconDrawSize(15);
         TopSettingsButton.SetIconDrawSize(14);
         TopThumbnailButton.SetIconDrawSize(14);
 

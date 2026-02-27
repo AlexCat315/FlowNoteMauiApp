@@ -2,11 +2,14 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using SkiaSharp;
+using System.Runtime.CompilerServices;
 
 namespace FlowNoteMauiApp.Helpers;
 
 public static class ImageButtonIconExtensions
 {
+    private static readonly ConditionalWeakTable<ImageButton, IconRenderState> RenderStateMap = new();
+
     public static async Task SetIconAsync(
         this ImageButton button,
         string iconFile,
@@ -22,6 +25,11 @@ public static class ImageButtonIconExtensions
             button.SetIconDrawSize(iconSize.Value);
 
         var skTintColor = ToSkColor(tintColor);
+        var renderKey = BuildRenderKey(iconFile, tintMode, skTintColor);
+        var state = RenderStateMap.GetOrCreateValue(button);
+        if (string.Equals(state.LastRenderKey, renderKey, StringComparison.Ordinal))
+            return;
+
         var source = await IconRenderHelper
             .CreateTintedImageSourceFromPackageAsync(iconFile, skTintColor, tintMode, token)
             .ConfigureAwait(false);
@@ -34,6 +42,7 @@ public static class ImageButtonIconExtensions
             if (!token.IsCancellationRequested)
             {
                 button.Source = source;
+                state.LastRenderKey = renderKey;
             }
         });
     }
@@ -81,5 +90,15 @@ public static class ImageButtonIconExtensions
         var blue = (byte)Math.Clamp((int)Math.Round(color.Blue * 255d), 0, 255);
         var alpha = (byte)Math.Clamp((int)Math.Round(color.Alpha * 255d), 0, 255);
         return new SKColor(red, green, blue, alpha);
+    }
+
+    private static string BuildRenderKey(string iconFile, IconTintMode tintMode, SKColor color)
+    {
+        return $"{iconFile}:{tintMode}:{color.Alpha:X2}{color.Red:X2}{color.Green:X2}{color.Blue:X2}";
+    }
+
+    private sealed class IconRenderState
+    {
+        public string LastRenderKey { get; set; } = string.Empty;
     }
 }

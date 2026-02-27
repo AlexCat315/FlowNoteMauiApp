@@ -186,6 +186,12 @@ public partial class MainPage
             return;
 
         var state = EnsureInkState(_activeInkTool);
+        if (state.Color == color)
+        {
+            UpdateColorSelection(GetColorKey(color));
+            return;
+        }
+
         state.Color = color;
         if (IsEditorInitialized)
         {
@@ -193,26 +199,48 @@ public partial class MainPage
         }
 
         UpdateColorSelection(GetColorKey(color));
-        UpdateToolButtonTintColors();
+        UpdateToolButtonTintColors(_activeInkTool);
     }
 
     private void UpdateToolButtonTintColors()
     {
+        UpdateToolButtonTintColors(
+            InkToolKind.Ballpoint,
+            InkToolKind.Fountain,
+            InkToolKind.Pencil,
+            InkToolKind.Marker);
+    }
+
+    private void UpdateToolButtonTintColors(params InkToolKind[] tools)
+    {
+        if (tools.Length == 0)
+            return;
+
         _toolTintUpdateCts?.Cancel();
         _toolTintUpdateCts?.Dispose();
         _toolTintUpdateCts = new CancellationTokenSource();
         var token = _toolTintUpdateCts.Token;
-        _ = UpdateToolButtonTintColorsAsync(token);
+        _ = UpdateToolButtonTintColorsAsync(tools, token);
     }
 
-    private async Task UpdateToolButtonTintColorsAsync(CancellationToken token)
+    private async Task UpdateToolButtonTintColorsAsync(IReadOnlyList<InkToolKind> tools, CancellationToken token)
     {
         try
         {
-            var penSource = await CreateTintedToolIconSourceAsync("toolicons/icon_ballpoint_pen.png", EnsureInkState(InkToolKind.Ballpoint).Color, token);
-            var highlighterSource = await CreateTintedToolIconSourceAsync("toolicons/icon_gelpen.png", EnsureInkState(InkToolKind.Fountain).Color, token);
-            var pencilSource = await CreateTintedToolIconSourceAsync("toolicons/icon_pencil.png", EnsureInkState(InkToolKind.Pencil).Color, token);
-            var markerSource = await CreateTintedToolIconSourceAsync("toolicons/icon_markpen.png", EnsureInkState(InkToolKind.Marker).Color, token);
+            var renderTasks = new List<Task<(InkToolKind Tool, ImageSource Source)>>(tools.Count);
+            foreach (var tool in tools)
+            {
+                if (!TryGetToolIconFile(tool, out var iconFile))
+                    continue;
+
+                var tintColor = EnsureInkState(tool).Color;
+                renderTasks.Add(RenderToolIconAsync(tool, iconFile, tintColor, token));
+            }
+
+            if (renderTasks.Count == 0)
+                return;
+
+            var updates = await Task.WhenAll(renderTasks).ConfigureAwait(false);
             if (token.IsCancellationRequested)
                 return;
 
@@ -221,16 +249,63 @@ public partial class MainPage
                 if (token.IsCancellationRequested)
                     return;
 
-                PenModeButton.Source = penSource;
-                HighlighterButton.Source = highlighterSource;
-                PencilButton.Source = pencilSource;
-                MarkerButton.Source = markerSource;
-                EraserButton.Source = ImageSource.FromFile("icon_eraser.png");
-            });
+                foreach (var update in updates)
+                {
+                    var button = GetToolButton(update.Tool);
+                    if (button is not null)
+                    {
+                        button.Source = update.Source;
+                    }
+                }
+            }).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
         }
+    }
+
+    private async Task<(InkToolKind Tool, ImageSource Source)> RenderToolIconAsync(
+        InkToolKind tool,
+        string iconFile,
+        SKColor tintColor,
+        CancellationToken token)
+    {
+        var source = await CreateTintedToolIconSourceAsync(iconFile, tintColor, token).ConfigureAwait(false);
+        return (tool, source);
+    }
+
+    private static bool TryGetToolIconFile(InkToolKind tool, out string iconFile)
+    {
+        switch (tool)
+        {
+            case InkToolKind.Ballpoint:
+                iconFile = "toolicons/icon_ballpoint_pen.png";
+                return true;
+            case InkToolKind.Fountain:
+                iconFile = "toolicons/icon_gelpen.png";
+                return true;
+            case InkToolKind.Pencil:
+                iconFile = "toolicons/icon_pencil.png";
+                return true;
+            case InkToolKind.Marker:
+                iconFile = "toolicons/icon_markpen.png";
+                return true;
+            default:
+                iconFile = string.Empty;
+                return false;
+        }
+    }
+
+    private ImageButton? GetToolButton(InkToolKind tool)
+    {
+        return tool switch
+        {
+            InkToolKind.Ballpoint => PenModeButton,
+            InkToolKind.Fountain => HighlighterButton,
+            InkToolKind.Pencil => PencilButton,
+            InkToolKind.Marker => MarkerButton,
+            _ => null
+        };
     }
 
     private async Task<ImageSource> CreateTintedToolIconSourceAsync(string iconFile, SKColor tintColor, CancellationToken token)

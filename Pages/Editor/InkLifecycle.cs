@@ -504,6 +504,7 @@ public partial class MainPage
         if (string.IsNullOrWhiteSpace(_currentNoteId))
             return;
 
+        _hasUnsavedInkChanges = true;
         _inkSaveDebounce?.Cancel();
         _inkSaveDebounce?.Dispose();
         _inkSaveDebounce = new CancellationTokenSource();
@@ -530,10 +531,16 @@ public partial class MainPage
         if (!IsEditorInitialized || string.IsNullOrWhiteSpace(_currentNoteId))
             return;
 
+        if (!_hasUnsavedInkChanges)
+            return;
+
         try
         {
-            var state = DrawingCanvas.ExportState();
+            var state = await MainThread
+                .InvokeOnMainThreadAsync(() => DrawingCanvas.ExportState())
+                .ConfigureAwait(false);
             await _drawingPersistenceService.SaveAsync(_currentNoteId, state);
+            _hasUnsavedInkChanges = false;
         }
         catch
         {
@@ -549,11 +556,13 @@ public partial class MainPage
         {
             DrawingCanvas.ImportState(null);
             RefreshLayerList();
+            _hasUnsavedInkChanges = false;
             return;
         }
 
         var state = await _drawingPersistenceService.LoadAsync(_currentNoteId);
         DrawingCanvas.ImportState(state);
         RefreshLayerList();
+        _hasUnsavedInkChanges = false;
     }
 }

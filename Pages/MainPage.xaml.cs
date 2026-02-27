@@ -35,6 +35,7 @@ public partial class MainPage : ContentPage
     private bool _isBootstrappingUi;
     private bool _isDisplayInfoEventsWired;
     private CancellationTokenSource? _floatingPanelRepositionCts;
+    private bool _isEditorPrewarmStarted;
 
     public MainPage()
     {
@@ -293,6 +294,7 @@ public partial class MainPage : ContentPage
         ShowHomeScreen();
         _ = RefreshWorkspaceViewsAfterStartupAsync();
         _ = BootstrapUiAfterFirstFrameAsync();
+        _ = PrewarmEditorAfterStartupAsync();
     }
 
     protected override void OnAppearing()
@@ -340,6 +342,34 @@ public partial class MainPage : ContentPage
         catch (Exception ex)
         {
             ShowStatus($"Workspace refresh failed: {ex.Message}");
+        }
+    }
+
+    private async Task PrewarmEditorAfterStartupAsync()
+    {
+        if (_isEditorPrewarmStarted || IsEditorInitialized)
+            return;
+
+        _isEditorPrewarmStarted = true;
+        try
+        {
+            await Task.Delay(420);
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                EnsureUiBootstrapped();
+                EnsureEditorInitialized();
+                if (!IsEditorInitialized)
+                    return;
+
+                // Prewarm once to move native engine startup cost off first user click.
+                PdfViewer.IsVisible = false;
+                DrawingCanvas.IsVisible = false;
+                ClearArmedInkTool(hideDrawingToolbar: true);
+            });
+        }
+        catch
+        {
+            _isEditorPrewarmStarted = false;
         }
     }
 
