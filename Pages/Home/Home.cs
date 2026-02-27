@@ -47,6 +47,7 @@ public partial class MainPage
         {
             HomeDrawerOverlay.IsVisible = visible;
         }
+        RefreshAndroidChromeLayering();
     }
 
     private void SetSettingsVisible(bool visible)
@@ -73,6 +74,7 @@ public partial class MainPage
             SetSettingsSection(SettingsSection.Home);
             RefreshSettingsUiState();
         }
+        RefreshAndroidChromeLayering();
     }
 
     private void RefreshHomeFeed()

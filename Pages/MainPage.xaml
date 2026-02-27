@@ -33,16 +33,19 @@
         />
         <sharedViews:DrawerOverlayView
             x:Name="DrawerOverlayView"
+            ZIndex="2200"
             IsVisible="False"
             InputTransparent="True"
         />
         <settingsViews:SettingsOverlayView
             x:Name="SettingsOverlayView"
+            ZIndex="2300"
             IsVisible="False"
             InputTransparent="True"
         />
         <sharedViews:StatusToastView
             x:Name="StatusToastView"
+            ZIndex="2400"
             InputTransparent="True"
         />
 

@@ -465,6 +465,7 @@ public partial class MainPage
             ImportProgressBar.Progress = 0d;
             ImportProgressOverlay.InputTransparent = false;
             ImportProgressOverlay.IsVisible = true;
+            RefreshAndroidChromeLayering();
         });
     }
 
@@ -492,6 +493,7 @@ public partial class MainPage
             ImportProgressBar.Progress = 0d;
             ImportProgressTitleLabel.Text = string.Empty;
             ImportProgressDetailLabel.Text = string.Empty;
+            RefreshAndroidChromeLayering();
         });
     }
 
