@@ -22,6 +22,8 @@ public partial class MainPage
     private bool _isTopBarInsetWired;
     private CancellationTokenSource? _homeFeedRenderCts;
     private int _openWorkspaceNoteRequestVersion;
+    private bool _isHomeSelectionMode;
+    private readonly HashSet<string> _selectedHomeNoteIds = new(StringComparer.Ordinal);
 
     private void UpsertEditorTab(WorkspaceNote note)
     {
@@ -300,11 +302,18 @@ public partial class MainPage
         _cachedHomeNotes = homeNotes;
         _cachedTrashedNotes = trashedNotes;
         _cachedHomeFolders = browse.SubFolders;
+        var visibleIds = (_isTrashView ? _cachedTrashedNotes : _cachedHomeNotes)
+            .Select(n => n.Id)
+            .ToHashSet(StringComparer.Ordinal);
+        _selectedHomeNoteIds.RemoveWhere(id => !visibleIds.Contains(id));
+        if (_selectedHomeNoteIds.Count == 0)
+            _isHomeSelectionMode = false;
         RefreshHomeFeed();
     }
 
     private void ShowHomeScreen()
     {
+        var noteIdForCoverRefresh = _currentNoteId;
         HomePanelView.IsVisible = true;
         HomePanelView.InputTransparent = false;
         AnimateScreenEntry(HomePanelView);
@@ -341,6 +350,30 @@ public partial class MainPage
                 ClearArmedInkTool(hideDrawingToolbar: true);
             }
             DrawingCanvas.IsVisible = false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(noteIdForCoverRefresh))
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await SaveCurrentDrawingStateAsync().ConfigureAwait(false);
+                    var note = await _workspaceService.GetNoteAsync(noteIdForCoverRefresh).ConfigureAwait(false);
+                    if (note is null)
+                        return;
+                    var bytes = await _workspaceService.GetPdfBytesAsync(noteIdForCoverRefresh).ConfigureAwait(false);
+                    if (bytes is null || bytes.Length == 0)
+                        return;
+
+                    InvalidateHomeCoverCacheForNote(noteIdForCoverRefresh);
+                    QueuePrimeHomeCoverCache(note, bytes);
+                    await MainThread.InvokeOnMainThreadAsync(RefreshHomeFeed);
+                }
+                catch
+                {
+                }
+            });
         }
     }
 
@@ -388,6 +421,15 @@ public partial class MainPage
         }
 
         var topInset = TopBarPanel.Height;
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+        {
+            topInset = Math.Max(topInset, AndroidEditorTopInsetFallback);
+        }
+        else
+        {
+            topInset = Math.Max(topInset, EditorTopInsetFallback);
+        }
+
         if (topInset <= 0)
         {
             topInset = DeviceInfo.Platform == DevicePlatform.Android
@@ -649,6 +691,7 @@ public partial class MainPage
     private View CreateHomeNoteCard(WorkspaceNote note)
     {
         var selected = note.Id == _currentNoteId;
+        var batchSelected = _selectedHomeNoteIds.Contains(note.Id);
         var card = new Border
         {
             WidthRequest = 130,
@@ -716,6 +759,32 @@ public partial class MainPage
         if (preview.Content is Border previewPaper
             && previewPaper.Content is Grid previewGrid)
         {
+            if (_isHomeSelectionMode)
+            {
+                previewGrid.Children.Add(new Border
+                {
+                    WidthRequest = 20,
+                    HeightRequest = 20,
+                    StrokeThickness = 1,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+                    Stroke = batchSelected ? Color.FromArgb("#4A90E2") : Color.FromArgb("#9AA8BC"),
+                    BackgroundColor = batchSelected ? Color.FromArgb("#4A90E2") : Color.FromArgb("#E8EDF4"),
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Start,
+                    Margin = new Thickness(4, 4, 0, 0),
+                    Padding = 0,
+                    ZIndex = 9,
+                    Content = new Label
+                    {
+                        Text = batchSelected ? "✓" : string.Empty,
+                        HorizontalTextAlignment = TextAlignment.Center,
+                        VerticalTextAlignment = TextAlignment.Center,
+                        FontSize = 12,
+                        TextColor = Colors.White
+                    }
+                });
+            }
+
             var menuButton = new Button
             {
                 Text = "⋮",
@@ -837,6 +906,12 @@ public partial class MainPage
         {
             Command = new Command(async () =>
             {
+                if (_isHomeSelectionMode)
+                {
+                    ToggleHomeSelection(note.Id);
+                    return;
+                }
+
                 if (_isTrashView)
                 {
                     await ShowHomeNoteActionsAsync(note);
@@ -857,6 +932,101 @@ public partial class MainPage
         return card;
     }
 
+    private void ToggleHomeSelection(string noteId)
+    {
+        if (string.IsNullOrWhiteSpace(noteId))
+            return;
+
+        if (_selectedHomeNoteIds.Contains(noteId))
+        {
+            _selectedHomeNoteIds.Remove(noteId);
+        }
+        else
+        {
+            _selectedHomeNoteIds.Add(noteId);
+        }
+
+        if (_selectedHomeNoteIds.Count == 0)
+        {
+            _isHomeSelectionMode = false;
+        }
+
+        RefreshHomeFeed();
+        ShowStatus(TF("SelectionCountFormat", "{0} selected", _selectedHomeNoteIds.Count));
+    }
+
+    private async Task ShowHomeBatchActionsAsync()
+    {
+        if (_selectedHomeNoteIds.Count == 0)
+        {
+            _isHomeSelectionMode = false;
+            RefreshHomeFeed();
+            return;
+        }
+
+        var action = _isTrashView
+            ? await DisplayActionSheet(
+                TF("SelectionCountFormat", "{0} selected", _selectedHomeNoteIds.Count),
+                T("CancelAction", "Cancel"),
+                null,
+                T("RestoreFromTrash", "Restore"),
+                T("DeletePermanently", "Delete Permanently"),
+                T("ExitSelection", "Exit Selection"))
+            : await DisplayActionSheet(
+                TF("SelectionCountFormat", "{0} selected", _selectedHomeNoteIds.Count),
+                T("CancelAction", "Cancel"),
+                null,
+                T("MoveToTrash", "Move to Trash"),
+                T("ExitSelection", "Exit Selection"));
+
+        if (action == T("ExitSelection", "Exit Selection"))
+        {
+            _isHomeSelectionMode = false;
+            _selectedHomeNoteIds.Clear();
+            RefreshHomeFeed();
+            return;
+        }
+
+        if (_isTrashView && action == T("RestoreFromTrash", "Restore"))
+        {
+            foreach (var noteId in _selectedHomeNoteIds.ToArray())
+            {
+                await _workspaceService.RestoreFromTrashAsync(noteId);
+            }
+
+            _isHomeSelectionMode = false;
+            _selectedHomeNoteIds.Clear();
+            await RefreshWorkspaceViewsAsync();
+            return;
+        }
+
+        if (_isTrashView && action == T("DeletePermanently", "Delete Permanently"))
+        {
+            foreach (var noteId in _selectedHomeNoteIds.ToArray())
+            {
+                await _workspaceService.DeleteNotePermanentlyAsync(noteId);
+                InvalidateHomeCoverCacheForNote(noteId);
+            }
+
+            _isHomeSelectionMode = false;
+            _selectedHomeNoteIds.Clear();
+            await RefreshWorkspaceViewsAsync();
+            return;
+        }
+
+        if (!_isTrashView && action == T("MoveToTrash", "Move to Trash"))
+        {
+            foreach (var noteId in _selectedHomeNoteIds.ToArray())
+            {
+                await _workspaceService.MoveToTrashAsync(noteId);
+            }
+
+            _isHomeSelectionMode = false;
+            _selectedHomeNoteIds.Clear();
+            await RefreshWorkspaceViewsAsync();
+        }
+    }
+
     private async Task ShowHomeNoteActionsAsync(WorkspaceNote note)
     {
         if (_isTrashView)
@@ -865,13 +1035,24 @@ public partial class MainPage
                 note.Name,
                 T("CancelAction", "Cancel"),
                 null,
-                T("RestoreFromTrash", "Restore"));
+                T("RestoreFromTrash", "Restore"),
+                T("DeletePermanently", "Delete Permanently"));
             if (trashAction == T("RestoreFromTrash", "Restore"))
             {
                 var restored = await _workspaceService.RestoreFromTrashAsync(note.Id);
                 if (restored)
                 {
                     ShowStatus(T("RestoredFromTrash", "Restored from trash."));
+                    await RefreshWorkspaceViewsAsync();
+                }
+            }
+            else if (trashAction == T("DeletePermanently", "Delete Permanently"))
+            {
+                var deleted = await _workspaceService.DeleteNotePermanentlyAsync(note.Id);
+                if (deleted)
+                {
+                    InvalidateHomeCoverCacheForNote(note.Id);
+                    ShowStatus(T("DeletePermanentlyDone", "Deleted permanently."));
                     await RefreshWorkspaceViewsAsync();
                 }
             }
@@ -884,6 +1065,7 @@ public partial class MainPage
             T("CancelAction", "Cancel"),
             null,
             T("RenameAction", "Rename"),
+            T("SelectMultiple", "Select Multiple"),
             T("ChangeCoverAction", "Change Cover"),
             T("RefreshCover", "Refresh Cover"),
             T("MoveToTrash", "Move to Trash"));
@@ -911,6 +1093,16 @@ public partial class MainPage
                 }
             }
 
+            return;
+        }
+
+        if (action == T("SelectMultiple", "Select Multiple"))
+        {
+            _isHomeSelectionMode = true;
+            _selectedHomeNoteIds.Clear();
+            _selectedHomeNoteIds.Add(note.Id);
+            RefreshHomeFeed();
+            ShowStatus(TF("SelectionCountFormat", "{0} selected", _selectedHomeNoteIds.Count));
             return;
         }
 

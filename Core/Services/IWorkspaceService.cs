@@ -14,5 +14,6 @@ public interface IWorkspaceService
     Task<IReadOnlyList<WorkspaceNote>> GetTrashedNotesAsync(int limit = 200);
     Task<bool> MoveToTrashAsync(string noteId);
     Task<bool> RestoreFromTrashAsync(string noteId);
+    Task<bool> DeleteNotePermanentlyAsync(string noteId);
     Task<bool> RenameNoteAsync(string noteId, string newName);
 }

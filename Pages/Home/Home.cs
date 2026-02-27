@@ -292,6 +292,12 @@ public partial class MainPage
 
     private void OnHomeSortClicked(object? sender, EventArgs e)
     {
+        if (_isHomeSelectionMode)
+        {
+            _ = ShowHomeBatchActionsAsync();
+            return;
+        }
+
         SetHomeSortPanelVisible(!HomeSortPanel.IsVisible);
     }
 

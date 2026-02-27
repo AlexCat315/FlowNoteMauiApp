@@ -304,6 +304,39 @@ public sealed class WorkspaceStore : IWorkspaceService
         }
     }
 
+    public async Task<bool> DeleteNotePermanentlyAsync(string noteId)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var index = await LoadIndexLockedAsync();
+            var note = index.Notes.FirstOrDefault(n => n.Id == noteId);
+            if (note is null)
+                return false;
+
+            index.Notes.Remove(note);
+            await SaveIndexLockedAsync(index);
+
+            try
+            {
+                var absolutePath = GetAbsolutePath(note.RelativePdfPath);
+                if (File.Exists(absolutePath))
+                {
+                    File.Delete(absolutePath);
+                }
+            }
+            catch
+            {
+            }
+
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     private string GetAbsolutePath(string relativePath)
     {
         var normalized = relativePath.Replace('/', Path.DirectorySeparatorChar);

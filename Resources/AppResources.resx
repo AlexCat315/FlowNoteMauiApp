@@ -810,4 +810,19 @@ Unlock full note workflow</value>
   <data name="HomeNoteKeyword3" xml:space="preserve">
     <value>class</value>
   </data>
+  <data name="DeletePermanently" xml:space="preserve">
+    <value>Delete Permanently</value>
+  </data>
+  <data name="DeletePermanentlyDone" xml:space="preserve">
+    <value>Deleted permanently.</value>
+  </data>
+  <data name="SelectMultiple" xml:space="preserve">
+    <value>Select Multiple</value>
+  </data>
+  <data name="SelectionCountFormat" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
+  <data name="ExitSelection" xml:space="preserve">
+    <value>Exit Selection</value>
+  </data>
 </root>

@@ -806,4 +806,19 @@
   <data name="HomeNoteKeyword3" xml:space="preserve">
     <value>课堂</value>
   </data>
+  <data name="DeletePermanently" xml:space="preserve">
+    <value>彻底删除</value>
+  </data>
+  <data name="DeletePermanentlyDone" xml:space="preserve">
+    <value>已彻底删除。</value>
+  </data>
+  <data name="SelectMultiple" xml:space="preserve">
+    <value>多选</value>
+  </data>
+  <data name="SelectionCountFormat" xml:space="preserve">
+    <value>已选择 {0} 项</value>
+  </data>
+  <data name="ExitSelection" xml:space="preserve">
+    <value>退出多选</value>
+  </data>
 </root>
