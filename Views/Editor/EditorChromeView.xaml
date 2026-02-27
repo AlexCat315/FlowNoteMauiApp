@@ -2,6 +2,7 @@
 <ContentView
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:FlowNoteMauiApp.Controls"
     x:Class="FlowNoteMauiApp.Views.Editor.EditorChromeView"
     IsClippedToBounds="False"
 >
@@ -14,7 +15,11 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ContentView.Resources>
-    <Grid InputTransparent="True" CascadeInputTransparent="False" IsClippedToBounds="False">
+    <Grid
+        InputTransparent="True"
+        CascadeInputTransparent="False"
+        IsClippedToBounds="False"
+    >
         <Border
             x:Name="TopBarPanel"
             IsVisible="False"
@@ -31,7 +36,11 @@
             StrokeShape="RoundRectangle 0"
             Opacity="0.995"
         >
-            <Grid RowDefinitions="Auto,Auto,1" RowSpacing="2" IsClippedToBounds="False">
+            <Grid
+                RowDefinitions="Auto,Auto,1"
+                RowSpacing="2"
+                IsClippedToBounds="False"
+            >
                 <Grid
                     Grid.Row="0"
                     ColumnDefinitions="Auto,*,Auto"
@@ -104,7 +113,7 @@
                             MinimumWidthRequest="24"
                             MinimumHeightRequest="24"
                             Padding="3"
-                            Source="icon_stylus_mode.png"
+                            Source="icon_stylus_mode.svg"
                         />
                         <ImageButton
                             x:Name="TopSettingsButton"
@@ -512,6 +521,116 @@
                                 />
                             </HorizontalStackLayout>
                         </Border>
+                        <Button
+                            x:Name="OpenColorWheelButton"
+                            Text="颜色轮盘"
+                            FontSize="12"
+                            CornerRadius="10"
+                            Padding="10,6"
+                            BackgroundColor="{AppThemeBinding Light=#EAF1FB, Dark=#334A67}"
+                            TextColor="{AppThemeBinding Light=#254A78, Dark=#D3E5FF}"
+                        />
+                        <Border
+                            x:Name="ColorWheelPickerPanel"
+                            IsVisible="False"
+                            Padding="10"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#23364F}"
+                            Stroke="{AppThemeBinding Light=#E3E9F3, Dark=#3A526F}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 12"
+                        >
+                            <VerticalStackLayout Spacing="8">
+                                <controls:ColorWheelView
+                                    x:Name="ColorWheelView"
+                                    HeightRequest="176"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"
+                                />
+                                <Grid
+                                    ColumnDefinitions="Auto,*,Auto"
+                                    ColumnSpacing="8"
+                                >
+                                    <Label
+                                        x:Name="ColorSaturationLabel"
+                                        Text="饱和度"
+                                        FontSize="12"
+                                        VerticalOptions="Center"
+                                    />
+                                    <Slider
+                                        x:Name="ColorSaturationSlider"
+                                        Grid.Column="1"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        Value="1"
+                                    />
+                                    <Label
+                                        x:Name="ColorSaturationValueLabel"
+                                        Grid.Column="2"
+                                        Text="100%"
+                                        FontSize="11"
+                                        VerticalOptions="Center"
+                                        TextColor="{AppThemeBinding Light=#7A869A, Dark=#A6B7D0}"
+                                    />
+                                </Grid>
+                                <Grid
+                                    ColumnDefinitions="Auto,*,Auto"
+                                    ColumnSpacing="8"
+                                >
+                                    <Label
+                                        x:Name="ColorBrightnessLabel"
+                                        Text="明度"
+                                        FontSize="12"
+                                        VerticalOptions="Center"
+                                    />
+                                    <Slider
+                                        x:Name="ColorBrightnessSlider"
+                                        Grid.Column="1"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        Value="1"
+                                    />
+                                    <Label
+                                        x:Name="ColorBrightnessValueLabel"
+                                        Grid.Column="2"
+                                        Text="100%"
+                                        FontSize="11"
+                                        VerticalOptions="Center"
+                                        TextColor="{AppThemeBinding Light=#7A869A, Dark=#A6B7D0}"
+                                    />
+                                </Grid>
+                                <Grid
+                                    ColumnDefinitions="Auto,*,*"
+                                    ColumnSpacing="8"
+                                >
+                                    <Border
+                                        x:Name="ColorWheelPreviewSwatch"
+                                        WidthRequest="26"
+                                        HeightRequest="26"
+                                        StrokeShape="RoundRectangle 13"
+                                        Stroke="{AppThemeBinding Light=#CBD5E1, Dark=#4B5F7A}"
+                                        StrokeThickness="1"
+                                        BackgroundColor="#111111"
+                                        VerticalOptions="Center"
+                                    />
+                                    <Button
+                                        x:Name="ApplyColorWheelButton"
+                                        Grid.Column="1"
+                                        Text="应用"
+                                        FontSize="12"
+                                        CornerRadius="9"
+                                        Padding="10,6"
+                                    />
+                                    <Button
+                                        x:Name="CancelColorWheelButton"
+                                        Grid.Column="2"
+                                        Text="收起"
+                                        FontSize="12"
+                                        CornerRadius="9"
+                                        Padding="10,6"
+                                    />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
                     </VerticalStackLayout>
                 </VerticalStackLayout>
             </VerticalStackLayout>
@@ -547,7 +666,11 @@
                         Source="icon_x.png"
                     />
                 </Grid>
-                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <Grid
+                    Grid.Row="1"
+                    ColumnDefinitions="Auto,*,Auto,Auto"
+                    ColumnSpacing="8"
+                >
                     <Switch
                         x:Name="ThumbnailOverlaySwitch"
                         IsToggled="True"
@@ -562,6 +685,26 @@
                         VerticalOptions="Center"
                         TextColor="{AppThemeBinding Light=#475569, Dark=#A8B4C8}"
                     />
+                    <Button
+                        x:Name="ThumbnailListModeButton"
+                        Grid.Column="2"
+                        Text="列表"
+                        FontSize="11"
+                        CornerRadius="8"
+                        Padding="8,4"
+                        BackgroundColor="{AppThemeBinding Light=#EAF1FB, Dark=#334A67}"
+                        TextColor="{AppThemeBinding Light=#264A78, Dark=#D3E5FF}"
+                    />
+                    <Button
+                        x:Name="ThumbnailGridModeButton"
+                        Grid.Column="3"
+                        Text="网格"
+                        FontSize="11"
+                        CornerRadius="8"
+                        Padding="8,4"
+                        BackgroundColor="{AppThemeBinding Light=#F2F5FA, Dark=#2B3F58}"
+                        TextColor="{AppThemeBinding Light=#64748B, Dark=#AAB9CC}"
+                    />
                 </Grid>
                 <Border
                     Grid.Row="2"
@@ -572,8 +715,10 @@
                     BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#22344B}"
                 >
                     <ScrollView>
-                        <VerticalStackLayout
+                        <FlexLayout
                             x:Name="ThumbnailList"
+                            Direction="Column"
+                            Wrap="NoWrap"
                             Spacing="6"
                         />
                     </ScrollView>
@@ -629,7 +774,7 @@
                         x:Name="InputModePenButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
-                        ImageSource="icon_stylus_mode.png"
+                        ImageSource="icon_stylus_mode.svg"
                         ContentLayout="Left,8"
                         Text="手写模式"
                     />
@@ -649,7 +794,7 @@
                         x:Name="InputModeFingerButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
-                        ImageSource="icon_hand_mode.png"
+                        ImageSource="icon_hand_mode.svg"
                         ContentLayout="Left,8"
                         Text="触控模式"
                     />
@@ -669,7 +814,7 @@
                         x:Name="InputModeReadButton"
                         Grid.Column="0"
                         Style="{StaticResource InputModeItemButton}"
-                        ImageSource="icon_read_mode.png"
+                        ImageSource="icon_read_mode.svg"
                         ContentLayout="Left,8"
                         Text="阅读模式"
                     />

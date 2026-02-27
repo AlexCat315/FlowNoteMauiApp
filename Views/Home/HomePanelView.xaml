@@ -179,7 +179,7 @@
                     x:Name="QuickPenButton"
                     Style="{StaticResource FloatingIconButton}"
                     BackgroundColor="{StaticResource PrimaryBlueLight}"
-                    Source="icon_stylus_mode.png"
+                    Source="icon_stylus_mode.svg"
                 />
             <ImageButton
                     x:Name="HomeImportButton"

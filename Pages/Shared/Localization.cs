@@ -59,6 +59,13 @@ public partial class MainPage
         FindInEditor<Button>("StrokeEraserModeButton").Text = T("EraserModeStroke", "Stroke");
         FindInEditor<Button>("LassoEraserModeButton").Text = T("EraserModeLasso", "Lasso");
         FindInEditor<Label>("ToolColorTitleLabel").Text = T("Color", "Color");
+        OpenColorWheelButton.Text = T("ColorWheel", "Color Wheel");
+        ColorSaturationLabel.Text = T("ColorSaturation", "Saturation");
+        ColorBrightnessLabel.Text = T("ColorBrightness", "Brightness");
+        ApplyColorWheelButton.Text = T("ApplyAction", "Apply");
+        CancelColorWheelButton.Text = T("CollapseAction", "Collapse");
+        ThumbnailListModeButton.Text = T("ThumbnailListMode", "List");
+        ThumbnailGridModeButton.Text = T("ThumbnailGridMode", "Grid");
         FindInEditor<Label>("PressureSensitivityTitleLabel").Text = T("PressureSensitivity", "Pressure");
         FindInEditor<Label>("ThumbnailTitleLabel").Text = T("Thumbnail", "Thumbnails");
         FindInEditor<Label>("ThumbnailHintLabel").Text = T("ThumbnailHint", "Tap an item to jump to page");
@@ -93,6 +100,11 @@ public partial class MainPage
         LanguageEnglishButton.Text = T("LangEnUs", "English");
         FindInSettings<Label>("LanguageDateFormatTitleLabel").Text = T("DateFormatTitle", "Date Format");
         FindInSettings<Label>("LanguageDateFormatHintLabel").Text = T("DateFormatInDisplay", "Set in Display");
+        DataTransferTitleLabel.Text = T("DataTransfer", "Import & Export");
+        ImportBfNoteButton.Text = T("ImportBfNote", "Import bfnote");
+        ExportBfNoteButton.Text = T("ExportBfNote", "Export bfnote");
+        ExportOriginalPdfButton.Text = T("ExportOriginalPdf", "Export Original PDF");
+        ExportOverlayPdfButton.Text = T("ExportOverlayPdf", "Export PDF + Notes");
         ResetSettingsButton.Text = T("ResetDefaults", "Reset to Defaults");
 
         LoadUrlButton.Text = T("LoadAction", "Load");

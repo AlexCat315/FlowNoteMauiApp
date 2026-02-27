@@ -65,6 +65,11 @@ public partial class MainPage
         RegisterMicroInteraction(ColorGreen);
         RegisterMicroInteraction(ColorOrange);
         RegisterMicroInteraction(ColorWhite);
+        RegisterMicroInteraction(OpenColorWheelButton);
+        RegisterMicroInteraction(ApplyColorWheelButton);
+        RegisterMicroInteraction(CancelColorWheelButton);
+        RegisterMicroInteraction(ThumbnailListModeButton);
+        RegisterMicroInteraction(ThumbnailGridModeButton);
         RegisterMicroInteraction(InputModePenButton);
         RegisterMicroInteraction(InputModeFingerButton);
         RegisterMicroInteraction(InputModeReadButton);
@@ -104,6 +109,10 @@ public partial class MainPage
         RegisterMicroInteraction(FindInSettings<Button>("WorkspaceOpenFolderButton"));
         RegisterMicroInteraction(FindInSettings<Button>("WorkspaceCreateFolderButton"));
         RegisterMicroInteraction(FindInSettings<Button>("WorkspaceRefreshButton"));
+        RegisterMicroInteraction(ImportBfNoteButton);
+        RegisterMicroInteraction(ExportBfNoteButton);
+        RegisterMicroInteraction(ExportOriginalPdfButton);
+        RegisterMicroInteraction(ExportOverlayPdfButton);
         RegisterMicroInteraction(SearchButton);
         RegisterMicroInteraction(SearchPrevButton);
         RegisterMicroInteraction(SearchNextButton);
@@ -179,14 +188,10 @@ public partial class MainPage
             {
                 var pressedScaleX = Math.Max(0.01d, state.BaseScaleX * 0.95d);
                 var pressedScaleY = Math.Max(0.01d, state.BaseScaleY * 0.95d);
-                return Task.WhenAll(
-                    AnimateScaleAsync(visual, pressedScaleX, pressedScaleY, 80, Easing.CubicOut),
-                    visual.TranslateToAsync(state.BaseTranslationX, state.BaseTranslationY + 1.5d, 80, Easing.CubicOut));
+                return AnimateScaleAsync(visual, pressedScaleX, pressedScaleY, 80, Easing.CubicOut);
             }
 
-            return Task.WhenAll(
-                AnimateScaleAsync(visual, state.BaseScaleX, state.BaseScaleY, 130, Easing.SpringOut),
-                visual.TranslateToAsync(state.BaseTranslationX, state.BaseTranslationY, 130, Easing.SpringOut));
+            return AnimateScaleAsync(visual, state.BaseScaleX, state.BaseScaleY, 130, Easing.SpringOut);
         }
         catch
         {
@@ -201,8 +206,6 @@ public partial class MainPage
         {
             state.BaseScaleX = visual.ScaleX;
             state.BaseScaleY = visual.ScaleY;
-            state.BaseTranslationX = visual.TranslationX;
-            state.BaseTranslationY = visual.TranslationY;
             state.HasBaseValues = true;
         }
 
@@ -213,8 +216,6 @@ public partial class MainPage
     {
         state.BaseScaleX = visual.ScaleX;
         state.BaseScaleY = visual.ScaleY;
-        state.BaseTranslationX = visual.TranslationX;
-        state.BaseTranslationY = visual.TranslationY;
         state.HasBaseValues = true;
     }
 
@@ -251,8 +252,6 @@ public partial class MainPage
     {
         public double BaseScaleX { get; set; } = 1d;
         public double BaseScaleY { get; set; } = 1d;
-        public double BaseTranslationX { get; set; }
-        public double BaseTranslationY { get; set; }
         public bool HasBaseValues { get; set; }
     }
 }

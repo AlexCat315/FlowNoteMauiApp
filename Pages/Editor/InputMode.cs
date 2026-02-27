@@ -54,9 +54,9 @@ public partial class MainPage
         TopModePenButton.BorderWidth = 0;
         var modeIcon = _drawingInputMode switch
         {
-            DrawingInputMode.FingerCapacitive => "icon_hand_mode.png",
-            DrawingInputMode.TapRead => "icon_read_mode.png",
-            _ => "icon_stylus_mode.png"
+            DrawingInputMode.FingerCapacitive => "icon_hand_mode.svg",
+            DrawingInputMode.TapRead => "icon_read_mode.svg",
+            _ => "icon_stylus_mode.svg"
         };
 
         var iconTint = IsDarkTheme ? Colors.White : Colors.Black;

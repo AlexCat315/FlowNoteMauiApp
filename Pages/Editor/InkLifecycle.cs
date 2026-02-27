@@ -540,6 +540,7 @@ public partial class MainPage
                 .InvokeOnMainThreadAsync(() => DrawingCanvas.ExportState())
                 .ConfigureAwait(false);
             await _drawingPersistenceService.SaveAsync(_currentNoteId, state);
+            InvalidateHomeCoverCacheForNote(_currentNoteId);
             _hasUnsavedInkChanges = false;
         }
         catch

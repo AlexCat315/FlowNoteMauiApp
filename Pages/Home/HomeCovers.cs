@@ -527,12 +527,44 @@ public partial class MainPage
             if (!File.Exists(path))
                 return 0;
 
-            return File.GetLastWriteTimeUtc(path).Ticks;
+            return ComputeInkStateFingerprint(path);
         }
         catch
         {
             return 0;
         }
+    }
+
+    private static long ComputeInkStateFingerprint(string path)
+    {
+        const ulong offset = 14695981039346656037UL;
+        const ulong prime = 1099511628211UL;
+        ulong hash = offset;
+
+        var info = new FileInfo(path);
+        hash ^= (ulong)info.Length;
+        hash *= prime;
+        hash ^= (ulong)info.LastWriteTimeUtc.Ticks;
+        hash *= prime;
+
+        using var stream = File.OpenRead(path);
+        Span<byte> buffer = stackalloc byte[4096];
+        var remaining = 96 * 1024;
+        while (remaining > 0)
+        {
+            var read = stream.Read(buffer[..Math.Min(buffer.Length, remaining)]);
+            if (read <= 0)
+                break;
+
+            remaining -= read;
+            for (var i = 0; i < read; i++)
+            {
+                hash ^= buffer[i];
+                hash *= prime;
+            }
+        }
+
+        return unchecked((long)(hash & 0x7FFFFFFFFFFFFFFF));
     }
 
     private static string BuildInkStateFilePath(string noteId)
@@ -562,5 +594,32 @@ public partial class MainPage
                 Debug.WriteLine($"[HomeCover] queue pre-generate failed for {note.Id}: {ex.Message}");
             }
         });
+    }
+
+    private void InvalidateHomeCoverCacheForNote(string noteId)
+    {
+        if (string.IsNullOrWhiteSpace(noteId))
+            return;
+
+        var prefix = $"{noteId}_";
+        var keys = _homeCoverSourceCache.Keys
+            .Where(key => key.StartsWith(prefix, StringComparison.Ordinal))
+            .ToArray();
+        foreach (var key in keys)
+        {
+            _homeCoverSourceCache.TryRemove(key, out _);
+            _homeCoverLoadTasks.TryRemove(key, out _);
+            try
+            {
+                var path = BuildHomeCoverFilePath(key);
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+            catch
+            {
+            }
+        }
     }
 }

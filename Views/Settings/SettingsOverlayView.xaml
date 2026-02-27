@@ -195,6 +195,51 @@
                             </Border>
                         </VerticalStackLayout>
                     </Border>
+                    <Border Style="{StaticResource PanelCard}" Padding="12">
+                        <VerticalStackLayout Spacing="10">
+                            <Label
+                                    x:Name="DataTransferTitleLabel"
+                                    Text="导入导出"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="14"
+                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                />
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Button
+                                        x:Name="ImportBfNoteButton"
+                                        Text="导入 bfnote"
+                                        FontSize="13"
+                                        CornerRadius="10"
+                                        Padding="10,8"
+                                    />
+                                <Button
+                                        x:Name="ExportBfNoteButton"
+                                        Grid.Column="1"
+                                        Text="导出 bfnote"
+                                        FontSize="13"
+                                        CornerRadius="10"
+                                        Padding="10,8"
+                                    />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Button
+                                        x:Name="ExportOriginalPdfButton"
+                                        Text="导出原 PDF"
+                                        FontSize="13"
+                                        CornerRadius="10"
+                                        Padding="10,8"
+                                    />
+                                <Button
+                                        x:Name="ExportOverlayPdfButton"
+                                        Grid.Column="1"
+                                        Text="导出 PDF+笔记"
+                                        FontSize="13"
+                                        CornerRadius="10"
+                                        Padding="10,8"
+                                    />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
                 </VerticalStackLayout>
 
                 <VerticalStackLayout

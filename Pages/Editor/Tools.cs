@@ -58,7 +58,7 @@ public partial class MainPage
         button.ScaleX = selected ? 1.30 : 1.14;
         button.ScaleY = selected ? 1.84 : 1.50;
         button.TranslationY = selected ? 10 : 2;
-        button.ZIndex = selected ? 980 : 920; 
+        button.ZIndex = selected ? 980 : 920;
         button.Opacity = selected ? 1.0 : 0.96;
     }
 
@@ -200,8 +200,138 @@ public partial class MainPage
             DrawingCanvas.StrokeColor = color;
         }
 
+        SyncColorWheelWithColor(color);
         UpdateColorSelection(GetColorKey(color));
         UpdateToolButtonTintColors(_activeInkTool);
+    }
+
+    private void OnOpenColorWheelClicked(object? sender, EventArgs e)
+    {
+        if (!EnsureDrawingReady())
+            return;
+
+        if (_activeInkTool == InkToolKind.Eraser || _activeInkTool == InkToolKind.None)
+            return;
+
+        var state = EnsureInkState(_activeInkTool);
+        SyncColorWheelWithColor(state.Color);
+        ColorWheelPickerPanel.IsVisible = !ColorWheelPickerPanel.IsVisible;
+    }
+
+    private void OnApplyColorWheelClicked(object? sender, EventArgs e)
+    {
+        if (!EnsureDrawingReady())
+            return;
+
+        if (_activeInkTool == InkToolKind.Eraser || _activeInkTool == InkToolKind.None)
+            return;
+
+        var color = ColorWheelView.BuildColor(_colorWheelSaturation, _colorWheelBrightness);
+        SetActiveToolColor(color);
+        ColorWheelPickerPanel.IsVisible = false;
+    }
+
+    private void OnCancelColorWheelClicked(object? sender, EventArgs e)
+    {
+        ColorWheelPickerPanel.IsVisible = false;
+        if (_activeInkTool == InkToolKind.Eraser || _activeInkTool == InkToolKind.None)
+            return;
+
+        var state = EnsureInkState(_activeInkTool);
+        SyncColorWheelWithColor(state.Color);
+    }
+
+    private void OnColorWheelHueChanged(object? sender, EventArgs e)
+    {
+        if (_isUpdatingToolUi)
+            return;
+
+        UpdateColorWheelPreview();
+    }
+
+    private void OnColorSaturationChanged(object? sender, ValueChangedEventArgs e)
+    {
+        if (_isUpdatingToolUi)
+            return;
+
+        _colorWheelSaturation = Math.Clamp((float)e.NewValue, 0f, 1f);
+        UpdateColorWheelPreview();
+    }
+
+    private void OnColorBrightnessChanged(object? sender, ValueChangedEventArgs e)
+    {
+        if (_isUpdatingToolUi)
+            return;
+
+        _colorWheelBrightness = Math.Clamp((float)e.NewValue, 0f, 1f);
+        UpdateColorWheelPreview();
+    }
+
+    private void SyncColorWheelWithColor(SKColor color)
+    {
+        ToHsv(color, out _, out var saturation, out var value);
+        _isUpdatingToolUi = true;
+        try
+        {
+            _colorWheelSaturation = saturation;
+            _colorWheelBrightness = value;
+            ColorWheelView.SetFromColor(color);
+            ColorSaturationSlider.Value = saturation;
+            ColorBrightnessSlider.Value = value;
+        }
+        finally
+        {
+            _isUpdatingToolUi = false;
+        }
+
+        UpdateColorWheelPreview();
+    }
+
+    private void UpdateColorWheelPreview()
+    {
+        var preview = ColorWheelView.BuildColor(_colorWheelSaturation, _colorWheelBrightness);
+        ColorWheelPreviewSwatch.BackgroundColor = ToMauiColor(preview);
+        ColorSaturationValueLabel.Text = $"{Math.Round(_colorWheelSaturation * 100f):0}%";
+        ColorBrightnessValueLabel.Text = $"{Math.Round(_colorWheelBrightness * 100f):0}%";
+    }
+
+    private static Microsoft.Maui.Graphics.Color ToMauiColor(SKColor color)
+    {
+        return Microsoft.Maui.Graphics.Color.FromRgba(color.Red, color.Green, color.Blue, color.Alpha);
+    }
+
+    private static void ToHsv(SKColor color, out float hue, out float saturation, out float value)
+    {
+        var r = color.Red / 255f;
+        var g = color.Green / 255f;
+        var b = color.Blue / 255f;
+
+        var max = Math.Max(r, Math.Max(g, b));
+        var min = Math.Min(r, Math.Min(g, b));
+        var delta = max - min;
+
+        hue = 0f;
+        if (delta > 0.0001f)
+        {
+            if (max == r)
+            {
+                hue = 60f * (((g - b) / delta) % 6f);
+            }
+            else if (max == g)
+            {
+                hue = 60f * (((b - r) / delta) + 2f);
+            }
+            else
+            {
+                hue = 60f * (((r - g) / delta) + 4f);
+            }
+        }
+
+        if (hue < 0f)
+            hue += 360f;
+
+        value = max;
+        saturation = max <= 0.0001f ? 0f : delta / max;
     }
 
     private void UpdateToolButtonTintColors()
@@ -366,6 +496,14 @@ public partial class MainPage
         var supportsInkSettings = _activeInkTool != InkToolKind.Eraser && _activeInkTool != InkToolKind.None;
         PressurePanel.IsVisible = supportsInkSettings;
         ToolColorPanel.IsVisible = supportsInkSettings;
+        if (!supportsInkSettings)
+        {
+            ColorWheelPickerPanel.IsVisible = false;
+        }
+        else
+        {
+            SyncColorWheelWithColor(state.Color);
+        }
         UpdateEraserModeSelectionVisual();
         UpdateColorSelection(_activeInkTool == InkToolKind.Eraser ? null : GetColorKey(state.Color));
         if (DrawingToolbarPanel.IsVisible)

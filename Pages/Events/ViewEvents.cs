@@ -80,6 +80,12 @@ public partial class MainPage
         ColorGreen.Clicked += OnColorGreenClicked;
         ColorOrange.Clicked += OnColorOrangeClicked;
         ColorWhite.Clicked += OnColorWhiteClicked;
+        OpenColorWheelButton.Clicked += OnOpenColorWheelClicked;
+        ApplyColorWheelButton.Clicked += OnApplyColorWheelClicked;
+        CancelColorWheelButton.Clicked += OnCancelColorWheelClicked;
+        ColorSaturationSlider.ValueChanged += OnColorSaturationChanged;
+        ColorBrightnessSlider.ValueChanged += OnColorBrightnessChanged;
+        ColorWheelView.SelectedColorChanged += OnColorWheelHueChanged;
 
         InputModePenButton.Clicked += OnInputModePenClicked;
         InputModeFingerButton.Clicked += OnInputModeFingerClicked;
@@ -95,6 +101,8 @@ public partial class MainPage
         FindInEditor<ImageButton>("DeleteLayerButton").Clicked += OnDeleteLayerClicked;
         ThumbnailCloseButton.Clicked += OnThumbnailCloseClicked;
         ThumbnailOverlaySwitch.Toggled += OnThumbnailOverlayToggled;
+        ThumbnailListModeButton.Clicked += OnThumbnailListModeClicked;
+        ThumbnailGridModeButton.Clicked += OnThumbnailGridModeClicked;
 
         EditorChromeView.SizeChanged += OnEditorChromeLayoutChanged;
         TopBarPanel.SizeChanged += OnEditorChromeLayoutChanged;
@@ -171,6 +179,10 @@ public partial class MainPage
         FindInSettings<Button>("WorkspaceOpenFolderButton").Clicked += OnWorkspaceOpenFolderClicked;
         FindInSettings<Button>("WorkspaceCreateFolderButton").Clicked += OnWorkspaceCreateFolderClicked;
         FindInSettings<Button>("WorkspaceRefreshButton").Clicked += OnWorkspaceRefreshClicked;
+        ImportBfNoteButton.Clicked += OnImportBfNoteClicked;
+        ExportBfNoteButton.Clicked += OnExportBfNoteClicked;
+        ExportOriginalPdfButton.Clicked += OnExportOriginalPdfClicked;
+        ExportOverlayPdfButton.Clicked += OnExportOverlayPdfClicked;
 
         SearchButton.Clicked += OnSearchClicked;
         SearchPrevButton.Clicked += OnSearchPrevClicked;

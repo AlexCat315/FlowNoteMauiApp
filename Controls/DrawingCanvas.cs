@@ -1323,24 +1323,26 @@ public class DrawingCanvas : SKCanvasView
         if (distance < 0.001f)
             return;
 
+        var dynamicPoint = ApplyPressureDynamics(_currentStroke, last, point, distance);
+
         var firstMoveJumpThreshold = StrokeFirstMoveJumpThresholdScreen / zoom;
         if (!_hasStrokeSignificantMovement
             && _currentStroke.Points.Count <= 2
             && distance >= firstMoveJumpThreshold
-            && point.Timestamp - _strokeStartTimestampMs <= StrokeFirstMoveJumpWindowMs)
+            && dynamicPoint.Timestamp - _strokeStartTimestampMs <= StrokeFirstMoveJumpWindowMs)
         {
             // Stylus drivers can report an unstable first move; reset anchor to current point.
             if (_currentStroke.Points.Count > 0)
             {
-                _currentStroke.Points[0] = point;
+                _currentStroke.Points[0] = dynamicPoint;
                 _currentStroke.MarkDirty();
             }
             else
             {
-                _currentStroke.AddPoint(point);
+                _currentStroke.AddPoint(dynamicPoint);
             }
 
-            _lastStrokePoint = point;
+            _lastStrokePoint = dynamicPoint;
             LogPointerState($"first-move-jump-filtered dist={distance:0.0} zoom={zoom:0.00}");
             return;
         }
@@ -1356,16 +1358,16 @@ public class DrawingCanvas : SKCanvasView
                 var interpolated = new DrawingPoint(
                     last.X + (dx * t),
                     last.Y + (dy * t),
-                    last.Pressure + ((point.Pressure - last.Pressure) * t),
-                    last.Timestamp + (long)((point.Timestamp - last.Timestamp) * t));
+                    last.Pressure + ((dynamicPoint.Pressure - last.Pressure) * t),
+                    last.Timestamp + (long)((dynamicPoint.Timestamp - last.Timestamp) * t));
                 _currentStroke.AddPoint(interpolated);
                 _lastStrokePoint = interpolated;
             }
         }
         else
         {
-            _currentStroke.AddPoint(point);
-            _lastStrokePoint = point;
+            _currentStroke.AddPoint(dynamicPoint);
+            _lastStrokePoint = dynamicPoint;
         }
 
         if (!_hasStrokeSignificantMovement && distance >= (4f / zoom))
@@ -1440,14 +1442,61 @@ public class DrawingCanvas : SKCanvasView
 
         var minPressure = Math.Max(0.02f, stroke.Options.MinPressure);
         var maxPressure = Math.Max(minPressure + 0.01f, stroke.Options.MaxPressure);
+        var smoothing = 0.18f + (Math.Clamp(stroke.Options.SmoothingFactor, 0f, 1f) * 0.48f);
+        var streamline = Math.Clamp(stroke.Options.Streamline, 0f, 1f);
+        var widthPressure = Math.Clamp(stroke.Points[0].Pressure, minPressure, maxPressure);
         for (var i = 1; i < stroke.Points.Count; i++)
         {
             var prev = stroke.Points[i - 1];
             var current = stroke.Points[i];
-            var pressure = Math.Clamp((prev.Pressure + current.Pressure) * 0.5f, minPressure, maxPressure);
-            paint.StrokeWidth = Math.Max(0.25f, stroke.StrokeWidth * strokeWidthScale * pressure);
+            var dtMs = Math.Max(1L, current.Timestamp - prev.Timestamp);
+            var dx = current.X - prev.X;
+            var dy = current.Y - prev.Y;
+            var distance = MathF.Sqrt((dx * dx) + (dy * dy));
+            var velocity = distance / dtMs;
+            var velocityFactor = Math.Clamp(1f - (velocity * (0.14f + (streamline * 0.35f))), 0.55f, 1.05f);
+            var targetPressure = Math.Clamp(((prev.Pressure + current.Pressure) * 0.5f) * velocityFactor, minPressure, maxPressure);
+            widthPressure = widthPressure + ((targetPressure - widthPressure) * smoothing);
+            paint.StrokeWidth = Math.Max(0.25f, stroke.StrokeWidth * strokeWidthScale * widthPressure);
             canvas.DrawLine(prev.X, prev.Y, current.X, current.Y, paint);
         }
+    }
+
+    private static DrawingPoint ApplyPressureDynamics(
+        DrawingStroke stroke,
+        DrawingPoint previousPoint,
+        DrawingPoint currentPoint,
+        float distance)
+    {
+        if (!stroke.Options.PressureEnabled)
+            return currentPoint;
+
+        var minPressure = Math.Max(0.02f, stroke.Options.MinPressure);
+        var maxPressure = Math.Max(minPressure + 0.01f, stroke.Options.MaxPressure);
+        var dtMs = Math.Max(1L, currentPoint.Timestamp - previousPoint.Timestamp);
+        var velocity = distance / dtMs;
+        var streamline = Math.Clamp(stroke.Options.Streamline, 0f, 1f);
+        var smoothing = 0.22f + (Math.Clamp(stroke.Options.SmoothingFactor, 0f, 1f) * 0.46f);
+
+        var simulatedPressure = Math.Clamp(
+            1.16f - (velocity * (0.18f + (streamline * 0.62f))),
+            minPressure,
+            maxPressure);
+        var hasHardwarePressure = Math.Abs(currentPoint.Pressure - 1f) > 0.03f;
+        var targetPressure = hasHardwarePressure
+            ? ((currentPoint.Pressure * 0.76f) + (simulatedPressure * 0.24f))
+            : simulatedPressure;
+        targetPressure = Math.Clamp(targetPressure, minPressure, maxPressure);
+
+        var previousPressure = Math.Clamp(previousPoint.Pressure, minPressure, maxPressure);
+        var stabilizedPressure = previousPressure + ((targetPressure - previousPressure) * smoothing);
+        stabilizedPressure = Math.Clamp(stabilizedPressure, minPressure, maxPressure);
+
+        return new DrawingPoint(
+            currentPoint.X,
+            currentPoint.Y,
+            stabilizedPressure,
+            currentPoint.Timestamp);
     }
 
     private static SKBlendMode GetBlendMode(DrawingStroke stroke)

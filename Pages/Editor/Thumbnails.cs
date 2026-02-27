@@ -7,11 +7,58 @@ using FlowNoteMauiApp.Models;
 using System.Diagnostics;
 using System.Collections.Concurrent;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Layouts;
 
 namespace FlowNoteMauiApp;
 
 public partial class MainPage
 {
+    private void ApplyThumbnailLayoutModeVisual()
+    {
+        var listSelected = _thumbnailLayoutMode == ThumbnailLayoutMode.List;
+        var gridSelected = _thumbnailLayoutMode == ThumbnailLayoutMode.Grid;
+        var palette = Palette;
+
+        ThumbnailListModeButton.BackgroundColor = listSelected
+            ? palette.ModeButtonExpandedBackground
+            : palette.ModeButtonCollapsedBackground;
+        ThumbnailListModeButton.BorderColor = listSelected
+            ? palette.ModeButtonExpandedBorder
+            : palette.ModeButtonCollapsedBorder;
+        ThumbnailListModeButton.BorderWidth = 1;
+        ThumbnailListModeButton.TextColor = listSelected
+            ? palette.ModeSelectionText
+            : palette.TabInactiveText;
+
+        ThumbnailGridModeButton.BackgroundColor = gridSelected
+            ? palette.ModeButtonExpandedBackground
+            : palette.ModeButtonCollapsedBackground;
+        ThumbnailGridModeButton.BorderColor = gridSelected
+            ? palette.ModeButtonExpandedBorder
+            : palette.ModeButtonCollapsedBorder;
+        ThumbnailGridModeButton.BorderWidth = 1;
+        ThumbnailGridModeButton.TextColor = gridSelected
+            ? palette.ModeSelectionText
+            : palette.TabInactiveText;
+    }
+
+    private void ApplyThumbnailContainerLayout()
+    {
+        if (_thumbnailLayoutMode == ThumbnailLayoutMode.Grid)
+        {
+            ThumbnailList.Direction = FlexDirection.Row;
+            ThumbnailList.Wrap = FlexWrap.Wrap;
+            ThumbnailList.JustifyContent = FlexJustify.Start;
+            ThumbnailList.AlignItems = FlexAlignItems.Start;
+            return;
+        }
+
+        ThumbnailList.Direction = FlexDirection.Column;
+        ThumbnailList.Wrap = FlexWrap.NoWrap;
+        ThumbnailList.JustifyContent = FlexJustify.Start;
+        ThumbnailList.AlignItems = FlexAlignItems.Stretch;
+    }
+
     private void InvalidateThumbnailCache()
     {
         _thumbnailLoadCts?.Cancel();
@@ -26,6 +73,9 @@ public partial class MainPage
 
     private void RefreshThumbnailList()
     {
+        ApplyThumbnailLayoutModeVisual();
+        ApplyThumbnailContainerLayout();
+
         if (!IsEditorInitialized || _totalPageCount <= 0)
         {
             ThumbnailList.Children.Clear();
@@ -36,8 +86,16 @@ public partial class MainPage
             return;
         }
 
-        var maxVisibleItems = _thumbnailIncludeInkOverlay ? MaxOverlayThumbnailItems : MaxPlainThumbnailItems;
+        var maxVisibleItems = _thumbnailLayoutMode == ThumbnailLayoutMode.Grid
+            ? MaxGridThumbnailItems
+            : (_thumbnailIncludeInkOverlay ? MaxOverlayThumbnailItems : MaxPlainThumbnailItems);
         var (startIndex, endIndex) = ResolveThumbnailWindow(maxVisibleItems);
+        if (_thumbnailLayoutMode == ThumbnailLayoutMode.Grid && _totalPageCount <= MaxGridThumbnailItems)
+        {
+            startIndex = 0;
+            endIndex = _totalPageCount - 1;
+        }
+
         var needsRebuild = ThumbnailList.Children.Count == 0
             || _thumbnailItemLookup.Count == 0
             || startIndex != _thumbnailWindowStart
@@ -59,7 +117,7 @@ public partial class MainPage
         ThumbnailList.Children.Clear();
         _thumbnailItemLookup.Clear();
 
-        if (startIndex > 0)
+        if (_thumbnailLayoutMode == ThumbnailLayoutMode.List && startIndex > 0)
         {
             ThumbnailList.Children.Add(CreateThumbnailListItem(
                 0,
@@ -74,7 +132,7 @@ public partial class MainPage
             ThumbnailList.Children.Add(CreateThumbnailListItem(i, i == _currentPageIndex, token, overlaySnapshots));
         }
 
-        if (endIndex < _totalPageCount - 1)
+        if (_thumbnailLayoutMode == ThumbnailLayoutMode.List && endIndex < _totalPageCount - 1)
         {
             ThumbnailList.Children.Add(CreateThumbnailListItem(
                 _totalPageCount - 1,
@@ -217,6 +275,13 @@ public partial class MainPage
                 }
             }
         };
+
+        if (_thumbnailLayoutMode == ThumbnailLayoutMode.Grid)
+        {
+            item.WidthRequest = 126;
+            item.Margin = new Thickness(0, 0, 6, 6);
+        }
+
         ApplyThumbnailItemSelectionVisual(item, isCurrent);
         if (!_thumbnailItemLookup.ContainsKey(pageIndex))
         {
@@ -237,6 +302,32 @@ public partial class MainPage
         });
 
         return item;
+    }
+
+    private void OnThumbnailListModeClicked(object? sender, EventArgs e)
+    {
+        if (_thumbnailLayoutMode == ThumbnailLayoutMode.List)
+            return;
+
+        _thumbnailLayoutMode = ThumbnailLayoutMode.List;
+        InvalidateThumbnailCache();
+        if (ThumbnailPanel.IsVisible)
+        {
+            RefreshThumbnailList();
+        }
+    }
+
+    private void OnThumbnailGridModeClicked(object? sender, EventArgs e)
+    {
+        if (_thumbnailLayoutMode == ThumbnailLayoutMode.Grid)
+            return;
+
+        _thumbnailLayoutMode = ThumbnailLayoutMode.Grid;
+        InvalidateThumbnailCache();
+        if (ThumbnailPanel.IsVisible)
+        {
+            RefreshThumbnailList();
+        }
     }
 
     private async Task LoadThumbnailForPageAsync(
@@ -532,14 +623,24 @@ public partial class MainPage
 
         var minPressure = Math.Max(0.02f, stroke.Options.MinPressure);
         var maxPressure = Math.Max(minPressure + 0.01f, stroke.Options.MaxPressure);
+        var smoothing = 0.18f + (Math.Clamp(stroke.Options.SmoothingFactor, 0f, 1f) * 0.48f);
+        var streamline = Math.Clamp(stroke.Options.Streamline, 0f, 1f);
+        var widthPressure = Math.Clamp(stroke.Points[0].Pressure, minPressure, maxPressure);
         for (var index = 1; index < stroke.Points.Count; index++)
         {
             var previous = stroke.Points[index - 1];
             var current = stroke.Points[index];
             var mappedPrev = MapPoint(transform, previous.X, previous.Y);
             var mappedCurrent = MapPoint(transform, current.X, current.Y);
-            var pressure = Math.Clamp((previous.Pressure + current.Pressure) * 0.5f, minPressure, maxPressure);
-            paint.StrokeWidth = Math.Max(0.4f, stroke.StrokeWidth * strokeScale * pressure);
+            var dtMs = Math.Max(1L, current.Timestamp - previous.Timestamp);
+            var dx = current.X - previous.X;
+            var dy = current.Y - previous.Y;
+            var distance = MathF.Sqrt((dx * dx) + (dy * dy));
+            var velocity = distance / dtMs;
+            var velocityFactor = Math.Clamp(1f - (velocity * (0.14f + (streamline * 0.35f))), 0.55f, 1.05f);
+            var targetPressure = Math.Clamp(((previous.Pressure + current.Pressure) * 0.5f) * velocityFactor, minPressure, maxPressure);
+            widthPressure = widthPressure + ((targetPressure - widthPressure) * smoothing);
+            paint.StrokeWidth = Math.Max(0.4f, stroke.StrokeWidth * strokeScale * widthPressure);
             canvas.DrawLine(mappedPrev, mappedCurrent, paint);
         }
     }

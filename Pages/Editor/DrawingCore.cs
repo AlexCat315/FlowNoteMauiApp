@@ -36,6 +36,12 @@ public partial class MainPage
         Lasso
     }
 
+    private enum ThumbnailLayoutMode
+    {
+        List,
+        Grid
+    }
+
     private sealed class InkToolState
     {
         public InkToolState(SKColor color, float width)
@@ -66,12 +72,16 @@ public partial class MainPage
     private const int ThumbnailRequestHeight = 320;
     private const int MaxOverlayThumbnailItems = 36;
     private const int MaxPlainThumbnailItems = 80;
+    private const int MaxGridThumbnailItems = 120;
     private const double ThumbnailPreviewWidth = 118d;
     private const double ThumbnailPreviewHeight = 168d;
     private const float MinPressureSensitivity = 0.4f;
     private const float MaxPressureSensitivity = 2.0f;
     private bool _thumbnailIncludeInkOverlay = true;
+    private ThumbnailLayoutMode _thumbnailLayoutMode = ThumbnailLayoutMode.List;
     private float _pressureSensitivity = 1f;
+    private float _colorWheelSaturation = 1f;
+    private float _colorWheelBrightness = 1f;
 
     private sealed class ThumbnailStrokeSnapshot
     {
