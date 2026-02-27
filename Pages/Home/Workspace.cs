@@ -416,18 +416,30 @@ public partial class MainPage
     {
         if (!EditorChromeView.IsVisible || !TopBarPanel.IsVisible)
         {
+            if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+            {
+                EditorChromeView.TranslationY = 0;
+            }
             EditorHost.Margin = Thickness.Zero;
             return;
         }
 
-        var topInset = TopBarPanel.Height;
+        // Include the chrome's Y offset so PDF content never peeks through above the top bar.
+        var chromeTopOffset = double.IsNaN(TopBarPanel.Y) ? 0d : Math.Max(0d, TopBarPanel.Y);
+        if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+        {
+            // Pull the custom chrome up into the native title-bar gap so the top background stays opaque.
+            EditorChromeView.TranslationY = -chromeTopOffset;
+            chromeTopOffset = 0d;
+        }
+        var topInset = chromeTopOffset + TopBarPanel.Height;
         if (DeviceInfo.Platform == DevicePlatform.Android)
         {
-            topInset = Math.Max(topInset, AndroidEditorTopInsetFallback);
+            topInset = Math.Max(topInset, chromeTopOffset + AndroidEditorTopInsetFallback);
         }
         else
         {
-            topInset = Math.Max(topInset, EditorTopInsetFallback);
+            topInset = Math.Max(topInset, chromeTopOffset + EditorTopInsetFallback);
         }
 
         if (topInset <= 0)
@@ -474,25 +486,33 @@ public partial class MainPage
         RenderHomeFeedInBatches(folders, CreateHomeFolderCard);
     }
 
-    private Color HomePreviewBackground => IsDarkTheme ? Color.FromArgb("#2A3B55") : Color.FromArgb("#E7EEF7");
-    private Color HomePreviewStroke => IsDarkTheme ? Color.FromArgb("#4B6281") : Color.FromArgb("#D3DCE9");
-    private Color HomePreviewPaperBackground => IsDarkTheme ? Color.FromArgb("#374D69") : Color.FromArgb("#FFFFFF");
+    private const double HomeCardWidth = 164d;
+    private const double HomeCardPreviewHeight = 206d;
+    private const float HomeCardCornerRadius = 16f;
+    private const float HomePreviewCornerRadius = 12f;
+    private Color HomeCardBackground => IsDarkTheme ? Color.FromArgb("#24374E") : Color.FromArgb("#FFFFFF");
+    private Color HomeCardStroke => IsDarkTheme ? Color.FromArgb("#415878") : Color.FromArgb("#D8E2EE");
+    private Color HomePreviewBackground => IsDarkTheme ? Color.FromArgb("#2D4360") : Color.FromArgb("#EBF1FA");
+    private Color HomePreviewStroke => IsDarkTheme ? Color.FromArgb("#4E6688") : Color.FromArgb("#CBD8EA");
+    private Color HomePreviewPaperBackground => IsDarkTheme ? Color.FromArgb("#3A526F") : Color.FromArgb("#FFFFFF");
+    private Color HomeMetaChipBackground => IsDarkTheme ? Color.FromArgb("#324A67") : Color.FromArgb("#EDF3FB");
+    private Color HomeMetaChipStroke => IsDarkTheme ? Color.FromArgb("#4A6486") : Color.FromArgb("#D8E2EE");
 
     private void RenderHomeEmptyState(string title, string description)
     {
         CancelHomeFeedRender();
         HomeNotesList.Children.Add(new Border
         {
-            WidthRequest = 280,
-            Margin = new Thickness(0, 8, 24, 18),
-            BackgroundColor = IsDarkTheme ? Color.FromArgb("#223349") : Color.FromArgb("#FFFFFF"),
-            Stroke = HomePreviewStroke,
+            WidthRequest = 300,
+            Margin = new Thickness(0, 8, 16, 18),
+            BackgroundColor = HomeCardBackground,
+            Stroke = HomeCardStroke,
             StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
-            Padding = new Thickness(16, 14),
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 14 },
+            Padding = new Thickness(18, 16),
             Content = new VerticalStackLayout
             {
-                Spacing = 8,
+                Spacing = 9,
                 Children =
                 {
                     new Label
@@ -566,111 +586,69 @@ public partial class MainPage
     private View CreateHomeFolderCard(string folderPath)
     {
         var folderName = folderPath.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? "/";
-
-        var card = new Border
-        {
-            WidthRequest = 130,
-            Margin = new Thickness(0, 0, 22, 20),
-            BackgroundColor = Colors.Transparent,
-            StrokeThickness = 0,
-            Padding = new Thickness(0)
-        };
+        var card = CreateHomeCardContainer();
 
         var content = new Grid
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = new GridLength(138) },
+                new RowDefinition { Height = new GridLength(HomeCardPreviewHeight) },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }
             },
-            RowSpacing = 6
+            RowSpacing = 8
         };
 
         var preview = new Border
         {
-            WidthRequest = 94,
-            HeightRequest = 138,
-            HorizontalOptions = LayoutOptions.Center,
+            HeightRequest = HomeCardPreviewHeight,
+            HorizontalOptions = LayoutOptions.Fill,
             BackgroundColor = HomePreviewBackground,
             Stroke = HomePreviewStroke,
             StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
-            Padding = new Thickness(8)
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = HomePreviewCornerRadius },
+            Padding = new Thickness(6)
         };
         preview.Content = new Border
         {
             BackgroundColor = HomePreviewPaperBackground,
             Stroke = IsDarkTheme ? Color.FromArgb("#5D779A") : Color.FromArgb("#D8E1EE"),
             StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = HomePreviewCornerRadius - 2f },
             Content = new Image
             {
                 Source = "icon_folder.png",
-                WidthRequest = 14,
-                HeightRequest = 14,
+                WidthRequest = 22,
+                HeightRequest = 22,
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center,
-                Opacity = 0.85
+                Opacity = 0.78
             }
         };
         content.Add(preview);
         Grid.SetRow(preview, 0);
 
-        var titleRow = new Grid
-        {
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = GridLength.Auto }
-            }
-        };
-        titleRow.Children.Add(new Label
+        var folderTitle = new Label
         {
             Text = folderName,
             FontFamily = "OpenSansSemibold",
-            FontSize = 12,
+            FontSize = 13,
             MaxLines = 2,
-            LineBreakMode = LineBreakMode.WordWrap,
-            HorizontalTextAlignment = TextAlignment.Center,
+            LineBreakMode = LineBreakMode.TailTruncation,
+            HorizontalTextAlignment = TextAlignment.Start,
             TextColor = ThemePrimaryText
-        });
-        var moreLabel = new Label
-        {
-            Text = "⋮",
-            FontSize = 15,
-            TextColor = ThemeSecondaryText
         };
-        titleRow.Children.Add(moreLabel);
-        Grid.SetColumn(moreLabel, 1);
-        content.Add(titleRow);
-        Grid.SetRow(titleRow, 1);
+        content.Children.Add(folderTitle);
+        Grid.SetRow(folderTitle, 1);
 
-        var metaGrid = new Grid
+        var metaRow = new HorizontalStackLayout
         {
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = GridLength.Star }
-            }
+            Spacing = 6
         };
-        metaGrid.Children.Add(new Label
-        {
-            Text = T("Folder", "Folder"),
-            FontSize = 10,
-            TextColor = ThemeSecondaryText
-        });
-        var dateLabel = new Label
-        {
-            Text = FormatDateForHome(DateTime.Now),
-            HorizontalTextAlignment = TextAlignment.End,
-            FontSize = 10,
-            TextColor = ThemeSecondaryText
-        };
-        metaGrid.Children.Add(dateLabel);
-        Grid.SetColumn(dateLabel, 1);
-        content.Add(metaGrid);
-        Grid.SetRow(metaGrid, 2);
+        metaRow.Children.Add(CreateHomeMetaChip(T("Folder", "Folder")));
+        metaRow.Children.Add(CreateHomeMetaChip(FormatDateForHome(DateTime.Now)));
+        content.Add(metaRow);
+        Grid.SetRow(metaRow, 2);
 
         card.Content = content;
         card.GestureRecognizers.Add(new TapGestureRecognizer
@@ -692,36 +670,28 @@ public partial class MainPage
     {
         var selected = note.Id == _currentNoteId;
         var batchSelected = _selectedHomeNoteIds.Contains(note.Id);
-        var card = new Border
-        {
-            WidthRequest = 130,
-            Margin = new Thickness(0, 0, 22, 20),
-            BackgroundColor = Colors.Transparent,
-            StrokeThickness = 0,
-            Padding = new Thickness(0)
-        };
+        var card = CreateHomeCardContainer(selected);
 
         var content = new Grid
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = new GridLength(138) },
+                new RowDefinition { Height = new GridLength(HomeCardPreviewHeight) },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }
             },
-            RowSpacing = 6
+            RowSpacing = 8
         };
 
         var preview = new Border
         {
-            WidthRequest = 94,
-            HeightRequest = 138,
-            HorizontalOptions = LayoutOptions.Center,
+            HeightRequest = HomeCardPreviewHeight,
+            HorizontalOptions = LayoutOptions.Fill,
             BackgroundColor = HomePreviewBackground,
             Stroke = selected ? Color.FromArgb("#4A90E2") : HomePreviewStroke,
             StrokeThickness = selected ? 1.5 : 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
-            Padding = new Thickness(8)
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = HomePreviewCornerRadius },
+            Padding = new Thickness(6)
         };
 
         var previewImage = new Image
@@ -734,11 +704,11 @@ public partial class MainPage
         var placeholderGlyph = new Image
         {
             Source = "icon_file.png",
-            WidthRequest = 14,
-            HeightRequest = 14,
+            WidthRequest = 18,
+            HeightRequest = 18,
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
-            Opacity = 0.28
+            Opacity = 0.24
         };
 
         preview.Content = new Border
@@ -746,7 +716,7 @@ public partial class MainPage
             BackgroundColor = HomePreviewPaperBackground,
             Stroke = IsDarkTheme ? Color.FromArgb("#5D779A") : Color.FromArgb("#D8E1EE"),
             StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = HomePreviewCornerRadius - 2f },
             Content = new Grid
             {
                 Children =
@@ -763,15 +733,17 @@ public partial class MainPage
             {
                 previewGrid.Children.Add(new Border
                 {
-                    WidthRequest = 20,
-                    HeightRequest = 20,
+                    WidthRequest = 21,
+                    HeightRequest = 21,
                     StrokeThickness = 1,
-                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 11 },
                     Stroke = batchSelected ? Color.FromArgb("#4A90E2") : Color.FromArgb("#9AA8BC"),
-                    BackgroundColor = batchSelected ? Color.FromArgb("#4A90E2") : Color.FromArgb("#E8EDF4"),
+                    BackgroundColor = batchSelected
+                        ? Color.FromArgb("#4A90E2")
+                        : (IsDarkTheme ? Color.FromArgb("#324860") : Color.FromArgb("#E8EDF4")),
                     HorizontalOptions = LayoutOptions.Start,
                     VerticalOptions = LayoutOptions.Start,
-                    Margin = new Thickness(4, 4, 0, 0),
+                    Margin = new Thickness(6, 6, 0, 0),
                     Padding = 0,
                     ZIndex = 9,
                     Content = new Label
@@ -785,22 +757,20 @@ public partial class MainPage
                 });
             }
 
-            var menuButton = new Button
+            var menuButton = new ImageButton
             {
-                Text = "⋮",
-                FontSize = 20,
-                FontFamily = "OpenSansSemibold",
-                WidthRequest = 30,
-                HeightRequest = 30,
-                MinimumWidthRequest = 30,
-                MinimumHeightRequest = 30,
-                Padding = 0,
-                CornerRadius = 15,
-                BackgroundColor = IsDarkTheme ? Color.FromArgb("#B3223349") : Color.FromArgb("#B3FFFFFF"),
-                TextColor = IsDarkTheme ? Color.FromArgb("#F2F2F7") : Color.FromArgb("#1C1C1E"),
+                Source = "home_more.png",
+                WidthRequest = 28,
+                HeightRequest = 28,
+                MinimumWidthRequest = 28,
+                MinimumHeightRequest = 28,
+                Padding = 6,
+                Aspect = Aspect.AspectFit,
+                CornerRadius = 14,
+                BackgroundColor = IsDarkTheme ? Color.FromArgb("#B62A3F58") : Color.FromArgb("#B8FFFFFF"),
                 HorizontalOptions = LayoutOptions.End,
                 VerticalOptions = LayoutOptions.Start,
-                Margin = new Thickness(0, 4, 4, 0),
+                Margin = new Thickness(0, 6, 6, 0),
                 ZIndex = 8
             };
 
@@ -855,16 +825,17 @@ public partial class MainPage
             {
                 new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = GridLength.Auto }
-            }
+            },
+            ColumnSpacing = 4
         };
         titleGrid.Children.Add(new Label
         {
             Text = note.Name,
             FontFamily = "OpenSansSemibold",
-            FontSize = 12,
+            FontSize = 13,
             MaxLines = 2,
-            LineBreakMode = LineBreakMode.WordWrap,
-            HorizontalTextAlignment = TextAlignment.Center,
+            LineBreakMode = LineBreakMode.TailTruncation,
+            HorizontalTextAlignment = TextAlignment.Start,
             TextColor = ThemePrimaryText
         });
         titleGrid.Children.Add(new Label
@@ -879,25 +850,16 @@ public partial class MainPage
         {
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Star }
-            }
+            },
+            ColumnSpacing = 6
         };
-        metaGrid.Children.Add(new Label
-        {
-            Text = TF("PageCountFormat", "{0} pages", EstimatePages(note)),
-            FontSize = 10,
-            TextColor = ThemeSecondaryText
-        });
-        var dateLabel = new Label
-        {
-            Text = FormatDateForHome(note.LastOpenedAtUtc),
-            HorizontalTextAlignment = TextAlignment.End,
-            FontSize = 10,
-            TextColor = ThemeSecondaryText
-        };
-        metaGrid.Children.Add(dateLabel);
-        Grid.SetColumn(dateLabel, 1);
+        metaGrid.Children.Add(CreateHomeMetaChip(TF("PageCountFormat", "{0} pages", EstimatePages(note))));
+        var dateChip = CreateHomeMetaChip(FormatDateForHome(note.LastOpenedAtUtc));
+        metaGrid.Children.Add(dateChip);
+        Grid.SetColumn(dateChip, 1);
         content.Add(metaGrid);
         Grid.SetRow(metaGrid, 2);
 
@@ -930,6 +892,40 @@ public partial class MainPage
         });
 
         return card;
+    }
+
+    private Border CreateHomeCardContainer(bool selected = false)
+    {
+        return new Border
+        {
+            WidthRequest = HomeCardWidth,
+            Margin = new Thickness(0, 0, 14, 18),
+            BackgroundColor = HomeCardBackground,
+            Stroke = selected ? Color.FromArgb("#4A90E2") : HomeCardStroke,
+            StrokeThickness = selected ? 1.6 : 1,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = HomeCardCornerRadius },
+            Padding = new Thickness(10, 10, 10, 9)
+        };
+    }
+
+    private Border CreateHomeMetaChip(string text)
+    {
+        return new Border
+        {
+            BackgroundColor = HomeMetaChipBackground,
+            Stroke = HomeMetaChipStroke,
+            StrokeThickness = 1,
+            Padding = new Thickness(7, 3),
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+            Content = new Label
+            {
+                Text = text,
+                FontSize = 10,
+                LineBreakMode = LineBreakMode.TailTruncation,
+                MaxLines = 1,
+                TextColor = ThemeSecondaryText
+            }
+        };
     }
 
     private void ToggleHomeSelection(string noteId)

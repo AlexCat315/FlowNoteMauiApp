@@ -20,6 +20,18 @@
         CascadeInputTransparent="False"
         
     >
+        <!-- Solid top backdrop to prevent PDF content from bleeding through system/title-bar inset area. -->
+        <Border
+            HeightRequest="112"
+            VerticalOptions="Start"
+            HorizontalOptions="Fill"
+            InputTransparent="True"
+            BackgroundColor="{AppThemeBinding Light=#F7F8FB, Dark=#162334}"
+            Stroke="Transparent"
+            StrokeThickness="0"
+            StrokeShape="RoundRectangle 0"
+            ZIndex="210"
+        />
         <Border
             x:Name="TopBarPanel"
             IsVisible="False"
@@ -34,7 +46,7 @@
             Stroke="Transparent"
             StrokeThickness="0"
             StrokeShape="RoundRectangle 0"
-            Opacity="0.995"
+            Opacity="1"
         >
             <Grid
                 RowDefinitions="Auto,Auto,1"

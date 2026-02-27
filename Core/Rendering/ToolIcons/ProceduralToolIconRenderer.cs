@@ -106,8 +106,8 @@ public static class ProceduralToolIconRenderer
     private static void DrawToolScene(SKCanvas canvas, ToolIconKind toolKind, SKColor accentColor, int size)
     {
         // 使用矩阵变换替代 Save/Restore，减少状态栈操作
-        var matrix = SKMatrix.CreateTranslation(0, size);
-        matrix = matrix.PostConcat(SKMatrix.CreateScale(1f, -1f));
+        var matrix = SKMatrix.CreateScale(1f, -1f);
+        matrix = matrix.PostConcat(SKMatrix.CreateTranslation(0, size));
         canvas.SetMatrix(matrix);
 
         DrawToolUpright(canvas, toolKind, accentColor, size);

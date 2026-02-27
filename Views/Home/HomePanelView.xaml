@@ -26,7 +26,7 @@
         >
         <Grid
                 Grid.Row="0"
-                Padding="20,9,20,9"
+                Padding="18,10,18,10"
                 ColumnDefinitions="Auto,*,Auto"
                 ColumnSpacing="10"
             >
@@ -91,73 +91,81 @@
             />
     </Grid>
 
-    <Grid Grid.Row="1" Padding="20,12,20,8" ColumnDefinitions="*">
-        <HorizontalStackLayout HorizontalOptions="Center" Spacing="20">
-            <VerticalStackLayout Spacing="5">
+    <Grid Grid.Row="1" Padding="18,10,18,10" ColumnDefinitions="*">
+        <Border
+                Padding="12,8"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{AppThemeBinding Light=#EEF3FB, Dark=#263A52}"
+                Stroke="{AppThemeBinding Light=#D9E2EF, Dark=#3D5777}"
+                StrokeThickness="1"
+            >
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="18">
+                <VerticalStackLayout Spacing="5">
                 <Button
-                        x:Name="FilterAllButton"
-                        Style="{StaticResource FilterTabButton}"
-                        Text="全部"
-                    />
+                            x:Name="FilterAllButton"
+                            Style="{StaticResource FilterTabButton}"
+                            Text="全部"
+                        />
                 <BoxView
-                        x:Name="FilterAllIndicator"
-                        HeightRequest="2"
-                        WidthRequest="30"
-                        HorizontalOptions="Center"
-                        Color="{StaticResource PrimaryBlue}"
-                    />
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="5">
+                            x:Name="FilterAllIndicator"
+                            HeightRequest="2"
+                            WidthRequest="30"
+                            HorizontalOptions="Center"
+                            Color="{StaticResource PrimaryBlue}"
+                        />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="5">
                 <Button
-                        x:Name="FilterPdfButton"
-                        Style="{StaticResource FilterTabButton}"
-                        Text="PDF"
-                    />
+                            x:Name="FilterPdfButton"
+                            Style="{StaticResource FilterTabButton}"
+                            Text="PDF"
+                        />
                 <BoxView
-                        x:Name="FilterPdfIndicator"
-                        HeightRequest="2"
-                        WidthRequest="30"
-                        HorizontalOptions="Center"
-                        Color="{StaticResource PrimaryBlue}"
-                        IsVisible="False"
-                    />
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="5">
+                            x:Name="FilterPdfIndicator"
+                            HeightRequest="2"
+                            WidthRequest="30"
+                            HorizontalOptions="Center"
+                            Color="{StaticResource PrimaryBlue}"
+                            IsVisible="False"
+                        />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="5">
                 <Button
-                        x:Name="FilterNoteButton"
-                        Style="{StaticResource FilterTabButton}"
-                        Text="笔记"
-                    />
+                            x:Name="FilterNoteButton"
+                            Style="{StaticResource FilterTabButton}"
+                            Text="笔记"
+                        />
                 <BoxView
-                        x:Name="FilterNoteIndicator"
-                        HeightRequest="2"
-                        WidthRequest="30"
-                        HorizontalOptions="Center"
-                        Color="{StaticResource PrimaryBlue}"
-                        IsVisible="False"
-                    />
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="5">
+                            x:Name="FilterNoteIndicator"
+                            HeightRequest="2"
+                            WidthRequest="30"
+                            HorizontalOptions="Center"
+                            Color="{StaticResource PrimaryBlue}"
+                            IsVisible="False"
+                        />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="5">
                 <Button
-                        x:Name="FilterFolderButton"
-                        Style="{StaticResource FilterTabButton}"
-                        Text="文件夹"
-                    />
+                            x:Name="FilterFolderButton"
+                            Style="{StaticResource FilterTabButton}"
+                            Text="文件夹"
+                        />
                 <BoxView
-                        x:Name="FilterFolderIndicator"
-                        HeightRequest="2"
-                        WidthRequest="36"
-                        HorizontalOptions="Center"
-                        Color="{StaticResource PrimaryBlue}"
-                        IsVisible="False"
-                    />
-            </VerticalStackLayout>
-        </HorizontalStackLayout>
+                            x:Name="FilterFolderIndicator"
+                            HeightRequest="2"
+                            WidthRequest="36"
+                            HorizontalOptions="Center"
+                            Color="{StaticResource PrimaryBlue}"
+                            IsVisible="False"
+                        />
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+        </Border>
     </Grid>
 
     <Grid Grid.Row="2">
         <ScrollView>
-            <VerticalStackLayout Spacing="8" Padding="44,4,44,120">
+            <VerticalStackLayout Spacing="0" Padding="20,8,20,120">
                 <FlexLayout
                         x:Name="HomeNotesList"
                         Direction="Row"
@@ -173,7 +181,7 @@
                 HorizontalOptions="End"
                 VerticalOptions="End"
                 Spacing="12"
-                Margin="0,0,30,24"
+                Margin="0,0,24,22"
             >
             <ImageButton
                     x:Name="QuickPenButton"

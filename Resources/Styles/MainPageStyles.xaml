@@ -232,16 +232,91 @@
         </Setter>
     </Style>
 
-    <Style
-        x:Key="DrawerItemButton"
-        TargetType="Button"
-        BasedOn="{StaticResource BaseButtonStyle}"
-    >
+    <Style x:Key="DrawerOverlayPanel" TargetType="Border">
+        <Setter
+            Property="BackgroundColor"
+            Value="{AppThemeBinding Light={StaticResource SurfaceSoft}, Dark={StaticResource SurfaceSoftDark}}"
+        />
+        <Setter
+            Property="Stroke"
+            Value="{AppThemeBinding Light=#D8E1EF, Dark=#3D5471}"
+        />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 22" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#300D1A2B" Radius="22" Offset="0,8" Opacity="0.9" />
+        </Setter>
+    </Style>
+
+    <Style x:Key="DrawerSectionCard" TargetType="Border">
+        <Setter
+            Property="BackgroundColor"
+            Value="{AppThemeBinding Light=#FFFFFF, Dark=#27384F}"
+        />
+        <Setter
+            Property="Stroke"
+            Value="{AppThemeBinding Light=#DDE5F1, Dark=#425A78}"
+        />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+        <Setter Property="Padding" Value="8,6" />
+    </Style>
+
+    <Style x:Key="DrawerSectionTitleLabel" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Margin" Value="2,8,0,0" />
+        <Setter
+            Property="TextColor"
+            Value="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}"
+        />
+    </Style>
+
+    <Style x:Key="DrawerItemButton" TargetType="Button">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter
+            Property="TextColor"
+            Value="{AppThemeBinding Light=#1F2A3A, Dark=#F2F5FA}"
+        />
         <Setter Property="HorizontalOptions" Value="Fill" />
         <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="BorderWidth" Value="0" />
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="Padding" Value="10,11" />
-        <Setter Property="FontSize" Value="15" />
+        <Setter Property="ImageSource" Value="icon_file.png" />
+        <Setter Property="ContentLayout" Value="Left,10" />
+        <Setter Property="MinimumHeightRequest" Value="42" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <Setter
+                                Property="BackgroundColor"
+                                Value="Transparent"
+                            />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="PointerOver">
+                        <VisualState.Setters>
+                            <Setter
+                                Property="BackgroundColor"
+                                Value="{AppThemeBinding Light=#EEF4FD, Dark=#344A66}"
+                            />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter
+                                Property="BackgroundColor"
+                                Value="{AppThemeBinding Light=#E5EEFB, Dark=#3A5370}"
+                            />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
     </Style>
 
     <Style x:Key="SettingRow" TargetType="Border">
