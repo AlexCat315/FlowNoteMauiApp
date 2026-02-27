@@ -19,7 +19,7 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid IsClippedToBounds="False">
+    <Grid>
         <Grid x:Name="EditorHost" ZIndex="0" />
 
         <homeViews:HomePanelView x:Name="HomePanelView" />

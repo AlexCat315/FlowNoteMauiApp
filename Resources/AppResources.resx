@@ -747,4 +747,67 @@ Unlock full note workflow</value>
   <data name="EraserModeLasso" xml:space="preserve">
     <value>Lasso</value>
   </data>
+  <data name="FeatureTrashOpened" xml:space="preserve">
+    <value>Trash opened.</value>
+  </data>
+  <data name="RestoreFromTrash" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="MovedToTrash" xml:space="preserve">
+    <value>Moved to trash.</value>
+  </data>
+  <data name="RestoredFromTrash" xml:space="preserve">
+    <value>Restored from trash.</value>
+  </data>
+  <data name="RenameAction" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="RenamePrompt" xml:space="preserve">
+    <value>Enter a new name</value>
+  </data>
+  <data name="SaveAction" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="RenameSuccess" xml:space="preserve">
+    <value>Renamed.</value>
+  </data>
+  <data name="RenameFailed" xml:space="preserve">
+    <value>Rename failed.</value>
+  </data>
+  <data name="ChangeCoverAction" xml:space="preserve">
+    <value>Change Cover</value>
+  </data>
+  <data name="ChangeCoverSuccess" xml:space="preserve">
+    <value>Cover updated.</value>
+  </data>
+  <data name="ChangeCoverFailed" xml:space="preserve">
+    <value>Failed to update cover.</value>
+  </data>
+  <data name="RefreshCover" xml:space="preserve">
+    <value>Refresh Cover</value>
+  </data>
+  <data name="RefreshCoverQueued" xml:space="preserve">
+    <value>Cover refresh queued.</value>
+  </data>
+  <data name="MoveToTrash" xml:space="preserve">
+    <value>Move to Trash</value>
+  </data>
+  <data name="OpenNoteContentFailed" xml:space="preserve">
+    <value>Cannot open note content.</value>
+  </data>
+  <data name="OpenedNoteFormat" xml:space="preserve">
+    <value>Opened: {0}</value>
+  </data>
+  <data name="AboutAppName" xml:space="preserve">
+    <value>FlowNote MAUI Demo v1.0</value>
+  </data>
+  <data name="HomeNoteKeyword1" xml:space="preserve">
+    <value>note</value>
+  </data>
+  <data name="HomeNoteKeyword2" xml:space="preserve">
+    <value>handwriting</value>
+  </data>
+  <data name="HomeNoteKeyword3" xml:space="preserve">
+    <value>class</value>
+  </data>
 </root>

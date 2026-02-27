@@ -22,6 +22,12 @@ public partial class MainPage
 
     private void BindHomeCoverPreview(WorkspaceNote note, Image previewImage, Image? placeholderImage = null)
     {
+        if (TryLoadCustomHomeCover(note.Id, out var customSource))
+        {
+            ApplyHomeCoverSource(previewImage, placeholderImage, customSource);
+            return;
+        }
+
         var cacheKey = BuildHomeCoverCacheKey(note);
         if (_homeCoverSourceCache.TryGetValue(cacheKey, out var cachedSource))
         {
@@ -199,13 +205,30 @@ public partial class MainPage
             return baseCoverBytes;
 
         DrawingDocumentState? state = null;
-        try
+        if (string.Equals(note.Id, _currentNoteId, StringComparison.Ordinal) && IsEditorInitialized)
         {
-            state = await _drawingPersistenceService.LoadAsync(note.Id).ConfigureAwait(false);
+            try
+            {
+                state = await MainThread
+                    .InvokeOnMainThreadAsync(() => DrawingCanvas.ExportState())
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[HomeCover] live ink-state export failed for {note.Id}: {ex.Message}");
+            }
         }
-        catch (Exception ex)
+
+        if (state is null)
         {
-            Debug.WriteLine($"[HomeCover] ink-state load failed for {note.Id}: {ex.Message}");
+            try
+            {
+                state = await _drawingPersistenceService.LoadAsync(note.Id).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[HomeCover] ink-state load failed for {note.Id}: {ex.Message}");
+            }
         }
 
         if (state is null || state.Layers.Count == 0 || token.IsCancellationRequested)
@@ -462,11 +485,14 @@ public partial class MainPage
         }
     }
 
-    private static string BuildHomeCoverCacheKey(WorkspaceNote note)
+    private string BuildHomeCoverCacheKey(WorkspaceNote note)
     {
         var version = note.ModifiedAtUtc.Ticks <= 0 ? note.CreatedAtUtc.Ticks : note.ModifiedAtUtc.Ticks;
         var inkVersion = ResolveInkStateVersionTicks(note.Id);
-        return $"{note.Id}_{version}_{inkVersion}";
+        var liveRevision = _liveInkRevisionByNoteId.TryGetValue(note.Id, out var revision)
+            ? revision
+            : 0L;
+        return $"{note.Id}_{version}_{inkVersion}_{liveRevision}";
     }
 
     private static string ResolveHomeCoverCacheDirectory()
@@ -475,9 +501,21 @@ public partial class MainPage
         return Path.Combine(cacheRoot, "home-covers");
     }
 
+    private static string ResolveCustomHomeCoverDirectory()
+    {
+        var cacheRoot = FileSystem.Current.AppDataDirectory;
+        return Path.Combine(cacheRoot, "home-custom-covers");
+    }
+
     private static string BuildHomeCoverFilePath(string cacheKey)
     {
         return Path.Combine(ResolveHomeCoverCacheDirectory(), $"{cacheKey}.png");
+    }
+
+    private static string BuildCustomHomeCoverPath(string noteId)
+    {
+        var safeId = noteId.Trim().Replace('/', '_').Replace('\\', '_');
+        return Path.Combine(ResolveCustomHomeCoverDirectory(), $"{safeId}.png");
     }
 
     private static bool TryLoadHomeCoverFromDisk(string cacheKey, out ImageSource source)
@@ -486,6 +524,31 @@ public partial class MainPage
         try
         {
             var path = BuildHomeCoverFilePath(cacheKey);
+            if (!File.Exists(path))
+                return false;
+
+            var bytes = File.ReadAllBytes(path);
+            if (bytes.Length == 0)
+                return false;
+
+            source = ImageSource.FromStream(() => new MemoryStream(bytes));
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool TryLoadCustomHomeCover(string noteId, out ImageSource source)
+    {
+        source = null!;
+        if (string.IsNullOrWhiteSpace(noteId))
+            return false;
+
+        try
+        {
+            var path = BuildCustomHomeCoverPath(noteId);
             if (!File.Exists(path))
                 return false;
 
@@ -620,6 +683,49 @@ public partial class MainPage
             catch
             {
             }
+        }
+    }
+
+    private async Task<bool> SetCustomHomeCoverAsync(string noteId, FileResult pickedImage, CancellationToken token = default)
+    {
+        if (string.IsNullOrWhiteSpace(noteId))
+            return false;
+
+        try
+        {
+            await using var stream = await pickedImage.OpenReadAsync();
+            using var memory = new MemoryStream();
+            await stream.CopyToAsync(memory, token).ConfigureAwait(false);
+            var raw = memory.ToArray();
+            if (raw.Length == 0)
+                return false;
+
+            using var bitmap = SKBitmap.Decode(raw);
+            if (bitmap is null || bitmap.Width <= 0 || bitmap.Height <= 0)
+                return false;
+
+            const int targetWidth = 376;
+            const int targetHeight = 528;
+            using var resized = bitmap.Resize(
+                new SKImageInfo(targetWidth, targetHeight),
+                new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
+            using var finalBitmap = resized ?? bitmap.Copy();
+            using var image = SKImage.FromBitmap(finalBitmap);
+            using var encoded = image.Encode(SKEncodedImageFormat.Png, 96);
+            var bytes = encoded?.ToArray();
+            if (bytes is null || bytes.Length == 0)
+                return false;
+
+            var directory = ResolveCustomHomeCoverDirectory();
+            Directory.CreateDirectory(directory);
+            var path = BuildCustomHomeCoverPath(noteId);
+            await File.WriteAllBytesAsync(path, bytes, token).ConfigureAwait(false);
+            InvalidateHomeCoverCacheForNote(noteId);
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 }

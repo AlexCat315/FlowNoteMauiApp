@@ -1,6 +1,7 @@
 using Flow.PDFView.Abstractions;
 using FlowNoteMauiApp.Models;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 
 namespace FlowNoteMauiApp;
 
@@ -250,7 +251,7 @@ public partial class MainPage
 
         if (bytes is null || bytes.Length == 0)
         {
-            ShowStatus("Cannot open note content.");
+            ShowStatus(T("OpenNoteContentFailed", "Cannot open note content."));
             return;
         }
 
@@ -278,12 +279,13 @@ public partial class MainPage
         if (requestVersion != _openWorkspaceNoteRequestVersion)
             return;
 
-        ShowStatus($"Opened: {note.Name}");
+        ShowStatus(TF("OpenedNoteFormat", "Opened: {0}", note.Name));
     }
 
     private async Task RefreshWorkspaceViewsAsync()
     {
         var homeNotes = await _workspaceService.GetRecentNotesAsync(120);
+        var trashedNotes = await _workspaceService.GetTrashedNotesAsync(200);
         var recent = homeNotes.Take(6).ToList();
         var browse = await _workspaceService.BrowseAsync(_workspaceFolder);
 
@@ -296,6 +298,7 @@ public partial class MainPage
         }
 
         _cachedHomeNotes = homeNotes;
+        _cachedTrashedNotes = trashedNotes;
         _cachedHomeFolders = browse.SubFolders;
         RefreshHomeFeed();
     }
@@ -710,6 +713,69 @@ public partial class MainPage
                 }
             }
         };
+        if (preview.Content is Border previewPaper
+            && previewPaper.Content is Grid previewGrid)
+        {
+            var menuButton = new Button
+            {
+                Text = "⋮",
+                FontSize = 20,
+                FontFamily = "OpenSansSemibold",
+                WidthRequest = 30,
+                HeightRequest = 30,
+                MinimumWidthRequest = 30,
+                MinimumHeightRequest = 30,
+                Padding = 0,
+                CornerRadius = 15,
+                BackgroundColor = IsDarkTheme ? Color.FromArgb("#B3223349") : Color.FromArgb("#B3FFFFFF"),
+                TextColor = IsDarkTheme ? Color.FromArgb("#F2F2F7") : Color.FromArgb("#1C1C1E"),
+                HorizontalOptions = LayoutOptions.End,
+                VerticalOptions = LayoutOptions.Start,
+                Margin = new Thickness(0, 4, 4, 0),
+                ZIndex = 8
+            };
+
+            CancellationTokenSource? longPressCts = null;
+            var handledByLongPress = false;
+            menuButton.Pressed += (_, _) =>
+            {
+                handledByLongPress = false;
+                longPressCts?.Cancel();
+                longPressCts?.Dispose();
+                longPressCts = new CancellationTokenSource();
+                var token = longPressCts.Token;
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await Task.Delay(430, token).ConfigureAwait(false);
+                        if (token.IsCancellationRequested)
+                            return;
+
+                        handledByLongPress = true;
+                        await MainThread.InvokeOnMainThreadAsync(async () =>
+                        {
+                            await ShowHomeNoteActionsAsync(note);
+                        });
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                }, token);
+            };
+            menuButton.Released += (_, _) =>
+            {
+                longPressCts?.Cancel();
+            };
+            menuButton.Clicked += async (_, _) =>
+            {
+                if (handledByLongPress)
+                    return;
+                await ShowHomeNoteActionsAsync(note);
+            };
+
+            previewGrid.Children.Add(menuButton);
+        }
         content.Add(preview);
         Grid.SetRow(preview, 0);
         BindHomeCoverPreview(note, previewImage, placeholderGlyph);
@@ -732,15 +798,11 @@ public partial class MainPage
             HorizontalTextAlignment = TextAlignment.Center,
             TextColor = ThemePrimaryText
         });
-        var chevron = new Label
+        titleGrid.Children.Add(new Label
         {
-            Text = "⋮",
-            FontSize = 15,
-            TextColor = ThemeSecondaryText,
-            VerticalOptions = LayoutOptions.Start
-        };
-        titleGrid.Children.Add(chevron);
-        Grid.SetColumn(chevron, 1);
+            Text = string.Empty,
+            WidthRequest = 14
+        });
         content.Add(titleGrid);
         Grid.SetRow(titleGrid, 1);
 
@@ -775,6 +837,12 @@ public partial class MainPage
         {
             Command = new Command(async () =>
             {
+                if (_isTrashView)
+                {
+                    await ShowHomeNoteActionsAsync(note);
+                    return;
+                }
+
                 try
                 {
                     await OpenWorkspaceNoteAsync(note);
@@ -787,6 +855,123 @@ public partial class MainPage
         });
 
         return card;
+    }
+
+    private async Task ShowHomeNoteActionsAsync(WorkspaceNote note)
+    {
+        if (_isTrashView)
+        {
+            var trashAction = await DisplayActionSheet(
+                note.Name,
+                T("CancelAction", "Cancel"),
+                null,
+                T("RestoreFromTrash", "Restore"));
+            if (trashAction == T("RestoreFromTrash", "Restore"))
+            {
+                var restored = await _workspaceService.RestoreFromTrashAsync(note.Id);
+                if (restored)
+                {
+                    ShowStatus(T("RestoredFromTrash", "Restored from trash."));
+                    await RefreshWorkspaceViewsAsync();
+                }
+            }
+
+            return;
+        }
+
+        var action = await DisplayActionSheet(
+            note.Name,
+            T("CancelAction", "Cancel"),
+            null,
+            T("RenameAction", "Rename"),
+            T("ChangeCoverAction", "Change Cover"),
+            T("RefreshCover", "Refresh Cover"),
+            T("MoveToTrash", "Move to Trash"));
+
+        if (action == T("RenameAction", "Rename"))
+        {
+            var updatedName = await DisplayPromptAsync(
+                T("RenameAction", "Rename"),
+                T("RenamePrompt", "Enter a new name"),
+                T("SaveAction", "Save"),
+                T("CancelAction", "Cancel"),
+                note.Name,
+                maxLength: 120);
+            if (!string.IsNullOrWhiteSpace(updatedName))
+            {
+                var renamed = await _workspaceService.RenameNoteAsync(note.Id, updatedName);
+                if (renamed)
+                {
+                    ShowStatus(T("RenameSuccess", "Renamed."));
+                    await RefreshWorkspaceViewsAsync();
+                }
+                else
+                {
+                    ShowStatus(T("RenameFailed", "Rename failed."));
+                }
+            }
+
+            return;
+        }
+
+        if (action == T("RefreshCover", "Refresh Cover"))
+        {
+            InvalidateHomeCoverCacheForNote(note.Id);
+            var pdfBytes = await _workspaceService.GetPdfBytesAsync(note.Id);
+            if (pdfBytes is { Length: > 0 })
+            {
+                QueuePrimeHomeCoverCache(note, pdfBytes);
+                ShowStatus(T("RefreshCoverQueued", "Cover refresh queued."));
+                await RefreshWorkspaceViewsAsync();
+            }
+
+            return;
+        }
+
+        if (action == T("ChangeCoverAction", "Change Cover"))
+        {
+            try
+            {
+                var result = await FilePicker.Default.PickAsync(new PickOptions
+                {
+                    PickerTitle = T("ChangeCoverAction", "Change Cover"),
+                    FileTypes = FilePickerFileType.Images
+                });
+                if (result is null)
+                    return;
+
+                var saved = await SetCustomHomeCoverAsync(note.Id, result);
+                if (saved)
+                {
+                    ShowStatus(T("ChangeCoverSuccess", "Cover updated."));
+                    await RefreshWorkspaceViewsAsync();
+                }
+                else
+                {
+                    ShowStatus(T("ChangeCoverFailed", "Failed to update cover."));
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatus($"{T("ChangeCoverFailed", "Failed to update cover.")} {ex.Message}");
+            }
+
+            return;
+        }
+
+        if (action == T("MoveToTrash", "Move to Trash"))
+        {
+            var moved = await _workspaceService.MoveToTrashAsync(note.Id);
+            if (moved)
+            {
+                if (string.Equals(_currentNoteId, note.Id, StringComparison.Ordinal))
+                {
+                    _currentNoteId = null;
+                }
+                ShowStatus(T("MovedToTrash", "Moved to trash."));
+                await RefreshWorkspaceViewsAsync();
+            }
+        }
     }
 
     private static int EstimatePages(WorkspaceNote note)

@@ -743,4 +743,67 @@
   <data name="EraserModeLasso" xml:space="preserve">
     <value>圈选擦除</value>
   </data>
+  <data name="FeatureTrashOpened" xml:space="preserve">
+    <value>已打开回收站。</value>
+  </data>
+  <data name="RestoreFromTrash" xml:space="preserve">
+    <value>恢复</value>
+  </data>
+  <data name="MovedToTrash" xml:space="preserve">
+    <value>已移入回收站。</value>
+  </data>
+  <data name="RestoredFromTrash" xml:space="preserve">
+    <value>已从回收站恢复。</value>
+  </data>
+  <data name="RenameAction" xml:space="preserve">
+    <value>重命名</value>
+  </data>
+  <data name="RenamePrompt" xml:space="preserve">
+    <value>请输入新名称</value>
+  </data>
+  <data name="SaveAction" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="RenameSuccess" xml:space="preserve">
+    <value>重命名成功。</value>
+  </data>
+  <data name="RenameFailed" xml:space="preserve">
+    <value>重命名失败。</value>
+  </data>
+  <data name="ChangeCoverAction" xml:space="preserve">
+    <value>更换封面</value>
+  </data>
+  <data name="ChangeCoverSuccess" xml:space="preserve">
+    <value>封面已更新。</value>
+  </data>
+  <data name="ChangeCoverFailed" xml:space="preserve">
+    <value>更新封面失败。</value>
+  </data>
+  <data name="RefreshCover" xml:space="preserve">
+    <value>刷新封面</value>
+  </data>
+  <data name="RefreshCoverQueued" xml:space="preserve">
+    <value>已加入封面刷新队列。</value>
+  </data>
+  <data name="MoveToTrash" xml:space="preserve">
+    <value>移入回收站</value>
+  </data>
+  <data name="OpenNoteContentFailed" xml:space="preserve">
+    <value>无法打开文档内容。</value>
+  </data>
+  <data name="OpenedNoteFormat" xml:space="preserve">
+    <value>已打开：{0}</value>
+  </data>
+  <data name="AboutAppName" xml:space="preserve">
+    <value>FlowNote MAUI 演示版 v1.0</value>
+  </data>
+  <data name="HomeNoteKeyword1" xml:space="preserve">
+    <value>笔记</value>
+  </data>
+  <data name="HomeNoteKeyword2" xml:space="preserve">
+    <value>手写</value>
+  </data>
+  <data name="HomeNoteKeyword3" xml:space="preserve">
+    <value>课堂</value>
+  </data>
 </root>

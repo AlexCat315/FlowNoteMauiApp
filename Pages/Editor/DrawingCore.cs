@@ -63,6 +63,7 @@ public partial class MainPage
     private readonly Dictionary<string, ImageSource> _thumbnailSourceCache = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _thumbnailRenderSemaphore = new(2, 2);
     private readonly ConcurrentDictionary<int, PdfPageBounds> _pageBoundsCache = new();
+    private readonly ConcurrentDictionary<string, long> _liveInkRevisionByNoteId = new(StringComparer.Ordinal);
     private CancellationTokenSource? _thumbnailLoadCts;
     private readonly Dictionary<int, Border> _thumbnailItemLookup = new();
     private int _thumbnailWindowStart = -1;
@@ -94,10 +95,10 @@ public partial class MainPage
     }
     private readonly Dictionary<InkToolKind, InkToolState> _inkToolStates = new()
     {
-        [InkToolKind.Ballpoint] = new InkToolState(SKColors.Black, 3f),
-        [InkToolKind.Fountain] = new InkToolState(SKColors.Blue, 3.5f),
-        [InkToolKind.Pencil] = new InkToolState(SKColors.Black, 2.2f),
-        [InkToolKind.Marker] = new InkToolState(SKColors.Green, 6f),
+        [InkToolKind.Ballpoint] = new InkToolState(SKColors.Black, 4.5f),
+        [InkToolKind.Fountain] = new InkToolState(SKColors.Blue, 5f),
+        [InkToolKind.Pencil] = new InkToolState(SKColors.Black, 3f),
+        [InkToolKind.Marker] = new InkToolState(SKColors.Green, 8f),
         [InkToolKind.Eraser] = new InkToolState(SKColors.Transparent, 10f)
     };
 

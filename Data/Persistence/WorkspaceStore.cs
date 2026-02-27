@@ -36,6 +36,7 @@ public sealed class WorkspaceStore : IWorkspaceService
         {
             var index = await LoadIndexLockedAsync();
             return index.Notes
+                .Where(n => !n.IsTrashed)
                 .OrderByDescending(n => n.LastOpenedAtUtc)
                 .ThenByDescending(n => n.ModifiedAtUtc)
                 .Take(Math.Max(1, limit))
@@ -61,7 +62,8 @@ public sealed class WorkspaceStore : IWorkspaceService
                 .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
                 .ToList();
             var notes = index.Notes
-                .Where(n => string.Equals(n.FolderPath, folder, StringComparison.OrdinalIgnoreCase))
+                .Where(n => !n.IsTrashed
+                    && string.Equals(n.FolderPath, folder, StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(n => n.ModifiedAtUtc)
                 .ThenBy(n => n.Name, StringComparer.OrdinalIgnoreCase)
                 .Select(CloneNote)
@@ -191,11 +193,110 @@ public sealed class WorkspaceStore : IWorkspaceService
         {
             var index = await LoadIndexLockedAsync();
             var note = index.Notes.FirstOrDefault(n => n.Id == noteId);
-            if (note is null)
+            if (note is null || note.IsTrashed)
                 return;
 
             note.LastOpenedAtUtc = DateTime.UtcNow;
             await SaveIndexLockedAsync(index);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<IReadOnlyList<WorkspaceNote>> GetTrashedNotesAsync(int limit = 200)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var index = await LoadIndexLockedAsync();
+            return index.Notes
+                .Where(n => n.IsTrashed)
+                .OrderByDescending(n => n.TrashedAtUtc ?? n.ModifiedAtUtc)
+                .ThenByDescending(n => n.ModifiedAtUtc)
+                .Take(Math.Max(1, limit))
+                .Select(CloneNote)
+                .ToList();
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<bool> MoveToTrashAsync(string noteId)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var index = await LoadIndexLockedAsync();
+            var note = index.Notes.FirstOrDefault(n => n.Id == noteId);
+            if (note is null)
+                return false;
+
+            if (note.IsTrashed)
+                return true;
+
+            note.IsTrashed = true;
+            note.TrashedAtUtc = DateTime.UtcNow;
+            note.ModifiedAtUtc = DateTime.UtcNow;
+            await SaveIndexLockedAsync(index);
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<bool> RestoreFromTrashAsync(string noteId)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var index = await LoadIndexLockedAsync();
+            var note = index.Notes.FirstOrDefault(n => n.Id == noteId);
+            if (note is null)
+                return false;
+
+            if (!note.IsTrashed)
+                return true;
+
+            note.IsTrashed = false;
+            note.TrashedAtUtc = null;
+            note.ModifiedAtUtc = DateTime.UtcNow;
+            await SaveIndexLockedAsync(index);
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<bool> RenameNoteAsync(string noteId, string newName)
+    {
+        var sanitized = SanitizeNoteName(newName);
+        if (string.IsNullOrWhiteSpace(sanitized))
+            return false;
+
+        await _gate.WaitAsync();
+        try
+        {
+            var index = await LoadIndexLockedAsync();
+            var note = index.Notes.FirstOrDefault(n => n.Id == noteId);
+            if (note is null)
+                return false;
+
+            var uniqueName = BuildUniqueNoteName(
+                index.Notes.Where(n => !string.Equals(n.Id, noteId, StringComparison.Ordinal)).ToList(),
+                note.FolderPath,
+                sanitized);
+            note.Name = uniqueName;
+            note.ModifiedAtUtc = DateTime.UtcNow;
+            await SaveIndexLockedAsync(index);
+            return true;
         }
         finally
         {
@@ -220,6 +321,9 @@ public sealed class WorkspaceStore : IWorkspaceService
             CreatedAtUtc = note.CreatedAtUtc,
             ModifiedAtUtc = note.ModifiedAtUtc,
             LastOpenedAtUtc = note.LastOpenedAtUtc
+            ,
+            IsTrashed = note.IsTrashed,
+            TrashedAtUtc = note.TrashedAtUtc
         };
     }
 

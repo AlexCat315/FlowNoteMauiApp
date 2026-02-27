@@ -594,16 +594,10 @@ public partial class MainPage
             : (byte)Math.Clamp((int)Math.Round(stroke.Color.Alpha * layerOpacity * stroke.Opacity), 0, 255);
         paint.Color = stroke.IsEraser ? SKColors.Transparent : stroke.Color.WithAlpha(alpha);
         paint.BlendMode = GetThumbnailStrokeBlendMode(stroke);
-        paint.StrokeWidth = Math.Max(0.4f, stroke.StrokeWidth * strokeScale);
-
-        for (var index = 1; index < stroke.Points.Count; index++)
-        {
-            var previous = stroke.Points[index - 1];
-            var current = stroke.Points[index];
-            var mappedPrev = MapPoint(transform, previous.X, previous.Y);
-            var mappedCurrent = MapPoint(transform, current.X, current.Y);
-            canvas.DrawLine(mappedPrev, mappedCurrent, paint);
-        }
+        paint.StrokeWidth = Math.Max(0.25f, stroke.StrokeWidth * strokeScale);
+        using var mappedPath = new SKPath();
+        stroke.CreatePath().Transform(transform, mappedPath);
+        canvas.DrawPath(mappedPath, paint);
     }
 
     private static void DrawThumbnailPressureStrokeSegments(
@@ -640,7 +634,7 @@ public partial class MainPage
             var velocityFactor = Math.Clamp(1f - (velocity * (0.14f + (streamline * 0.35f))), 0.55f, 1.05f);
             var targetPressure = Math.Clamp(((previous.Pressure + current.Pressure) * 0.5f) * velocityFactor, minPressure, maxPressure);
             widthPressure = widthPressure + ((targetPressure - widthPressure) * smoothing);
-            paint.StrokeWidth = Math.Max(0.4f, stroke.StrokeWidth * strokeScale * widthPressure);
+            paint.StrokeWidth = Math.Max(0.25f, stroke.StrokeWidth * strokeScale * widthPressure);
             canvas.DrawLine(mappedPrev, mappedCurrent, paint);
         }
     }

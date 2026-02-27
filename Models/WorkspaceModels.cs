@@ -9,6 +9,8 @@ public sealed class WorkspaceNote
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime ModifiedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime LastOpenedAtUtc { get; set; } = DateTime.UtcNow;
+    public bool IsTrashed { get; set; }
+    public DateTime? TrashedAtUtc { get; set; }
 }
 
 public sealed class WorkspaceBrowseResult

@@ -54,9 +54,9 @@ public partial class MainPage
         TopModePenButton.BorderWidth = 0;
         var modeIcon = _drawingInputMode switch
         {
-            DrawingInputMode.FingerCapacitive => "icon_hand_mode.svg",
-            DrawingInputMode.TapRead => "icon_read_mode.svg",
-            _ => "icon_stylus_mode.svg"
+            DrawingInputMode.FingerCapacitive => "icon_hand_mode.png",
+            DrawingInputMode.TapRead => "icon_read_mode.png",
+            _ => "icon_stylus_mode.png"
         };
 
         var iconTint = IsDarkTheme ? Colors.White : Colors.Black;
@@ -230,7 +230,7 @@ public partial class MainPage
             DrawingCanvas.IsHighlighter = _activeInkTool == InkToolKind.Marker;
             DrawingCanvas.ActiveBrushType = ToBrushType(_activeInkTool);
             DrawingCanvas.EraserBehavior = ToCanvasEraserMode(_eraserMode);
-            DrawingCanvas.UsePressureSensitivity = !isEraser;
+            DrawingCanvas.UsePressureSensitivity = !isEraser && _activeInkTool != InkToolKind.Ballpoint;
             DrawingCanvas.PressureSensitivity = _pressureSensitivity;
             DrawingCanvas.StrokeWidth = state.Width;
             if (!isEraser)

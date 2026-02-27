@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:FlowNoteMauiApp.Controls"
     x:Class="FlowNoteMauiApp.Views.Editor.EditorChromeView"
-    IsClippedToBounds="False"
+    
 >
     <ContentView.Resources>
         <ResourceDictionary>
@@ -18,12 +18,12 @@
     <Grid
         InputTransparent="True"
         CascadeInputTransparent="False"
-        IsClippedToBounds="False"
+        
     >
         <Border
             x:Name="TopBarPanel"
             IsVisible="False"
-            IsClippedToBounds="False"
+            
             ZIndex="220"
             InputTransparent="False"
             HorizontalOptions="Fill"
@@ -39,7 +39,7 @@
             <Grid
                 RowDefinitions="Auto,Auto,1"
                 RowSpacing="2"
-                IsClippedToBounds="False"
+                
             >
                 <Grid
                     Grid.Row="0"
@@ -138,18 +138,18 @@
                     </HorizontalStackLayout>
                 </Grid>
 
-                <Grid Grid.Row="1" IsClippedToBounds="False">
+                <Grid Grid.Row="1" >
                     <ScrollView
                         x:Name="TopToolsScrollView"
                         ZIndex="20"
-                        IsClippedToBounds="False"
+                        
                         Orientation="Horizontal"
                         HorizontalScrollBarVisibility="Never"
                     >
                         <HorizontalStackLayout
                             Spacing="6"
                             Padding="0,1,0,1"
-                            IsClippedToBounds="False"
+                            
                         >
                             <BoxView
                                 x:Name="TopToolsLeadingSpacer"
@@ -243,7 +243,7 @@
             ZIndex="860"
             Spacing="6"
             Padding="0,1,0,1"
-            IsClippedToBounds="False"
+            
             HorizontalOptions="Start"
             VerticalOptions="Start"
             Margin="8,38,0,0"
@@ -272,7 +272,7 @@
 
             <Grid
                 x:Name="InkToolsStripContainer"
-                IsClippedToBounds="False"
+                
                 ZIndex="960"
                 HeightRequest="32"
             >
@@ -283,7 +283,7 @@
                 />
                 <HorizontalStackLayout
                     x:Name="InkToolsHost"
-                    IsClippedToBounds="False"
+                    
                     ZIndex="980"
                     Spacing="2"
                     Margin="6,0"
@@ -293,22 +293,27 @@
                     <ImageButton
                         x:Name="PenModeButton"
                         Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_ballpoint_pen.svg"
                     />
                     <ImageButton
                         x:Name="HighlighterButton"
                         Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_gelpen.svg"
                     />
                     <ImageButton
                         x:Name="PencilButton"
                         Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_pencil.svg"
                     />
                     <ImageButton
                         x:Name="MarkerButton"
                         Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_markpen.svg"
                     />
                     <ImageButton
                         x:Name="EraserButton"
                         Style="{StaticResource InkToolGlyphButton}"
+                        Source="icon_eraser.svg"
                     />
                     <ImageButton
                         x:Name="ClearButton2"
@@ -719,7 +724,6 @@
                             x:Name="ThumbnailList"
                             Direction="Column"
                             Wrap="NoWrap"
-                            Spacing="6"
                         />
                     </ScrollView>
                 </Border>

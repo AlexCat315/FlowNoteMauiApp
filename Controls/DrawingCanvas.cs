@@ -1237,47 +1237,47 @@ public class DrawingCanvas : SKCanvasView
         var strokeWidth = StrokeWidth;
         var opacity = 1f;
         var pressureEnabled = !IsErasing && UsePressureSensitivity;
-        var smoothingFactor = 0.42f;
-        var streamline = 0.35f;
-        var minPressure = 0.12f;
-        var maxPressure = 1.25f;
+        var smoothingFactor = 0.46f;
+        var streamline = 0.40f;
+        var minPressure = 0.15f;
+        var maxPressure = 1.20f;
 
         if (!IsErasing)
         {
             switch (brushType)
             {
                 case BrushType.Pen:
-                    opacity = 0.95f;
-                    smoothingFactor = 0.42f;
-                    streamline = 0.35f;
-                    minPressure = 0.12f;
-                    maxPressure = 1.3f;
+                    opacity = 0.96f;
+                    smoothingFactor = 0.52f;
+                    streamline = 0.46f;
+                    minPressure = 0.16f;
+                    maxPressure = 1.18f;
                     break;
                 case BrushType.Pencil:
-                    opacity = 0.72f;
-                    strokeWidth *= 0.82f;
-                    smoothingFactor = 0.3f;
-                    streamline = 0.25f;
+                    opacity = 0.74f;
+                    strokeWidth *= 0.86f;
+                    smoothingFactor = 0.34f;
+                    streamline = 0.28f;
                     minPressure = 0.05f;
-                    maxPressure = 0.95f;
+                    maxPressure = 0.9f;
                     break;
                 case BrushType.Marker:
                 case BrushType.Highlighter:
-                    opacity = 0.23f;
-                    strokeWidth *= 2.35f;
+                    opacity = 0.22f;
+                    strokeWidth *= 2.15f;
                     pressureEnabled = false;
-                    smoothingFactor = 0.26f;
-                    streamline = 0.18f;
+                    smoothingFactor = 0.22f;
+                    streamline = 0.14f;
                     minPressure = 1f;
                     maxPressure = 1f;
                     break;
                 case BrushType.Watercolor:
-                    opacity = 0.88f;
-                    strokeWidth *= 1.12f;
-                    smoothingFactor = 0.5f;
-                    streamline = 0.42f;
+                    opacity = 0.9f;
+                    strokeWidth *= 1.08f;
+                    smoothingFactor = 0.54f;
+                    streamline = 0.45f;
                     minPressure = 0.1f;
-                    maxPressure = 1.2f;
+                    maxPressure = 1.16f;
                     break;
             }
         }

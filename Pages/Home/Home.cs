@@ -26,6 +26,8 @@ public partial class MainPage
     private string _homeSearchKeyword = string.Empty;
     private IReadOnlyList<WorkspaceNote> _cachedHomeNotes = Array.Empty<WorkspaceNote>();
     private IReadOnlyList<string> _cachedHomeFolders = Array.Empty<string>();
+    private IReadOnlyList<WorkspaceNote> _cachedTrashedNotes = Array.Empty<WorkspaceNote>();
+    private bool _isTrashView;
 
     private void SetDrawerVisible(bool visible)
     {
@@ -75,6 +77,21 @@ public partial class MainPage
 
     private void RefreshHomeFeed()
     {
+        if (_isTrashView)
+        {
+            var trashNotes = _cachedTrashedNotes;
+            if (!string.IsNullOrWhiteSpace(_homeSearchKeyword))
+            {
+                trashNotes = trashNotes.Where(note =>
+                        note.Name.Contains(_homeSearchKeyword, StringComparison.OrdinalIgnoreCase)
+                        || note.FolderPath.Contains(_homeSearchKeyword, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            RenderHomeNotes(trashNotes);
+            return;
+        }
+
         UpdateHomeSortLabel();
         UpdateHomeFilterButtons();
 
@@ -149,10 +166,12 @@ public partial class MainPage
 
     private static bool IsLikelyHandwrittenNote(WorkspaceNote note)
     {
-        return note.Name.Contains("笔记", StringComparison.OrdinalIgnoreCase)
-            || note.Name.Contains("note", StringComparison.OrdinalIgnoreCase)
-            || note.Name.Contains("手写", StringComparison.OrdinalIgnoreCase)
-            || note.Name.Contains("课堂", StringComparison.OrdinalIgnoreCase);
+        var keyword1 = T("HomeNoteKeyword1", "note");
+        var keyword2 = T("HomeNoteKeyword2", "handwriting");
+        var keyword3 = T("HomeNoteKeyword3", "class");
+        return note.Name.Contains(keyword1, StringComparison.OrdinalIgnoreCase)
+            || note.Name.Contains(keyword2, StringComparison.OrdinalIgnoreCase)
+            || note.Name.Contains(keyword3, StringComparison.OrdinalIgnoreCase);
     }
 
     private void UpdateHomeFilterButtons()
@@ -360,6 +379,7 @@ public partial class MainPage
     private void OnDrawerAllDocsClicked(object? sender, EventArgs e)
     {
         SetHomeSortPanelVisible(false);
+        _isTrashView = false;
         _homeFilter = HomeFilterType.All;
         RefreshHomeFeed();
         SetDrawerVisible(false);
@@ -368,6 +388,7 @@ public partial class MainPage
     private void OnDrawerRecentClicked(object? sender, EventArgs e)
     {
         SetHomeSortPanelVisible(false);
+        _isTrashView = false;
         _homeFilter = HomeFilterType.All;
         _homeSort = HomeSortType.TimeDescending;
         RefreshHomeFeed();
@@ -384,7 +405,10 @@ public partial class MainPage
     private void OnDrawerTrashClicked(object? sender, EventArgs e)
     {
         SetHomeSortPanelVisible(false);
-        ShowStatus(T("FeatureTrashPending", "Trash is under development."));
+        _isTrashView = true;
+        _homeFilter = HomeFilterType.All;
+        RefreshHomeFeed();
+        ShowStatus(T("FeatureTrashOpened", "Trash opened."));
         SetDrawerVisible(false);
     }
 
@@ -410,7 +434,7 @@ public partial class MainPage
     private void OnDrawerAboutClicked(object? sender, EventArgs e)
     {
         SetHomeSortPanelVisible(false);
-        ShowStatus("FlowNote MAUI Demo v1.0");
+        ShowStatus(T("AboutAppName", "FlowNote MAUI Demo v1.0"));
         SetDrawerVisible(false);
     }
 
@@ -430,17 +454,17 @@ public partial class MainPage
 
         switch (item)
         {
-            case "语言":
+            case "Language":
                 {
                     var isZh = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("zh", StringComparison.OrdinalIgnoreCase);
                     LanguageManager.SetCulture(new CultureInfo(isZh ? "en-US" : "zh-CN"));
                     ShowStatus(isZh ? T("StatusLanguageEnglish", "Language: English") : T("StatusLanguageChinese", "Language: Simplified Chinese"));
                     break;
                 }
-            case "显示":
+            case "Display":
                 ShowStatus(T("StatusDisplaySettingsOpened", "Display settings opened (theme integration pending)."));
                 break;
-            case "本地备份":
+            case "LocalBackup":
                 ShowStatus(T("StatusLocalBackupTriggered", "Local backup triggered."));
                 break;
             default:

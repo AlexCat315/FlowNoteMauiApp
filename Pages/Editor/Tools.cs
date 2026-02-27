@@ -50,8 +50,7 @@ public partial class MainPage
         button.BorderColor = Colors.Transparent;
         button.BorderWidth = 0;
         button.Aspect = Aspect.AspectFit;
-        button.Scale = 1d;
-        button.SetIconDrawSize(selected ? 50 : 40);
+        button.SetIconDrawSize(800);
 
         button.AnchorX = 0.5;
         button.AnchorY = 0.0;
@@ -408,7 +407,16 @@ public partial class MainPage
         SKColor tintColor,
         CancellationToken token)
     {
-        var source = await CreateTintedToolIconSourceAsync(toolKind, tintColor, token).ConfigureAwait(false);
+        ImageSource source;
+        try
+        {
+            source = await CreateTintedToolIconSourceAsync(toolKind, tintColor, token).ConfigureAwait(false);
+        }
+        catch
+        {
+            source = ImageSource.FromFile(GetToolFallbackIconFile(tool));
+        }
+
         return (tool, source);
     }
 
@@ -447,6 +455,19 @@ public partial class MainPage
             InkToolKind.Marker => MarkerButton,
             InkToolKind.Eraser => EraserButton,
             _ => null
+        };
+    }
+
+    private static string GetToolFallbackIconFile(InkToolKind tool)
+    {
+        return tool switch
+        {
+            InkToolKind.Ballpoint => "icon_ballpoint_pen.svg",
+            InkToolKind.Fountain => "icon_gelpen.svg",
+            InkToolKind.Pencil => "icon_pencil.svg",
+            InkToolKind.Marker => "icon_markpen.svg",
+            InkToolKind.Eraser => "icon_eraser.svg",
+            _ => "icon_pen.svg"
         };
     }
 

@@ -491,6 +491,15 @@ public partial class MainPage
 
     private void OnDrawingStrokeCommitted(object? sender, EventArgs e)
     {
+        if (!string.IsNullOrWhiteSpace(_currentNoteId))
+        {
+            _liveInkRevisionByNoteId.AddOrUpdate(
+                _currentNoteId,
+                _ => 1L,
+                (_, previous) => previous + 1L);
+            InvalidateHomeCoverCacheForNote(_currentNoteId);
+        }
+
         InvalidateThumbnailCache();
         if (ThumbnailPanel.IsVisible)
         {

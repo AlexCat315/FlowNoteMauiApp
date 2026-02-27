@@ -406,6 +406,14 @@ public static class IconRenderHelper
         yield return fileName;
         yield return $"toolicons/{fileName}";
         yield return $"toolicons\\{fileName}";
+        yield return $"toolbar/{fileName}";
+        yield return $"toolbar\\{fileName}";
+        yield return $"homeicons/{fileName}";
+        yield return $"homeicons\\{fileName}";
+        yield return $"images/{fileName}";
+        yield return $"images\\{fileName}";
+        yield return $"images/toolbar/{fileName}";
+        yield return $"images\\toolbar\\{fileName}";
     }
 
     private static async Task<byte[]?> GetTemplateBytesAsync(string iconFile, CancellationToken token)
