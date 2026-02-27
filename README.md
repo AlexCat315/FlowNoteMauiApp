@@ -17,10 +17,12 @@ FlowNoteMauiApp 是一个基于 .NET MAUI 的跨平台 PDF 阅读与手写笔记
 
 ```text
 FlowNoteMauiApp/
+├─ Core/Services/              # 业务契约接口（IWorkspaceService 等）
+├─ Data/Persistence/           # 本地持久化实现（WorkspaceStore / DrawingStateStore）
 ├─ Controls/                   # 自定义控件（含 DrawingCanvas）
-├─ Models/                     # 数据模型（笔画/图层/状态）
-├─ Pages/Main/                 # 主页面逻辑（分文件 partial）
-├─ Views/Main/                 # Main 页面 XAML 组合视图
+├─ Models/                     # 业务模型（笔画/图层/工作区）
+├─ Pages/                      # 页面逻辑（MainPage 按 Editor/Home/... 拆分）
+├─ Views/                      # 页面组合视图（Editor/Home/Settings/Shared）
 ├─ Resources/
 │  ├─ AppResources*.resx       # 多语言资源
 │  ├─ Images/                  # 图标与图片资源
@@ -78,4 +80,4 @@ dotnet build -t:Run /Users/alexcat/dev/FlowNoteAppDevWorkSpace/FlowNoteMauiApp/F
 ## 7. 相关文档
 
 - 功能使用说明（详细）：`docs/功能使用说明.md`
-
+- 结构与职责说明：`docs/项目结构与代码职责.md`

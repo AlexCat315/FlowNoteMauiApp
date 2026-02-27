@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:homeViews="clr-namespace:FlowNoteMauiApp.Views.Home"
+    xmlns:editorViews="clr-namespace:FlowNoteMauiApp.Views.Editor"
+    xmlns:settingsViews="clr-namespace:FlowNoteMauiApp.Views.Settings"
+    xmlns:sharedViews="clr-namespace:FlowNoteMauiApp.Views.Shared"
+    x:Class="FlowNoteMauiApp.MainPage"
+    BackgroundColor="{AppThemeBinding Light=#F8F8FA, Dark=#182434}"
+>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary
+                    Source="/Resources/Styles/MainPageStyles.xaml"
+                />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid x:Name="EditorHost" />
+
+        <homeViews:HomePanelView x:Name="HomePanelView" />
+        <editorViews:EditorChromeView
+            x:Name="EditorChromeView"
+            InputTransparent="True"
+            CascadeInputTransparent="False"
+            VerticalOptions="Start"
+            HorizontalOptions="Fill"
+        />
+        <sharedViews:DrawerOverlayView
+            x:Name="DrawerOverlayView"
+            IsVisible="False"
+            InputTransparent="True"
+        />
+        <settingsViews:SettingsOverlayView
+            x:Name="SettingsOverlayView"
+            IsVisible="False"
+            InputTransparent="True"
+        />
+        <sharedViews:StatusToastView
+            x:Name="StatusToastView"
+            InputTransparent="True"
+        />
+    </Grid>
+</ContentPage>

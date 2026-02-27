@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="FlowNoteMauiApp.Views.Home.HomePanelView"
+>
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary
+                    Source="/Resources/Styles/MainPageStyles.xaml"
+                />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentView.Resources>
+<Grid
+        x:Name="HomePanel"
+        IsVisible="True"
+        RowDefinitions="Auto,Auto,*"
+        RowSpacing="0"
+    >
+    <Grid
+            Grid.Row="0"
+            RowDefinitions="Auto,1"
+            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2C3E}"
+        >
+        <Grid
+                Grid.Row="0"
+                Padding="20,9,20,9"
+                ColumnDefinitions="Auto,*,Auto"
+                ColumnSpacing="10"
+            >
+            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                <ImageButton
+                        x:Name="HomeMenuButton"
+                        Style="{StaticResource HomeTopIconButton}"
+                        Source="home_menu.png"
+                    />
+                <ImageButton
+                        x:Name="HomeDrawerRecentButton"
+                        Style="{StaticResource HomeTopIconButton}"
+                        Source="home_bell.png"
+                    />
+                <ImageButton
+                        x:Name="HomeDrawerAllDocsButton"
+                        Style="{StaticResource HomeTopIconButton}"
+                        Source="home_cloud.png"
+                    />
+            </HorizontalStackLayout>
+
+            <Image
+                    Grid.Column="1"
+                    Source="icon_file.png"
+                    WidthRequest="14"
+                    HeightRequest="14"
+                    Opacity="0.8"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                />
+
+            <HorizontalStackLayout
+                    Grid.Column="2"
+                    Spacing="12"
+                    VerticalOptions="Center"
+                >
+                <ImageButton
+                        x:Name="HomeDrawerFavoriteButton"
+                        Style="{StaticResource HomeTopIconButton}"
+                        Source="home_done.png"
+                    />
+                <ImageButton
+                        x:Name="HomeRefreshButton"
+                        Style="{StaticResource HomeTopIconButton}"
+                        Source="home_search.png"
+                    />
+                <ImageButton
+                        x:Name="HomeOpenSettingsButton"
+                        Style="{StaticResource HomeTopIconButton}"
+                        Source="home_settings.png"
+                    />
+                <ImageButton
+                        x:Name="HomeSortMenuButton"
+                        Style="{StaticResource HomeTopIconButton}"
+                        Source="home_sort.png"
+                    />
+            </HorizontalStackLayout>
+        </Grid>
+        <BoxView
+                Grid.Row="1"
+                Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}"
+            />
+    </Grid>
+
+    <Grid Grid.Row="1" Padding="20,12,20,8" ColumnDefinitions="*">
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="20">
+            <VerticalStackLayout Spacing="5">
+                <Button
+                        x:Name="FilterAllButton"
+                        Style="{StaticResource FilterTabButton}"
+                        Text="全部"
+                    />
+                <BoxView
+                        x:Name="FilterAllIndicator"
+                        HeightRequest="2"
+                        WidthRequest="30"
+                        HorizontalOptions="Center"
+                        Color="{StaticResource PrimaryBlue}"
+                    />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="5">
+                <Button
+                        x:Name="FilterPdfButton"
+                        Style="{StaticResource FilterTabButton}"
+                        Text="PDF"
+                    />
+                <BoxView
+                        x:Name="FilterPdfIndicator"
+                        HeightRequest="2"
+                        WidthRequest="30"
+                        HorizontalOptions="Center"
+                        Color="{StaticResource PrimaryBlue}"
+                        IsVisible="False"
+                    />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="5">
+                <Button
+                        x:Name="FilterNoteButton"
+                        Style="{StaticResource FilterTabButton}"
+                        Text="笔记"
+                    />
+                <BoxView
+                        x:Name="FilterNoteIndicator"
+                        HeightRequest="2"
+                        WidthRequest="30"
+                        HorizontalOptions="Center"
+                        Color="{StaticResource PrimaryBlue}"
+                        IsVisible="False"
+                    />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="5">
+                <Button
+                        x:Name="FilterFolderButton"
+                        Style="{StaticResource FilterTabButton}"
+                        Text="文件夹"
+                    />
+                <BoxView
+                        x:Name="FilterFolderIndicator"
+                        HeightRequest="2"
+                        WidthRequest="36"
+                        HorizontalOptions="Center"
+                        Color="{StaticResource PrimaryBlue}"
+                        IsVisible="False"
+                    />
+            </VerticalStackLayout>
+        </HorizontalStackLayout>
+    </Grid>
+
+    <Grid Grid.Row="2">
+        <ScrollView>
+            <VerticalStackLayout Spacing="8" Padding="44,4,44,120">
+                <FlexLayout
+                        x:Name="HomeNotesList"
+                        Direction="Row"
+                        Wrap="Wrap"
+                        AlignItems="Start"
+                        AlignContent="Start"
+                        JustifyContent="Start"
+                    />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <VerticalStackLayout
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Spacing="12"
+                Margin="0,0,30,24"
+            >
+            <ImageButton
+                    x:Name="QuickPenButton"
+                    Style="{StaticResource FloatingIconButton}"
+                    BackgroundColor="{StaticResource PrimaryBlueLight}"
+                    Source="icon_pencil.png"
+                />
+            <ImageButton
+                    x:Name="HomeImportButton"
+                    Style="{StaticResource FloatingIconButton}"
+                    Source="icon_plus.png"
+                />
+        </VerticalStackLayout>
+
+        <Entry x:Name="HomeSearchEntry" IsVisible="False" />
+        <Label x:Name="HomeCountLabel" IsVisible="False" Text="0 个文档" />
+        <Entry x:Name="HomeUrlEntry" IsVisible="False" />
+    </Grid>
+
+    <Border
+            x:Name="HomeSortPanel"
+            Grid.RowSpan="3"
+            ZIndex="60"
+            IsVisible="False"
+            InputTransparent="False"
+            VerticalOptions="Start"
+            HorizontalOptions="Start"
+            Margin="0"
+            WidthRequest="176"
+            Padding="8"
+            Style="{StaticResource PanelCard}"
+        >
+        <VerticalStackLayout Spacing="4">
+            <Button
+                    x:Name="HomeSortTimeAscButton"
+                    Style="{StaticResource InputModeItemButton}"
+                    Text="按时间升序"
+                />
+            <Button
+                    x:Name="HomeSortTimeDescButton"
+                    Style="{StaticResource InputModeItemButton}"
+                    Text="按时间降序"
+                />
+            <Button
+                    x:Name="HomeSortNameAscButton"
+                    Style="{StaticResource InputModeItemButton}"
+                    Text="按名称升序"
+                />
+            <Button
+                    x:Name="HomeSortNameDescButton"
+                    Style="{StaticResource InputModeItemButton}"
+                    Text="按名称降序"
+                />
+        </VerticalStackLayout>
+    </Border>
+</Grid>
+</ContentView>
