@@ -388,7 +388,10 @@ public partial class MainPage
         byte[] baseThumbnailBytes,
         PdfPageBounds pageBounds,
         IReadOnlyList<ThumbnailStrokeSnapshot> snapshots,
-        CancellationToken token)
+        CancellationToken token,
+        bool requireIntersection = true,
+        float? overridePageOriginX = null,
+        float? overridePageOriginY = null)
     {
         using var baseBitmap = SKBitmap.Decode(baseThumbnailBytes);
         if (baseBitmap is null || baseBitmap.Width <= 0 || baseBitmap.Height <= 0)
@@ -411,10 +414,12 @@ public partial class MainPage
 
         var safePageWidth = Math.Max(1d, pageBounds.Width);
         var safePageHeight = Math.Max(1d, pageBounds.Height);
+        var pageOriginX = overridePageOriginX ?? (float)pageBounds.X;
+        var pageOriginY = overridePageOriginY ?? (float)pageBounds.Y;
         var scaleX = (float)(imageInfo.Width / safePageWidth);
         var scaleY = (float)(imageInfo.Height / safePageHeight);
-        var translateX = (float)(-pageBounds.X * scaleX);
-        var translateY = (float)(-pageBounds.Y * scaleY);
+        var translateX = -pageOriginX * scaleX;
+        var translateY = -pageOriginY * scaleY;
         var strokeScale = Math.Max(0.12f, (Math.Abs(scaleX) + Math.Abs(scaleY)) * 0.5f);
         var transform = SKMatrix.CreateScaleTranslation(scaleX, scaleY, translateX, translateY);
 
@@ -431,7 +436,7 @@ public partial class MainPage
             token.ThrowIfCancellationRequested();
 
             var stroke = snapshot.Stroke;
-            if (stroke.Points.Count < 2 || !DoesSnapshotIntersectPage(snapshot, pageBounds))
+            if (stroke.Points.Count < 2 || (requireIntersection && !DoesSnapshotIntersectPage(snapshot, pageBounds)))
                 continue;
 
             if (ShouldDrawThumbnailPressureStrokeSegments(stroke))

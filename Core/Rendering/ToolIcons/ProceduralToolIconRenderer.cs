@@ -6,8 +6,8 @@ public static class ProceduralToolIconRenderer
 {
     public static SKBitmap Render(ToolIconKind toolKind, SKColor accentColor, int size = 256)
     {
-        var outputSize = Math.Clamp(size, 64, 512);
-        var workingSize = Math.Clamp(outputSize * 2, 128, 1024);
+        var outputSize = Math.Clamp(size, 128, 1024);
+        var workingSize = Math.Clamp(outputSize * 2, 256, 2048);
         using var workingBitmap = new SKBitmap(workingSize, workingSize, SKColorType.Rgba8888, SKAlphaType.Premul);
         using (var canvas = new SKCanvas(workingBitmap))
         {
@@ -103,34 +103,117 @@ public static class ProceduralToolIconRenderer
 
     private static void DrawEraser(SKCanvas canvas, float centerX, SKColor accentColor, int size, float unit)
     {
-        var bodyRect = DrawTubeBody(canvas, centerX, size * 0.30f, size * 0.30f, size * 0.48f, size * 0.12f, unit);
+        var holderRect = DrawTubeBody(canvas, centerX, size * 0.44f, size * 0.30f, size * 0.42f, size * 0.11f, unit);
 
-        // Sleeve band
-        var sleevePad = 2f * unit;
-        var sleeveRect = new SKRect(bodyRect.Left + sleevePad, bodyRect.Top + (size * 0.16f), bodyRect.Right - sleevePad, bodyRect.Top + (size * 0.24f));
-        using (var sleevePaint = new SKPaint
+        var ferruleInset = 1.8f * unit;
+        var ferruleRect = new SKRect(
+            holderRect.Left + ferruleInset,
+            size * 0.34f,
+            holderRect.Right - ferruleInset,
+            size * 0.45f);
+        DrawEraserFerrule(canvas, ferruleRect, unit);
+
+        var rubberRect = new SKRect(
+            holderRect.Left + (0.6f * unit),
+            size * 0.14f,
+            holderRect.Right - (0.6f * unit),
+            size * 0.36f);
+        DrawEraserRubber(canvas, rubberRect, accentColor, unit);
+
+        var eraseFaceRect = new SKRect(
+            rubberRect.Left + (1.6f * unit),
+            rubberRect.Top + (1.6f * unit),
+            rubberRect.Right - (1.6f * unit),
+            rubberRect.Top + (4.4f * unit));
+        using var eraseFacePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = Lighten(accentColor, 0.42f)
+        };
+        var eraseFaceRadius = 1.6f * unit;
+        canvas.DrawRoundRect(eraseFaceRect, eraseFaceRadius, eraseFaceRadius, eraseFacePaint);
+    }
+
+    private static void DrawEraserFerrule(SKCanvas canvas, SKRect rect, float unit)
+    {
+        using var fillPaint = new SKPaint
         {
             IsAntialias = true,
             Shader = SKShader.CreateLinearGradient(
-                new SKPoint(sleeveRect.Left, sleeveRect.Top),
-                new SKPoint(sleeveRect.Right, sleeveRect.Top),
+                new SKPoint(rect.Left, rect.Top),
+                new SKPoint(rect.Right, rect.Top),
                 new[]
                 {
-                    SKColor.Parse("D9E3EF"),
-                    SKColor.Parse("B6C4D5"),
-                    SKColor.Parse("D9E3EF")
+                    SKColor.Parse("DDE6F2"),
+                    SKColor.Parse("B4C1D1"),
+                    SKColor.Parse("DDE6F2")
                 },
                 null,
                 SKShaderTileMode.Clamp)
-        })
-        {
-            var sleeveRadius = 2f * unit;
-            canvas.DrawRoundRect(sleeveRect, sleeveRadius, sleeveRadius, sleevePaint);
-        }
+        };
+        var radius = 2.2f * unit;
+        canvas.DrawRoundRect(rect, radius, radius, fillPaint);
 
-        // Rubber head (colored)
-        var rubberRect = new SKRect(bodyRect.Left, size * 0.17f, bodyRect.Right, size * 0.30f);
-        DrawAccentCap(canvas, rubberRect, accentColor, unit);
+        using var edgePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = Math.Max(1f, 0.9f * unit),
+            Color = SKColor.Parse("93A5BA")
+        };
+        canvas.DrawRoundRect(rect, radius, radius, edgePaint);
+
+        using var groovePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = Math.Max(1f, 0.7f * unit),
+            Color = new SKColor(120, 136, 156, 140)
+        };
+        var grooveStep = Math.Max(2.4f * unit, rect.Width / 5f);
+        for (var x = rect.Left + grooveStep; x < rect.Right - (grooveStep * 0.35f); x += grooveStep)
+        {
+            canvas.DrawLine(x, rect.Top + (0.8f * unit), x, rect.Bottom - (0.8f * unit), groovePaint);
+        }
+    }
+
+    private static void DrawEraserRubber(SKCanvas canvas, SKRect rect, SKColor accentColor, float unit)
+    {
+        var topColor = Lighten(accentColor, 0.26f);
+        var bottomColor = Darken(accentColor, 0.18f);
+        using var fillPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Shader = SKShader.CreateLinearGradient(
+                new SKPoint(rect.MidX, rect.Top),
+                new SKPoint(rect.MidX, rect.Bottom),
+                new[] { topColor, accentColor, bottomColor },
+                null,
+                SKShaderTileMode.Clamp)
+        };
+        var radius = 6f * unit;
+        canvas.DrawRoundRect(rect, radius, radius, fillPaint);
+
+        using var seamPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = Darken(accentColor, 0.34f),
+            StrokeWidth = Math.Max(1f, 0.85f * unit)
+        };
+        var seamY = rect.Top + (rect.Height * 0.58f);
+        canvas.DrawLine(rect.Left + (2.4f * unit), seamY, rect.Right - (2.4f * unit), seamY, seamPaint);
+
+        using var highlightPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(255, 255, 255, 128)
+        };
+        var highlightRect = new SKRect(
+            rect.Left + (2.6f * unit),
+            rect.Top + (2.2f * unit),
+            rect.Left + (5.6f * unit),
+            rect.Bottom - (3.2f * unit));
+        canvas.DrawRoundRect(highlightRect, 1.3f * unit, 1.3f * unit, highlightPaint);
     }
 
     private static SKRect DrawTubeBody(SKCanvas canvas, float centerX, float top, float width, float height, float radius, float unit)

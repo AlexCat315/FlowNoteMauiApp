@@ -50,7 +50,7 @@ public partial class MainPage
         button.BorderColor = Colors.Transparent;
         button.BorderWidth = 0;
         button.Aspect = Aspect.AspectFit;
-        button.SetIconDrawSize(selected ? 30 : 27);
+        button.SetIconDrawSize(selected ? 800 : 800);
 
         button.AnchorX = 0.5;
         button.AnchorY = 0.0;

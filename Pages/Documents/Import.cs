@@ -594,6 +594,7 @@ public partial class MainPage
 
     private async void OnHomeClicked(object? sender, EventArgs e)
     {
+        await SaveCurrentDrawingStateAsync();
         await RefreshWorkspaceViewsAsync();
         ShowHomeScreen();
     }

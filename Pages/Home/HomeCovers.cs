@@ -4,6 +4,7 @@ using Flow.PDFView;
 using Flow.PDFView.Abstractions;
 using FlowNoteMauiApp.Models;
 using Microsoft.Maui.Storage;
+using SkiaSharp;
 
 namespace FlowNoteMauiApp;
 
@@ -92,7 +93,7 @@ public partial class MainPage
             if (bytes is null || bytes.Length == 0 || token.IsCancellationRequested)
                 return null;
 
-            var coverBytes = await RenderHomeCoverBytesAsync(bytes, token).ConfigureAwait(false);
+            var coverBytes = await RenderHomeCoverBytesAsync(note, bytes, token).ConfigureAwait(false);
             if (coverBytes is null || coverBytes.Length == 0 || token.IsCancellationRequested)
                 return null;
 
@@ -107,18 +108,29 @@ public partial class MainPage
         }
     }
 
-    private async Task<byte[]?> RenderHomeCoverBytesAsync(byte[] pdfBytes, CancellationToken token)
+    private sealed class HomeCoverRenderResult
     {
-        await using var thumbnailStream = await RenderHomeCoverStreamAsync(pdfBytes, token).ConfigureAwait(false);
-        if (thumbnailStream is null || token.IsCancellationRequested)
-            return null;
-
-        using var memory = new MemoryStream();
-        await thumbnailStream.CopyToAsync(memory, token).ConfigureAwait(false);
-        return memory.Length > 0 ? memory.ToArray() : null;
+        public required Stream ThumbnailStream { get; init; }
+        public required PdfPageBounds? PageBounds { get; init; }
     }
 
-    private async Task<Stream?> RenderHomeCoverStreamAsync(byte[] pdfBytes, CancellationToken token)
+    private async Task<byte[]?> RenderHomeCoverBytesAsync(WorkspaceNote note, byte[] pdfBytes, CancellationToken token)
+    {
+        var renderResult = await RenderHomeCoverStreamAsync(pdfBytes, token).ConfigureAwait(false);
+        if (renderResult is null || token.IsCancellationRequested)
+            return null;
+
+        await using var thumbnailStream = renderResult.ThumbnailStream;
+        using var memory = new MemoryStream();
+        await thumbnailStream.CopyToAsync(memory, token).ConfigureAwait(false);
+        if (memory.Length <= 0)
+            return null;
+
+        var baseCoverBytes = memory.ToArray();
+        return await TryComposeHomeCoverWithInkAsync(note, baseCoverBytes, renderResult.PageBounds, token).ConfigureAwait(false);
+    }
+
+    private async Task<HomeCoverRenderResult?> RenderHomeCoverStreamAsync(byte[] pdfBytes, CancellationToken token)
     {
         var renderer = await EnsureHomeCoverRendererViewAsync().ConfigureAwait(false);
 
@@ -150,9 +162,18 @@ public partial class MainPage
             if (token.IsCancellationRequested)
                 return null;
 
-            return await renderer
+            var pageBounds = await renderer.GetPageBoundsAsync(0).ConfigureAwait(false);
+            var thumbnailStream = await renderer
                 .GetThumbnailAsync(0, HomeCoverRequestWidth, HomeCoverRequestHeight)
                 .ConfigureAwait(false);
+            if (thumbnailStream is null)
+                return null;
+
+            return new HomeCoverRenderResult
+            {
+                ThumbnailStream = thumbnailStream,
+                PageBounds = pageBounds
+            };
         }
         finally
         {
@@ -163,6 +184,151 @@ public partial class MainPage
                 renderer.Source = null;
             });
         }
+    }
+
+    private async Task<byte[]?> TryComposeHomeCoverWithInkAsync(
+        WorkspaceNote note,
+        byte[] baseCoverBytes,
+        PdfPageBounds? pageBounds,
+        CancellationToken token)
+    {
+        if (baseCoverBytes.Length == 0 || token.IsCancellationRequested)
+            return null;
+
+        if (pageBounds is null || pageBounds.Value.Width <= 0 || pageBounds.Value.Height <= 0)
+            return baseCoverBytes;
+
+        DrawingDocumentState? state = null;
+        try
+        {
+            state = await _drawingPersistenceService.LoadAsync(note.Id).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[HomeCover] ink-state load failed for {note.Id}: {ex.Message}");
+        }
+
+        if (state is null || state.Layers.Count == 0 || token.IsCancellationRequested)
+            return baseCoverBytes;
+
+        var snapshots = BuildHomeCoverStrokeSnapshots(state);
+        if (snapshots.Count == 0 || token.IsCancellationRequested)
+            return baseCoverBytes;
+
+        try
+        {
+            var bounds = pageBounds.Value;
+            var hasIntersectingStroke = false;
+            foreach (var snapshot in snapshots)
+            {
+                if (!DoesSnapshotIntersectPage(snapshot, bounds))
+                    continue;
+
+                hasIntersectingStroke = true;
+                break;
+            }
+
+            var composed = ComposeThumbnailWithInkOverlay(baseCoverBytes, bounds, snapshots, token);
+            if (composed is { Length: > 0 } && hasIntersectingStroke)
+                return composed;
+
+            if (!hasIntersectingStroke)
+            {
+                var fallback = ComposeThumbnailWithInkOverlay(
+                    baseCoverBytes,
+                    bounds,
+                    snapshots,
+                    token,
+                    requireIntersection: false,
+                    overridePageOriginX: 0f,
+                    overridePageOriginY: 0f);
+                if (fallback is { Length: > 0 })
+                    return fallback;
+            }
+
+            return composed ?? baseCoverBytes;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[HomeCover] ink compose failed for {note.Id}: {ex.Message}");
+            return baseCoverBytes;
+        }
+    }
+
+    private static List<ThumbnailStrokeSnapshot> BuildHomeCoverStrokeSnapshots(DrawingDocumentState state)
+    {
+        var snapshots = new List<ThumbnailStrokeSnapshot>();
+        foreach (var layerState in state.Layers)
+        {
+            if (!layerState.IsVisible || layerState.Opacity <= 0.001f)
+                continue;
+
+            var layerOpacity = Math.Clamp(layerState.Opacity, 0f, 1f);
+            foreach (var strokeState in layerState.Strokes)
+            {
+                if (strokeState.Points.Count < 2)
+                    continue;
+
+                var stroke = MaterializeStroke(strokeState);
+                if (!TryGetStrokeBounds(stroke, out var minX, out var minY, out var maxX, out var maxY))
+                    continue;
+
+                snapshots.Add(new ThumbnailStrokeSnapshot
+                {
+                    Stroke = stroke,
+                    LayerOpacity = layerOpacity,
+                    MinX = minX,
+                    MinY = minY,
+                    MaxX = maxX,
+                    MaxY = maxY
+                });
+            }
+        }
+
+        return snapshots;
+    }
+
+    private static DrawingStroke MaterializeStroke(DrawingStrokeState strokeState)
+    {
+        var stroke = new DrawingStroke
+        {
+            Color = FromArgb(strokeState.Color),
+            StrokeWidth = strokeState.StrokeWidth,
+            Opacity = strokeState.Opacity,
+            IsEraser = strokeState.IsEraser,
+            BrushType = strokeState.BrushType,
+            Options = new StrokeOptions
+            {
+                PressureEnabled = strokeState.PressureEnabled,
+                SmoothingEnabled = strokeState.SmoothingEnabled,
+                SmoothingFactor = strokeState.SmoothingFactor,
+                MinPressure = strokeState.MinPressure,
+                MaxPressure = strokeState.MaxPressure,
+                TaperStart = strokeState.TaperStart,
+                TaperEnd = strokeState.TaperEnd,
+                Streamline = strokeState.Streamline
+            }
+        };
+
+        foreach (var point in strokeState.Points)
+        {
+            stroke.AddPoint(new DrawingPoint(point.X, point.Y, point.Pressure, point.Timestamp));
+        }
+
+        return stroke;
+    }
+
+    private static SKColor FromArgb(uint argb)
+    {
+        var a = (byte)((argb >> 24) & 0xFF);
+        var r = (byte)((argb >> 16) & 0xFF);
+        var g = (byte)((argb >> 8) & 0xFF);
+        var b = (byte)(argb & 0xFF);
+        return new SKColor(r, g, b, a);
     }
 
     private async Task<PdfView> EnsureHomeCoverRendererViewAsync()
@@ -194,8 +360,8 @@ public partial class MainPage
                 IsVisible = true,
                 Opacity = 0.001,
                 InputTransparent = true,
-                WidthRequest = 2,
-                HeightRequest = 2,
+                WidthRequest = HomeCoverRequestWidth,
+                HeightRequest = HomeCoverRequestHeight,
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Start,
                 MinZoom = 1f,
@@ -276,7 +442,7 @@ public partial class MainPage
             if (_homeCoverSourceCache.ContainsKey(cacheKey))
                 return;
 
-            var coverBytes = await RenderHomeCoverBytesAsync(pdfBytes, token).ConfigureAwait(false);
+            var coverBytes = await RenderHomeCoverBytesAsync(note, pdfBytes, token).ConfigureAwait(false);
             if (coverBytes is null || coverBytes.Length == 0)
                 return;
 
@@ -299,7 +465,8 @@ public partial class MainPage
     private static string BuildHomeCoverCacheKey(WorkspaceNote note)
     {
         var version = note.ModifiedAtUtc.Ticks <= 0 ? note.CreatedAtUtc.Ticks : note.ModifiedAtUtc.Ticks;
-        return $"{note.Id}_{version}";
+        var inkVersion = ResolveInkStateVersionTicks(note.Id);
+        return $"{note.Id}_{version}_{inkVersion}";
     }
 
     private static string ResolveHomeCoverCacheDirectory()
@@ -347,6 +514,36 @@ public partial class MainPage
         catch
         {
         }
+    }
+
+    private static long ResolveInkStateVersionTicks(string noteId)
+    {
+        if (string.IsNullOrWhiteSpace(noteId))
+            return 0;
+
+        try
+        {
+            var path = BuildInkStateFilePath(noteId);
+            if (!File.Exists(path))
+                return 0;
+
+            return File.GetLastWriteTimeUtc(path).Ticks;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    private static string BuildInkStateFilePath(string noteId)
+    {
+        var safeId = noteId.Trim().Replace('/', '_').Replace('\\', '_');
+        var root = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "FlowNote",
+            "workspace",
+            "ink");
+        return Path.Combine(root, $"{safeId}.json");
     }
 
     private void QueuePrimeHomeCoverCache(WorkspaceNote note, byte[] pdfBytes)

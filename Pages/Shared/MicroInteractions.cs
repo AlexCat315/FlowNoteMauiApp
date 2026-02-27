@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace FlowNoteMauiApp;
 
 public partial class MainPage
@@ -8,6 +10,7 @@ public partial class MainPage
             typeof(bool),
             typeof(MainPage),
             false);
+    private static readonly ConditionalWeakTable<VisualElement, MicroInteractionState> MicroInteractionStateMap = new();
 
     private bool _microInteractionsWired;
 
@@ -135,7 +138,9 @@ public partial class MainPage
         if (sender is not VisualElement visual)
             return;
 
-        _ = AnimateMicroPressStateAsync(visual, pressed: true);
+        var state = GetInteractionState(visual);
+        CaptureInteractionBase(visual, state);
+        _ = AnimateMicroPressStateAsync(visual, state, pressed: true);
     }
 
     private void OnMicroInteractionReleased(object? sender, EventArgs e)
@@ -143,7 +148,8 @@ public partial class MainPage
         if (sender is not VisualElement visual)
             return;
 
-        _ = AnimateMicroPressStateAsync(visual, pressed: false);
+        var state = GetInteractionState(visual);
+        _ = AnimateMicroPressStateAsync(visual, state, pressed: false);
     }
 
     private async void OnMicroInteractionClicked(object? sender, EventArgs e)
@@ -154,33 +160,65 @@ public partial class MainPage
         try
         {
             visual.AbortAnimation("flow-micro-click");
-            await visual.ScaleToAsync(1.03, 75, Easing.CubicOut);
-            await visual.ScaleToAsync(1.0, 110, Easing.CubicIn);
+            var baseScale = visual.Scale <= 0d ? 1d : visual.Scale;
+            await visual.ScaleToAsync(baseScale * 1.03, 75, Easing.CubicOut);
+            await visual.ScaleToAsync(baseScale, 110, Easing.CubicIn);
         }
         catch
         {
         }
     }
 
-    private static Task AnimateMicroPressStateAsync(VisualElement visual, bool pressed)
+    private static Task AnimateMicroPressStateAsync(VisualElement visual, MicroInteractionState state, bool pressed)
     {
         try
         {
             visual.AbortAnimation("flow-micro-press");
             if (pressed)
             {
+                var pressedScale = Math.Max(0.01d, state.BaseScale * 0.95d);
                 return Task.WhenAll(
-                    visual.ScaleToAsync(0.95, 80, Easing.CubicOut),
-                    visual.TranslateToAsync(0, 1.5, 80, Easing.CubicOut));
+                    visual.ScaleToAsync(pressedScale, 80, Easing.CubicOut),
+                    visual.TranslateToAsync(state.BaseTranslationX, state.BaseTranslationY + 1.5d, 80, Easing.CubicOut));
             }
 
             return Task.WhenAll(
-                visual.ScaleToAsync(1.0, 130, Easing.SpringOut),
-                visual.TranslateToAsync(0, 0, 130, Easing.SpringOut));
+                visual.ScaleToAsync(state.BaseScale, 130, Easing.SpringOut),
+                visual.TranslateToAsync(state.BaseTranslationX, state.BaseTranslationY, 130, Easing.SpringOut));
         }
         catch
         {
             return Task.CompletedTask;
         }
+    }
+
+    private static MicroInteractionState GetInteractionState(VisualElement visual)
+    {
+        var state = MicroInteractionStateMap.GetOrCreateValue(visual);
+        if (!state.HasBaseValues)
+        {
+            state.BaseScale = visual.Scale;
+            state.BaseTranslationX = visual.TranslationX;
+            state.BaseTranslationY = visual.TranslationY;
+            state.HasBaseValues = true;
+        }
+
+        return state;
+    }
+
+    private static void CaptureInteractionBase(VisualElement visual, MicroInteractionState state)
+    {
+        state.BaseScale = visual.Scale;
+        state.BaseTranslationX = visual.TranslationX;
+        state.BaseTranslationY = visual.TranslationY;
+        state.HasBaseValues = true;
+    }
+
+    private sealed class MicroInteractionState
+    {
+        public double BaseScale { get; set; } = 1d;
+        public double BaseTranslationX { get; set; }
+        public double BaseTranslationY { get; set; }
+        public bool HasBaseValues { get; set; }
     }
 }
