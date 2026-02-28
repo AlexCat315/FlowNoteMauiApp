@@ -1,3 +1,4 @@
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 # FlowNoteMauiApp
 
 FlowNoteMauiApp 是一个基于 .NET MAUI 的跨平台 PDF 阅读与手写笔记应用，面向 Android / iOS / MacCatalyst。
