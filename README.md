@@ -44,13 +44,13 @@ FlowNoteMauiApp/
 在仓库根目录执行（推荐）：
 
 ```bash
-dotnet build /Users/alexcat/dev/FlowNoteAppDevWorkSpace/FlowNoteMauiApp/FlowNoteMauiApp.csproj -f net10.0-android -v minimal
+dotnet FlowNoteMauiApp/FlowNoteMauiApp.csproj -f net10.0-android -v minimal
 ```
 
 运行到设备（示例）：
 
 ```bash
-dotnet build -t:Run /Users/alexcat/dev/FlowNoteAppDevWorkSpace/FlowNoteMauiApp/FlowNoteMauiApp.csproj -f net10.0-android
+dotnet build -t:Run FlowNoteMauiApp/FlowNoteMauiApp.csproj -f net10.0-android
 ```
 
 ## 5. 关键设置说明
