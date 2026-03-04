@@ -2,7 +2,7 @@
 # FlowNoteMauiApp
 
 FlowNoteMauiApp 是一个基于 .NET MAUI 的跨平台 PDF 阅读与手写笔记应用，面向 Android / iOS / MacCatalyst。
-
+![app](showappjpg.jpg "showapp")
 ## 1. 核心能力
 
 - PDF 文档打开、分页浏览、缩放与翻页
